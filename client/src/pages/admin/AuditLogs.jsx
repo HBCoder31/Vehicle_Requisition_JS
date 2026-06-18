@@ -11,6 +11,8 @@ export default function AuditLogs() {
   const [filter, setFilter] = useState({ action: '', entity_type: '' });
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [printLogs, setPrintLogs] = useState([]);
+  const [isPreparingPrint, setIsPreparingPrint] = useState(false);
 
   useEffect(() => { fetchLogs(1); }, [filter, fromDate, toDate]);
 
@@ -28,6 +30,38 @@ export default function AuditLogs() {
       setPagination(data.pagination);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
+  }
+
+  async function handlePrint() {
+    if (pagination.total <= logs.length) {
+      setPrintLogs(logs);
+      setTimeout(() => {
+        window.print();
+      }, 100);
+      return;
+    }
+
+    setIsPreparingPrint(true);
+    try {
+      const params = new URLSearchParams();
+      if (filter.action) params.set('action', filter.action);
+      if (filter.entity_type) params.set('entity_type', filter.entity_type);
+      if (fromDate) params.set('from_date', fromDate);
+      if (toDate) params.set('to_date', toDate);
+      params.set('page', 1);
+      params.set('limit', 10000); // Fetch up to 10k logs for printing
+
+      const { data } = await api.get(`/admin/audit-logs?${params}`);
+      setPrintLogs(data.logs);
+      
+      setTimeout(() => {
+        window.print();
+        setIsPreparingPrint(false);
+      }, 150);
+    } catch (err) {
+      console.error('Failed to fetch logs for printing:', err);
+      setIsPreparingPrint(false);
+    }
   }
 
   return (
@@ -51,11 +85,12 @@ export default function AuditLogs() {
           <p className="text-sm text-muted mt-1">Complete activity history across the portal</p>
         </div>
         <button
-          onClick={() => window.print()}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm"
+          onClick={handlePrint}
+          disabled={isPreparingPrint}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm disabled:opacity-50"
         >
           <Printer className="w-4 h-4" />
-          Print Logs
+          {isPreparingPrint ? 'Preparing Report...' : 'Print Logs'}
         </button>
       </div>
 
@@ -100,7 +135,7 @@ export default function AuditLogs() {
         </div>
       </div>
 
-      <Card noPadding>
+      <Card noPadding className="no-print">
         {loading ? <Spinner className="py-10" /> : (
           <>
             <div className="overflow-x-auto">
@@ -160,6 +195,40 @@ export default function AuditLogs() {
           </>
         )}
       </Card>
+
+      {/* Print-only container containing all fetched logs */}
+      <div className="print-only">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-slate-50/50">
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Timestamp</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Actor</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Entity</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Details</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">IP</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {(printLogs.length > 0 ? printLogs : logs).map(log => (
+                <tr key={log.id}>
+                  <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
+                  <td className="px-6 py-3 text-slate-700">{log.actor_name || '—'}</td>
+                  <td className="px-6 py-3">
+                    <span className="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-mono text-slate-600">{log.action}</span>
+                  </td>
+                  <td className="px-6 py-3 text-slate-600">{log.entity_type} #{log.entity_id}</td>
+                  <td className="px-6 py-3 text-xs text-slate-500 max-w-48 truncate">
+                    {log.details ? JSON.stringify(typeof log.details === 'string' ? JSON.parse(log.details) : log.details) : '—'}
+                  </td>
+                  <td className="px-6 py-3 text-xs text-slate-400 font-mono">{log.ip_address || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
