@@ -92,10 +92,14 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
-@keyframes borderBeam {
-  0% { border-color: var(--color-border); }
-  50% { border-color: var(--color-primary-400); }
-  100% { border-color: var(--color-border); }
+@keyframes rotateBeam {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes focusGlowPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.12); }
+  50%      { box-shadow: 0 0 0 5px rgba(244, 63, 94, 0.22); }
 }
 
 .animate-fade-in    { animation: fadeIn 0.4s ease-out both; }
@@ -104,7 +108,53 @@ body {
 .animate-fade-in-up { animation: fadeInUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .animate-blob       { animation: blob-pivot 10s infinite alternate ease-in-out; }
 .animate-modal-spring { animation: modalSpring 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.border-beam-active { animation: borderBeam 2.5s infinite ease-in-out; }
+
+/* Border Beam Glow Effect */
+.border-beam {
+  position: relative;
+  overflow: hidden;
+}
+
+.border-beam::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    transparent, 
+    var(--color-primary-500) 25%, 
+    transparent 50%
+  );
+  animation: rotateBeam 4s linear infinite;
+  z-index: 0;
+}
+
+.border-beam::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: var(--color-surface);
+  border-radius: inherit;
+  z-index: 0;
+}
+
+/* Ensure children are above the pseudo-elements */
+.border-beam > * {
+  position: relative;
+  z-index: 10;
+}
+
+/* Focused Input Glow Styling */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--color-primary-500) !important;
+  animation: focusGlowPulse 2.5s infinite ease-in-out;
+  transition: border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+}
 
 /* Staggered delay utility classes */
 .delay-1 { animation-delay: 50ms; }

@@ -58,19 +58,22 @@ export default function EmployeeDashboard() {
           { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-warning-600', bg: 'bg-warning-50', delay: 'delay-2' },
           { label: 'Approved', value: stats.approved, icon: CheckCircle, color: 'text-success-600', bg: 'bg-success-50', delay: 'delay-3' },
           { label: 'Rejected', value: stats.rejected, icon: XCircle, color: 'text-danger-600', bg: 'bg-danger-50', delay: 'delay-4' },
-        ].map(({ label, value, icon: Icon, color, bg, delay }) => (
-          <Card key={label} className={`hover-card animate-fade-in-up ${delay}`}>
-            <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${bg}`}>
-                <Icon className={`w-6 h-6 ${color}`} />
+        ].map(({ label, value, icon: Icon, color, bg, delay }) => {
+          const isPendingGlow = label === 'Pending' && value > 0;
+          return (
+            <Card key={label} className={`hover-card animate-fade-in-up ${delay} ${isPendingGlow ? 'border-beam' : ''}`}>
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl ${bg}`}>
+                  <Icon className={`w-6 h-6 ${color}`} />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-800">{value}</p>
+                  <p className="text-xs text-muted">{label}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-slate-800">{value}</p>
-                <p className="text-xs text-muted">{label}</p>
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
 
       {/* Recent Requests Table */}

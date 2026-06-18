@@ -83,19 +83,22 @@ export default function GmHrDashboard() {
             { label: 'Approved', value: stats.approved, icon: CheckCircle, color: 'text-success-600', bg: 'bg-success-50', delay: 'delay-2' },
             { label: 'Rejected', value: stats.rejected, icon: XCircle, color: 'text-danger-600', bg: 'bg-danger-50', delay: 'delay-3' },
             { label: 'Total', value: stats.total, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50', delay: 'delay-4' },
-          ].map(({ label, value, icon: Icon, color, bg, delay }) => (
-            <Card key={label} className={`hover-card animate-fade-in-up ${delay}`}>
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-xl ${bg}`}>
-                  <Icon className={`w-5 h-5 ${color}`} />
+          ].map(({ label, value, icon: Icon, color, bg, delay }) => {
+            const isPendingGlow = label === 'Pending' && value > 0;
+            return (
+              <Card key={label} className={`hover-card animate-fade-in-up ${delay} ${isPendingGlow ? 'border-beam' : ''}`}>
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl ${bg}`}>
+                    <Icon className={`w-5 h-5 ${color}`} />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold text-slate-800">{value}</p>
+                    <p className="text-xs text-muted">{label}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xl font-bold text-slate-800">{value}</p>
-                  <p className="text-xs text-muted">{label}</p>
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
 
