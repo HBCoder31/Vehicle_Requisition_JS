@@ -119,6 +119,38 @@ export default function DashboardLayout() {
     }
   }, [user]);
 
+  useEffect(() => {
+    // 1. Detect normal browser reload vs. in-app refresh button reload
+    const navigationEntries = performance.getEntriesByType('navigation');
+    const isReload = (navigationEntries.length > 0 && navigationEntries[0].type === 'reload') || performance.navigation.type === 1;
+
+    if (isReload) {
+      if (sessionStorage.getItem('inAppRefresh') === 'true') {
+        // Allowed in-app refresh: clear the flag and continue session
+        sessionStorage.removeItem('inAppRefresh');
+      } else {
+        // Normal browser reload: force logout & redirect to login
+        logout().then(() => {
+          navigate('/login');
+        });
+      }
+    }
+
+    // 2. Warn user before reloading/unloading normally
+    const handleBeforeUnload = (e) => {
+      if (sessionStorage.getItem('inAppRefresh') !== 'true') {
+        e.preventDefault();
+        e.returnValue = 'Warning: If you reload the page normally, you will be redirected to the login page.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [logout, navigate]);
+
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const handleMarkAsRead = async (id) => {
@@ -404,7 +436,10 @@ export default function DashboardLayout() {
 
       {/* Global Refresh Button */}
       <button
-        onClick={() => window.location.reload()}
+        onClick={() => {
+          sessionStorage.setItem('inAppRefresh', 'true');
+          window.location.reload();
+        }}
         title="Refresh Data"
         className="fixed z-50 p-3 bg-primary-600 text-white rounded-full shadow-xl hover:bg-primary-700 transition-all hover:scale-105 active:scale-95 bottom-8 right-4 lg:right-8"
       >
