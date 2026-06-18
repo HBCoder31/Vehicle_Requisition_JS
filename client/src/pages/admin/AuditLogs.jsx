@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import Spinner from '../../components/ui/Spinner';
-import { ScrollText, ChevronLeft, ChevronRight, Printer } from 'lucide-react';
+import { ScrollText, ChevronLeft, ChevronRight, Printer, Download } from 'lucide-react';
 
 export default function AuditLogs() {
   const [logs, setLogs] = useState([]);
@@ -15,6 +15,7 @@ export default function AuditLogs() {
   const [debouncedEmpNumber, setDebouncedEmpNumber] = useState('');
   const [printLogs, setPrintLogs] = useState([]);
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Debounce employee number input to avoid excessive API requests
   useEffect(() => {
@@ -76,6 +77,80 @@ export default function AuditLogs() {
     }
   }
 
+  async function handleExport() {
+    let logsToExport = logs;
+    
+    if (pagination.total > logs.length) {
+      setIsExporting(true);
+      try {
+        const params = new URLSearchParams();
+        if (filter.action) params.set('action', filter.action);
+        if (filter.entity_type) params.set('entity_type', filter.entity_type);
+        if (fromDate) params.set('from_date', fromDate);
+        if (toDate) params.set('to_date', toDate);
+        if (debouncedEmpNumber) params.set('employee_number', debouncedEmpNumber);
+        params.set('page', 1);
+        params.set('limit', 10000); // Fetch up to 10k logs for exporting
+
+        const { data } = await api.get(`/admin/audit-logs?${params}`);
+        logsToExport = data.logs;
+      } catch (err) {
+        console.error('Failed to fetch logs for export:', err);
+        setIsExporting(false);
+        return;
+      }
+      setIsExporting(false);
+    }
+
+    if (logsToExport.length === 0) return;
+
+    const escape = (val) => {
+      if (val == null) return '';
+      const str = String(val);
+      return (str.includes(',') || str.includes('"') || str.includes('\n'))
+        ? '"' + str.replace(/"/g, '""') + '"'
+        : str;
+    };
+
+    const headers = [
+      'Timestamp', 'Actor', 'Action', 'Entity Type', 'Entity ID', 'Details', 'IP Address'
+    ];
+
+    const rows = logsToExport.map(log => {
+      let detailsStr = '—';
+      if (log.details) {
+        try {
+          detailsStr = typeof log.details === 'string'
+            ? JSON.stringify(JSON.parse(log.details))
+            : JSON.stringify(log.details);
+        } catch (e) {
+          detailsStr = String(log.details);
+        }
+      }
+
+      return [
+        new Date(log.created_at).toLocaleString(),
+        log.actor_name ? `${log.actor_name}${log.actor_employee_number ? ` (${log.actor_employee_number})` : ''}` : '—',
+        log.action,
+        log.entity_type,
+        log.entity_id,
+        detailsStr,
+        log.ip_address || '—'
+      ].map(escape);
+    });
+
+    const BOM = '\uFEFF';
+    const csv = BOM + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Audit_Logs_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Printable Report Header */}
@@ -97,14 +172,24 @@ export default function AuditLogs() {
           <h1 className="text-2xl font-bold text-slate-800">Audit Logs</h1>
           <p className="text-sm text-muted mt-1">Complete activity history across the portal</p>
         </div>
-        <button
-          onClick={handlePrint}
-          disabled={isPreparingPrint}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm disabled:opacity-50"
-        >
-          <Printer className="w-4 h-4" />
-          {isPreparingPrint ? 'Preparing Report...' : 'Print Logs'}
-        </button>
+        <div className="flex gap-2 shrink-0">
+          <button
+            onClick={handlePrint}
+            disabled={isPreparingPrint}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm disabled:opacity-50"
+          >
+            <Printer className="w-4 h-4" />
+            {isPreparingPrint ? 'Preparing Report...' : 'Print Logs'}
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={isExporting || logs.length === 0}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-success-600 hover:bg-success-700 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            {isExporting ? 'Exporting...' : 'Export to Excel'}
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
