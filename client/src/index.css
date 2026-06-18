@@ -88,9 +88,37 @@ body {
 }
 
 /* ─── Login Background Gradient ─────────────────────────── */
+@keyframes gradientAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes floatSlow1 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(45px, -65px) scale(1.15); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes floatSlow2 {
+  0% { transform: translate(0px, 0px) scale(1.15); }
+  50% { transform: translate(-65px, 45px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1.15); }
+}
+
 .login-bg {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #334155 100%);
+  background: linear-gradient(-45deg, #4c0519 0%, #881337 35%, #1e293b 70%, #0f172a 100%);
+  background-size: 400% 400%;
+  animation: gradientAnimation 18s ease infinite;
   min-height: 100vh;
+}
+
+.animate-float-1 {
+  animation: floatSlow1 22s ease-in-out infinite;
+}
+
+.animate-float-2 {
+  animation: floatSlow2 28s ease-in-out infinite;
 }
 
 /* ─── Glass Card ────────────────────────────────────────── */
