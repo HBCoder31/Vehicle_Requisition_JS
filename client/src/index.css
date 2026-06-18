@@ -205,3 +205,34 @@ body {
   display: none;
 }
 
+/* ─── Global Button Transitions & Micro-Animations ───────────────── */
+button,
+.btn,
+input[type="submit"],
+input[type="button"] {
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+button:hover:not(:disabled),
+.btn:hover:not(:disabled),
+input[type="submit"]:hover:not(:disabled),
+input[type="button"]:hover:not(:disabled) {
+  filter: brightness(0.94) contrast(1.03);
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled),
+.btn:active:not(:disabled),
+input[type="submit"]:active:not(:disabled),
+input[type="button"]:active:not(:disabled) {
+  filter: brightness(0.90) contrast(1.05);
+  transform: translateY(0);
+}
+
+
