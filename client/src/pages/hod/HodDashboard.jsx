@@ -5,7 +5,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
-import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, History } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function HodDashboard() {
