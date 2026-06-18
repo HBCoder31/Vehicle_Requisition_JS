@@ -74,6 +74,23 @@ export default function DashboardLayout() {
   const [searchResults, setSearchResults] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // States for dimming the in-app refresh button after 5 seconds of inactivity
+  const [isRefreshDimmed, setIsRefreshDimmed] = useState(false);
+  const [isRefreshHovered, setIsRefreshHovered] = useState(false);
+
+  useEffect(() => {
+    if (isRefreshHovered) {
+      setIsRefreshDimmed(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setIsRefreshDimmed(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [isRefreshHovered]);
+
   const navItems = roleNavConfig[user?.role] || [];
 
   // Search logic
@@ -424,8 +441,12 @@ export default function DashboardLayout() {
           sessionStorage.setItem('inAppRefresh', 'true');
           window.location.reload();
         }}
+        onMouseEnter={() => setIsRefreshHovered(true)}
+        onMouseLeave={() => setIsRefreshHovered(false)}
         title="Refresh Data"
-        className="fixed z-50 p-3 bg-primary-600 text-white rounded-full shadow-xl hover:bg-primary-700 transition-all hover:scale-105 active:scale-95 bottom-8 right-4 lg:right-8"
+        className={`fixed z-50 p-3 bg-primary-600 text-white rounded-full shadow-xl hover:bg-primary-700 hover:scale-105 active:scale-95 bottom-8 right-4 lg:right-8 transition-all duration-300 ${
+          isRefreshDimmed ? 'opacity-50' : 'opacity-100'
+        }`}
       >
         <RefreshCw className="w-5 h-5" />
       </button>
