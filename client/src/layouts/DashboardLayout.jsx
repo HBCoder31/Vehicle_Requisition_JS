@@ -1,0 +1,415 @@
+import { useState, useEffect } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import {
+  LayoutDashboard, FileText, CheckSquare, Truck, Users, ScrollText,
+  Menu, X, LogOut, ChevronDown, Shield, Bell, Check, TrendingUp, Search, RefreshCw, MapPin, History
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import api from '../services/api';
+import socket from '../services/socket';
+
+const roleNavConfig = {
+  Employee: [
+    { to: '/employee', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/employee/new-request', icon: FileText, label: 'New Request' },
+    { to: '/requests/history', icon: History, label: 'Request History' },
+    { to: '/delegations', icon: Users, label: 'Delegations' },
+  ],
+  HOD: [
+    { to: '/hod', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/hod/approvals', icon: CheckSquare, label: 'Pending Approvals' },
+    { to: '/hod/history', icon: History, label: 'Approval History' },
+    { to: '/requests/history', icon: History, label: 'Request History' },
+    { to: '/delegations', icon: Users, label: 'Delegations' },
+  ],
+  'GM-HR': [
+    { to: '/gmhr', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/gmhr/approvals', icon: CheckSquare, label: 'Pending Approvals' },
+    { to: '/delegations', icon: Users, label: 'Delegations' },
+  ],
+  COO: [
+    { to: '/coo', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/coo/approvals', icon: CheckSquare, label: 'Pending Approvals' },
+    { to: '/coo/history', icon: History, label: 'Approval History' },
+    { to: '/requests/history', icon: History, label: 'Request History' },
+    { to: '/delegations', icon: Users, label: 'Delegations' },
+  ],
+  Garage: [
+    { to: '/garage', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/garage/history', icon: ScrollText, label: 'Vehicle History' },
+    { to: '/garage/drivers', icon: Users, label: 'Driver Management' },
+    { to: '/garage/maintenance', icon: CheckSquare, label: 'Maintenance' },
+    { to: '/garage/fuel', icon: FileText, label: 'Fuel Logs' },
+  ],
+  Admin: [
+    { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/admin/analytics', icon: TrendingUp, label: 'Analytics & Reports' },
+    { to: '/admin/employees', icon: Users, label: 'Manage Employees' },
+    { to: '/admin/vehicles', icon: Truck, label: 'Vehicle Management' },
+    { to: '/admin/destinations', icon: MapPin, label: 'Destination Management' },
+    { to: '/admin/audit-logs', icon: ScrollText, label: 'Audit Logs' },
+    { to: '/delegations', icon: Users, label: 'Delegations' },
+  ],
+};
+
+const roleBadgeColors = {
+  Employee: 'bg-primary-100 text-primary-700',
+  HOD:      'bg-warning-50 text-warning-600',
+  'GM-HR':  'bg-indigo-50 text-indigo-700',
+  COO:      'bg-success-50 text-success-700',
+  Garage:   'bg-info-50 text-primary-700',
+  Admin:    'bg-danger-50 text-danger-700',
+};
+
+export default function DashboardLayout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const navItems = roleNavConfig[user?.role] || [];
+
+  // Search logic
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.length >= 2) {
+        try {
+          const { data } = await api.get(`/search?q=${searchQuery}`);
+          setSearchResults(data.data);
+          setSearchOpen(true);
+        } catch (err) { console.error(err); }
+      } else {
+        setSearchResults(null);
+        setSearchOpen(false);
+      }
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  // Fetch notifications
+  const fetchNotifications = async () => {
+    try {
+      const { data } = await api.get('/notifications');
+      setNotifications(data.data || []);
+    } catch (err) {
+      console.error('Failed to fetch notifications');
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchNotifications();
+      // Setup Socket.IO
+      // socket.connect();
+      // socket.emit('joinRoom', `user_${user.id}`);
+      // socket.on('notification', (newNotif) => {
+      //   setNotifications((prev) => [newNotif, ...prev]);
+      // });
+      // return () => {
+      //   socket.off('notification');
+      //   socket.disconnect();
+      // };
+    }
+  }, [user]);
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await api.patch(`/notifications/${id}/read`);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: 1 } : n));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await api.patch(`/notifications/read-all`);
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: 1 })));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar Overlay (mobile) */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-primary-900 text-white
+        transform transition-transform duration-300 ease-in-out
+        lg:translate-x-0 lg:static lg:flex lg:flex-col
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {/* Logo */}
+        <div className="flex items-center justify-between h-16 px-6 border-b border-primary-800">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+              <Truck className="w-5 h-5" />
+            </div>
+            <span className="text-sm font-bold tracking-wide">VRP</span>
+          </div>
+          <button
+            className="lg:hidden p-1 rounded hover:bg-primary-800"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Nav Items */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {navItems.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === `/${user?.role?.toLowerCase()}`}
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+                ${isActive
+                  ? 'bg-white/15 text-white shadow-sm'
+                  : 'text-primary-200 hover:bg-white/10 hover:text-white'}`
+              }
+            >
+              <Icon className="w-5 h-5 shrink-0" />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="p-4 border-t border-primary-800">
+          <div className="flex items-center gap-3">
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-full ring-2 ring-primary-700" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center text-xs font-semibold">
+                {user?.full_name?.charAt(0) || '?'}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate">{user?.full_name}</p>
+              <p className="text-[10px] text-primary-300 truncate">{user?.email}</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        {/* Top Navbar — always visible, never scrolls away */}
+        <header className="h-16 bg-white border-b border-border flex items-center justify-between px-4 sm:px-8 z-10 shrink-0 shadow-sm">
+          <div className="flex items-center gap-4 flex-1">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 -ml-2 rounded-lg hover:bg-slate-100 lg:hidden text-slate-600 transition-colors"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+
+            {/* Global Search */}
+            <div className="relative max-w-md w-full hidden sm:block">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input 
+                  type="text" 
+                  placeholder="Search requests, vehicles, drivers..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-sm focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+                />
+              </div>
+
+              {searchOpen && searchResults && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setSearchOpen(false)} />
+                  <div className="absolute top-full left-0 mt-2 w-full max-h-96 overflow-y-auto bg-white rounded-xl border border-border shadow-xl z-50 animate-fade-in p-2 space-y-4">
+                    {/* Requests */}
+                    {searchResults.requests?.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase px-2 mb-1">Requests</p>
+                        {searchResults.requests.map(r => (
+                          <Link key={`req-${r.id}`} to={`/requests/${r.id}`} onClick={() => setSearchOpen(false)} className="block px-3 py-2 rounded hover:bg-slate-50 text-sm">
+                            <span className="font-medium text-slate-900">#{r.id} {r.destination}</span>
+                            <span className="block text-xs text-slate-500">{r.status}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                    {/* Vehicles */}
+                    {searchResults.vehicles?.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase px-2 mb-1">Vehicles</p>
+                        {searchResults.vehicles.map(v => (
+                          <div key={`veh-${v.id}`} className="block px-3 py-2 rounded hover:bg-slate-50 text-sm">
+                            <span className="font-medium text-slate-900">{v.registration_no}</span>
+                            <span className="block text-xs text-slate-500">{v.make} {v.model}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* Drivers */}
+                    {searchResults.drivers?.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase px-2 mb-1">Drivers</p>
+                        {searchResults.drivers.map(d => (
+                          <div key={`drv-${d.id}`} className="block px-3 py-2 rounded hover:bg-slate-50 text-sm">
+                            <span className="font-medium text-slate-900">{d.full_name}</span>
+                            <span className="block text-xs text-slate-500">EMP: {d.employee_number}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {searchResults.requests?.length === 0 && searchResults.vehicles?.length === 0 && searchResults.drivers?.length === 0 && (
+                      <div className="p-4 text-center text-sm text-slate-500">No results found.</div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Company Logo */}
+            <img 
+              src="/logo.png" 
+              alt="CK Birla Group - Orient Paper" 
+              className="h-8 md:h-10 object-contain hidden sm:block border-r border-slate-200 pr-4" 
+            />
+
+            {/* Role Badge */}
+            <span className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${roleBadgeColors[user?.role] || ''}`}>
+              <Shield className="w-3 h-3" />
+              {user?.role}
+            </span>
+
+            {/* Notification Bell */}
+            <div className="relative">
+              <button
+                className="relative p-2 rounded-full hover:bg-slate-100 transition-colors"
+                onClick={() => { setNotifOpen(!notifOpen); setProfileOpen(false); }}
+              >
+                <Bell className="w-5 h-5 text-slate-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-danger-500 rounded-full border-2 border-surface animate-pulse" />
+                )}
+              </button>
+
+              {notifOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-surface rounded-xl border border-border shadow-xl z-50 animate-fade-in flex flex-col">
+                    <div className="p-3 border-b border-border flex justify-between items-center bg-slate-50 rounded-t-xl sticky top-0">
+                      <p className="text-sm font-semibold text-slate-800">Notifications</p>
+                      {unreadCount > 0 && (
+                        <button onClick={handleMarkAllAsRead} className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Mark all read
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex-1 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-sm text-slate-500">No notifications yet.</div>
+                      ) : (
+                        <div className="divide-y divide-border">
+                          {notifications.map(n => (
+                            <div key={n.id} className={`p-3 transition-colors ${n.is_read ? 'bg-white' : 'bg-primary-50/30'}`}>
+                              <div className="flex justify-between items-start gap-2">
+                                <p className={`text-sm ${n.is_read ? 'text-slate-700' : 'text-slate-900 font-medium'}`}>{n.title}</p>
+                                {!n.is_read && (
+                                  <button onClick={() => handleMarkAsRead(n.id)} className="shrink-0 text-primary-500 hover:text-primary-700" title="Mark as read">
+                                    <span className="w-2 h-2 rounded-full bg-primary-500 block"></span>
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-xs text-slate-500 mt-1">{n.message}</p>
+                              <p className="text-[10px] text-slate-400 mt-2">{new Date(n.created_at).toLocaleString()}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
+              >
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-full" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-semibold">
+                    {user?.full_name?.charAt(0) || '?'}
+                  </div>
+                )}
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              </button>
+
+              {profileOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-56 bg-surface rounded-xl border border-border shadow-xl z-50 animate-fade-in">
+                    <div className="p-3 border-b border-border">
+                      <p className="text-sm font-medium text-slate-800">{user?.full_name}</p>
+                      <p className="text-xs text-muted truncate">{user?.email}</p>
+                    </div>
+                    <div className="p-1.5">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger-600 rounded-lg hover:bg-danger-50 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
+
+      {/* Global Refresh Button */}
+      <button
+        onClick={() => window.location.reload()}
+        title="Refresh Data"
+        className="fixed z-50 p-3 bg-primary-600 text-white rounded-full shadow-xl hover:bg-primary-700 transition-all hover:scale-105 active:scale-95 bottom-8 right-4 lg:right-8"
+      >
+        <RefreshCw className="w-5 h-5" />
+      </button>
+    </div>
+  );
+}

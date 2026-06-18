@@ -1,0 +1,9 @@
+{
+  "name": "vehicle-requisition-portal",
+  "version": "1.0.0",
+  "scripts": {
+    "postinstall": "cd client && npm install && cd ../server && npm install",
+    "build": "cd client && npm run build",
+    "dev": "start cmd /c \"cd client && npm run dev\" && cd server && npm run dev"
+  }
+}
