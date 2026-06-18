@@ -73,8 +73,9 @@ export default function Login() {
   return (
     <div className="login-bg flex items-center justify-center p-4 relative overflow-hidden">
       {/* Floating decorative elements */}
-      <div className="absolute top-20 left-20 w-72 h-72 bg-primary-500/10 rounded-full blur-3xl animate-float-1" />
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary-700/10 rounded-full blur-3xl animate-float-2" />
+      <div className="absolute top-10 left-10 w-80 h-80 bg-primary-500/20 rounded-full blur-3xl animate-float-1 mix-blend-screen" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-primary-700/15 rounded-full blur-3xl animate-float-2 mix-blend-screen" />
+      <div className="absolute top-1/2 left-1/3 w-72 h-72 bg-rose-900/15 rounded-full blur-3xl animate-blob mix-blend-screen" />
 
       {/* Top Right Logo */}
       <div className="absolute top-6 right-6 lg:top-8 lg:right-8 bg-white rounded-xl shadow-xl p-2.5 z-10 animate-fade-in">

@@ -86,7 +86,7 @@ export default function GarageDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
+        <Card className="hover-card animate-fade-in-up delay-1">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-warning-50"><ClipboardList className="w-5 h-5 text-warning-600" /></div>
             <div>
@@ -95,7 +95,7 @@ export default function GarageDashboard() {
             </div>
           </div>
         </Card>
-        <Card>
+        <Card className="hover-card animate-fade-in-up delay-2">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-primary-50"><Car className="w-5 h-5 text-primary-600" /></div>
             <div>
@@ -104,7 +104,7 @@ export default function GarageDashboard() {
             </div>
           </div>
         </Card>
-        <Card>
+        <Card className="hover-card animate-fade-in-up delay-3">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-success-50"><Truck className="w-5 h-5 text-success-600" /></div>
             <div>

@@ -29,7 +29,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
       />
       {/* Centering wrapper — min-h-full + flex centers the modal vertically */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className={`relative bg-surface rounded-2xl shadow-2xl w-full ${sizeClasses[size]} animate-fade-in`}>
+        <div className={`relative bg-surface rounded-2xl shadow-2xl w-full ${sizeClasses[size]} animate-modal-spring`}>
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-3 border-b border-border">
             <h3 className="text-base font-semibold text-slate-800">{title}</h3>

@@ -73,7 +73,7 @@ export default function CooDashboard() {
       </div>
 
       {/* Summary */}
-      <Card>
+      <Card className="hover-card animate-fade-in-up delay-1">
         <div className="flex items-center gap-4">
           <div className="p-3 rounded-xl bg-primary-50">
             <MapPin className="w-6 h-6 text-primary-600" />

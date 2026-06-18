@@ -30,25 +30,25 @@ export default function AdminDashboard() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card className="hover-card animate-fade-in-up delay-1">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-primary-50"><FileText className="w-6 h-6 text-primary-600" /></div>
             <div><p className="text-2xl font-bold">{totalRequests}</p><p className="text-xs text-muted">Total Requests</p></div>
           </div>
         </Card>
-        <Card>
+        <Card className="hover-card animate-fade-in-up delay-2">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-success-50"><Users className="w-6 h-6 text-success-600" /></div>
             <div><p className="text-2xl font-bold">{data.employees.active}</p><p className="text-xs text-muted">Active Employees</p></div>
           </div>
         </Card>
-        <Card>
+        <Card className="hover-card animate-fade-in-up delay-3">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-warning-50"><Truck className="w-6 h-6 text-warning-600" /></div>
             <div><p className="text-2xl font-bold">{data.vehicles.available}/{data.vehicles.total}</p><p className="text-xs text-muted">Vehicles Available</p></div>
           </div>
         </Card>
-        <Card>
+        <Card className="hover-card animate-fade-in-up delay-4">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-info-50"><TrendingUp className="w-6 h-6 text-primary-600" /></div>
             <div><p className="text-2xl font-bold">{data.vehicles.in_use}</p><p className="text-xs text-muted">Vehicles In Use</p></div>
