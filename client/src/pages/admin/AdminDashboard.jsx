@@ -1,22 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import Card from '../../components/ui/Card';
-import Spinner from '../../components/ui/Spinner';
+import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { Users, Truck, FileText, Activity, TrendingUp, Building2 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const loadStart = useRef(Date.now());
 
   useEffect(() => {
+    loadStart.current = Date.now();
     api.get('/admin/dashboard').then(res => {
       setData(res.data);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+      const elapsed = Date.now() - loadStart.current;
+      const remaining = Math.max(0, 2000 - elapsed);
+      setTimeout(() => setLoading(false), remaining);
+    }).catch(() => {
+      const elapsed = Date.now() - loadStart.current;
+      const remaining = Math.max(0, 2000 - elapsed);
+      setTimeout(() => setLoading(false), remaining);
+    });
   }, []);
 
-  if (loading) return <Spinner size="lg" className="py-20" />;
+  if (loading) return <DashboardSkeleton cards={4} rows={5} cols={4} />;
   if (!data) return <p className="text-center text-muted py-20">Failed to load dashboard data.</p>;
 
   const totalRequests = data.requestsByStatus.reduce((s, r) => s + r.count, 0);

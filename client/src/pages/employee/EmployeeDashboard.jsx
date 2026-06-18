@@ -1,28 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import StatusBadge from '../../components/ui/StatusBadge';
-import Spinner from '../../components/ui/Spinner';
+import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { FileText, Plus, Clock, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
 
 export default function EmployeeDashboard() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [requestToDelete, setRequestToDelete] = useState(null);
+  const loadStart = useRef(Date.now());
 
   useEffect(() => {
     fetchRequests();
   }, []);
 
   async function fetchRequests() {
+    loadStart.current = Date.now();
     try {
       const { data } = await api.get('/requests/my');
       setRequests(data.requests);
     } catch (err) {
       console.error('Failed to fetch requests:', err);
     } finally {
-      setLoading(false);
+      const elapsed = Date.now() - loadStart.current;
+      const remaining = Math.max(0, 2000 - elapsed);
+      setTimeout(() => setLoading(false), remaining);
     }
   }
 
@@ -33,7 +37,7 @@ export default function EmployeeDashboard() {
     rejected: requests.filter(r => r.status.includes('Rejected')).length,
   };
 
-  if (loading) return <Spinner size="lg" className="py-20" />;
+  if (loading) return <DashboardSkeleton cards={4} rows={5} cols={6} />;
 
   return (
     <div className="space-y-6 animate-fade-in">

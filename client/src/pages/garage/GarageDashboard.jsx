@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import StatusBadge from '../../components/ui/StatusBadge';
-import Spinner from '../../components/ui/Spinner';
+import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { Truck, PlayCircle, StopCircle, ClipboardList, Car, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ export default function GarageDashboard() {
   const [licenseAlerts, setLicenseAlerts] = useState([]);
   const [certAlerts, setCertAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const loadStart = useRef(Date.now());
   const [assignModal, setAssignModal] = useState({ open: false, request: null });
   const [assignForm, setAssignForm] = useState({ vehicle_id: '', driver_id: '', remarks: '' });
   const [processing, setProcessing] = useState(false);
@@ -23,6 +24,7 @@ export default function GarageDashboard() {
   useEffect(() => { fetchAll(); }, []);
 
   async function fetchAll() {
+    loadStart.current = Date.now();
     try {
       const [pendRes, activeRes, vehRes, driverRes, licAlertsRes, certAlertsRes] = await Promise.all([
         api.get('/garage/pending'),
@@ -41,7 +43,9 @@ export default function GarageDashboard() {
     } catch (err) {
       console.error('Failed to fetch data:', err);
     } finally {
-      setLoading(false);
+      const elapsed = Date.now() - loadStart.current;
+      const remaining = Math.max(0, 2000 - elapsed);
+      setTimeout(() => setLoading(false), remaining);
     }
   }
 
@@ -75,7 +79,7 @@ export default function GarageDashboard() {
   const availableVehicles = vehicles.filter(v => v.is_available);
   const availableDrivers = drivers.filter(d => d.is_available);
 
-  if (loading) return <Spinner size="lg" className="py-20" />;
+  if (loading) return <DashboardSkeleton cards={3} rows={4} cols={5} />;
 
   return (
     <div className="space-y-6 animate-fade-in">

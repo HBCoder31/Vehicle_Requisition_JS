@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
-import Spinner from '../../components/ui/Spinner';
+import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -13,6 +13,7 @@ export default function GmHrDashboard() {
   const [myRequests, setMyRequests] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const loadStart = useRef(Date.now());
   const [actionModal, setActionModal] = useState({ open: false, request: null, action: '' });
   const [remarks, setRemarks] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -22,6 +23,7 @@ export default function GmHrDashboard() {
   }, []);
 
   async function fetchData() {
+    loadStart.current = Date.now();
     try {
       const [reqRes, statsRes, myReqRes] = await Promise.all([
         api.get('/approvals/gmhr'),
@@ -34,7 +36,9 @@ export default function GmHrDashboard() {
     } catch (err) {
       console.error('Failed to fetch data:', err);
     } finally {
-      setLoading(false);
+      const elapsed = Date.now() - loadStart.current;
+      const remaining = Math.max(0, 2000 - elapsed);
+      setTimeout(() => setLoading(false), remaining);
     }
   }
 
@@ -57,7 +61,7 @@ export default function GmHrDashboard() {
     }
   }
 
-  if (loading) return <Spinner size="lg" className="py-20" />;
+  if (loading) return <DashboardSkeleton cards={4} rows={4} cols={5} />;
 
   return (
     <div className="space-y-6 animate-fade-in">
