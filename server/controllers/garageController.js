@@ -1,16 +1,13 @@
 const { pool } = require('../config/db');
 const HistoryRepository = require('../repositories/HistoryRepository');
 const NotificationService = require('../services/NotificationService');
+const AuditRepository = require('../repositories/AuditRepository');
 
 /**
  * Utility: Insert an audit log entry.
  */
 async function logAudit(actorId, action, entityType, entityId, details, ipAddress) {
-  await pool.execute(
-    `INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, details, ip_address)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [actorId, action, entityType, entityId, JSON.stringify(details), ipAddress]
-  );
+  await AuditRepository.createLog(actorId, action, entityType, entityId, details, ipAddress);
 }
 
 // ─── GET PENDING ASSIGNMENTS ───────────────────────────────

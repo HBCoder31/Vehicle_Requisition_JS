@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const AppError = require('../utils/AppError');
+const AuditRepository = require('../repositories/AuditRepository');
 
 /**
  * GET /api/delegations
@@ -50,11 +51,7 @@ exports.createDelegation = async (req, res, next) => {
     `, [delegator_id, delegatee_id, start_date, end_date]);
 
     // Log the audit
-    await pool.execute(
-      `INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, details, ip_address)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [delegator_id, 'CREATE_DELEGATION', 'delegation', 0, JSON.stringify({ delegatee_id, start_date, end_date }), req.ip]
-    );
+    await AuditRepository.createLog(delegator_id, 'CREATE_DELEGATION', 'delegation', 0, { delegatee_id, start_date, end_date }, req.ip);
 
     res.status(201).json({ status: 'success', message: 'Delegation created successfully' });
   } catch (err) {
@@ -83,11 +80,7 @@ exports.cancelDelegation = async (req, res, next) => {
 
     await pool.execute('UPDATE delegations SET is_active = 0 WHERE id = ?', [id]);
 
-    await pool.execute(
-      `INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, details, ip_address)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [userId, 'CANCEL_DELEGATION', 'delegation', id, '{}', req.ip]
-    );
+    await AuditRepository.createLog(userId, 'CANCEL_DELEGATION', 'delegation', id, {}, req.ip);
 
     res.json({ status: 'success', message: 'Delegation cancelled successfully' });
   } catch (err) {

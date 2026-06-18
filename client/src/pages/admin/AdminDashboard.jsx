@@ -5,6 +5,18 @@ import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { Users, Truck, FileText, Activity, TrendingUp, Building2 } from 'lucide-react';
 
+function parseUTCDate(dateStr) {
+  if (!dateStr) return null;
+  if (dateStr.endsWith('Z') || dateStr.includes('+') || dateStr.includes('-')) {
+    return new Date(dateStr);
+  }
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(dateStr)) {
+    const isoStr = dateStr.replace(' ', 'T') + (dateStr.endsWith('Z') ? '' : 'Z');
+    return new Date(isoStr);
+  }
+  return new Date(dateStr);
+}
+
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -120,7 +132,7 @@ export default function AdminDashboard() {
                   <p className="text-xs text-muted">{log.entity_type} #{log.entity_id}</p>
                 </div>
               </div>
-              <span className="text-xs text-muted shrink-0">{new Date(log.created_at).toLocaleString()}</span>
+              <span className="text-xs text-muted shrink-0">{parseUTCDate(log.created_at)?.toLocaleString()}</span>
             </div>
           ))}
           {data.recentActivity.length === 0 && (

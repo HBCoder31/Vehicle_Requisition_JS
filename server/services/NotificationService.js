@@ -1,6 +1,8 @@
 const NotificationRepository = require('../repositories/NotificationRepository');
 const UserRepository = require('../repositories/UserRepository');
 const EmailService = require('./EmailService');
+const logger = require('../utils/logger');
+const socketUtil = require('../utils/socket');
 
 class NotificationService {
   async sendPasswordResetEmail(user, token) {
@@ -23,12 +25,11 @@ class NotificationService {
       const id = await NotificationRepository.createNotification(userId, title, message, type);
 
       // 2. Emit Real-time Event
-      // [TEMPORARILY DISABLED as per user request]
-      // try {
-      //   socketUtil.getIO().to(`user_${userId}`).emit('notification', { id, title, message, type, is_read: 0, created_at: new Date() });
-      // } catch (err) {
-      //   logger.error('Socket emission failed in notifyUser', err);
-      // }
+      try {
+        socketUtil.getIO().to(`user_${userId}`).emit('notification', { id, title, message, type, is_read: 0, created_at: new Date() });
+      } catch (err) {
+        logger.error('Socket emission failed in notifyUser', err);
+      }
 
       // 3. Send Email
       const user = await UserRepository.findById(userId);

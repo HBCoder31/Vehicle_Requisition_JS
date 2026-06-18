@@ -123,16 +123,15 @@ export default function DashboardLayout() {
   useEffect(() => {
     if (user?.id) {
       fetchNotifications();
-      // Setup Socket.IO
-      // socket.connect();
-      // socket.emit('joinRoom', `user_${user.id}`);
-      // socket.on('notification', (newNotif) => {
-      //   setNotifications((prev) => [newNotif, ...prev]);
-      // });
-      // return () => {
-      //   socket.off('notification');
-      //   socket.disconnect();
-      // };
+      // Setup Socket.IO / SSE
+      socket.connect();
+      socket.on('notification', (newNotif) => {
+        setNotifications((prev) => [newNotif, ...prev]);
+      });
+      return () => {
+        socket.off('notification');
+        socket.disconnect();
+      };
     }
   }, [user]);
 

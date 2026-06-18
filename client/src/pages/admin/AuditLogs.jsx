@@ -3,6 +3,21 @@ import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import Spinner from '../../components/ui/Spinner';
 import { ScrollText, ChevronLeft, ChevronRight, Printer, Download } from 'lucide-react';
+import socket from '../../services/socket';
+
+function parseUTCDate(dateStr) {
+  if (!dateStr) return null;
+  // If it's already an ISO string with timezone, parse it directly
+  if (dateStr.endsWith('Z') || dateStr.includes('+') || dateStr.includes('-')) {
+    return new Date(dateStr);
+  }
+  // If it's a MySQL datetime string 'YYYY-MM-DD HH:mm:ss', treat it as UTC!
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(dateStr)) {
+    const isoStr = dateStr.replace(' ', 'T') + (dateStr.endsWith('Z') ? '' : 'Z');
+    return new Date(isoStr);
+  }
+  return new Date(dateStr);
+}
 
 export default function AuditLogs() {
   const [logs, setLogs] = useState([]);
@@ -26,6 +41,41 @@ export default function AuditLogs() {
   }, [empNumber]);
 
   useEffect(() => { fetchLogs(1); }, [filter, fromDate, toDate, debouncedEmpNumber]);
+
+  useEffect(() => {
+    function handleNewAuditLog(newLog) {
+      // Check if filters match
+      if (filter.action && newLog.action !== filter.action) return;
+      if (filter.entity_type && newLog.entity_type !== filter.entity_type) return;
+      if (debouncedEmpNumber && (!newLog.actor_employee_number || !newLog.actor_employee_number.toLowerCase().includes(debouncedEmpNumber.toLowerCase()))) return;
+      
+      // Check date range if specified
+      if (fromDate || toDate) {
+        const logDateStr = newLog.created_at.split(' ')[0]; // YYYY-MM-DD
+        if (fromDate && logDateStr < fromDate) return;
+        if (toDate && logDateStr > toDate) return;
+      }
+
+      setLogs((prev) => {
+        if (prev.some(log => log.id === newLog.id)) return prev;
+        const updated = [newLog, ...prev];
+        if (updated.length > 20) {
+          updated.pop();
+        }
+        return updated;
+      });
+      setPagination((prev) => ({
+        ...prev,
+        total: prev.total + 1,
+        pages: Math.ceil((prev.total + 1) / 20)
+      }));
+    }
+
+    socket.on('audit_log', handleNewAuditLog);
+    return () => {
+      socket.off('audit_log');
+    };
+  }, [filter, fromDate, toDate, debouncedEmpNumber]);
 
   async function fetchLogs(page) {
     setLoading(true);
@@ -129,7 +179,7 @@ export default function AuditLogs() {
       }
 
       return [
-        new Date(log.created_at).toLocaleString(),
+        parseUTCDate(log.created_at).toLocaleString(),
         log.actor_name ? `${log.actor_name}${log.actor_employee_number ? ` (${log.actor_employee_number})` : ''}` : '—',
         log.action,
         log.entity_type,
@@ -261,7 +311,7 @@ export default function AuditLogs() {
                 <tbody className="divide-y divide-border">
                   {logs.map(log => (
                     <tr key={log.id} className="hover:bg-slate-50/50">
-                      <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
+                      <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{parseUTCDate(log.created_at)?.toLocaleString()}</td>
                       <td className="px-6 py-3 text-slate-700">
                         {log.actor_name || '—'}
                         {log.actor_employee_number ? ` (${log.actor_employee_number})` : ''}
@@ -324,7 +374,7 @@ export default function AuditLogs() {
             <tbody className="divide-y divide-border">
               {(printLogs.length > 0 ? printLogs : logs).map(log => (
                 <tr key={log.id}>
-                  <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
+                  <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{parseUTCDate(log.created_at)?.toLocaleString()}</td>
                   <td className="px-6 py-3 text-slate-700">
                     {log.actor_name || '—'}
                     {log.actor_employee_number ? ` (${log.actor_employee_number})` : ''}
