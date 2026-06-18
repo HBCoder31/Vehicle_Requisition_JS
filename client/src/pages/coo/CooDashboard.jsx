@@ -100,6 +100,7 @@ export default function CooDashboard() {
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Department</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Category</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requested On</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Date</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">HOD</th>
@@ -118,6 +119,11 @@ export default function CooDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
+                    <td className="px-6 py-3.5">
+                      <span className={`text-xs px-2 py-0.5 rounded-md ${req.work_type === 'Personal' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {req.work_type === 'Personal' ? 'Personal' : 'Company'}
+                      </span>
+                    </td>
                     <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-3.5 text-slate-600">{req.travel_date}</td>
                     <td className="px-6 py-3.5 text-xs text-success-600">✓ {req.hod_name || 'Approved'}</td>
@@ -156,6 +162,7 @@ export default function CooDashboard() {
                 <tr className="border-b border-border bg-slate-50/50">
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">ID</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Category</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requested On</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Travel Date</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
@@ -167,6 +174,11 @@ export default function CooDashboard() {
                   <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-3.5 font-mono text-xs text-slate-500">#{req.id}</td>
                     <td className="px-6 py-3.5 font-medium text-slate-800">{req.destination}</td>
+                    <td className="px-6 py-3.5">
+                      <span className={`text-xs px-2 py-0.5 rounded-md ${req.work_type === 'Personal' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {req.work_type === 'Personal' ? 'Personal' : 'Company'}
+                      </span>
+                    </td>
                     <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-3.5 text-slate-600">{req.travel_date}</td>
                     <td className="px-6 py-3.5">
@@ -203,6 +215,7 @@ export default function CooDashboard() {
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">ID</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Category</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action Date</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Remarks</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
@@ -213,11 +226,13 @@ export default function CooDashboard() {
                   {approvalHistory.slice(0, 5).map((req) => (
                     <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-3.5 font-mono text-xs text-slate-500">#{req.id}</td>
-                      <td className="px-6 py-3.5">
-                        <p className="font-medium text-slate-800">{req.requester_name}</p>
-                        <p className="text-xs text-muted">{req.requester_email}</p>
-                      </td>
+                      <td className="px-6 py-3.5 font-medium text-slate-800">{req.requester_name}</td>
                       <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
+                      <td className="px-6 py-3.5">
+                        <span className={`text-xs px-2 py-0.5 rounded-md ${req.work_type === 'Personal' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                          {req.work_type === 'Personal' ? 'Personal' : 'Company'}
+                        </span>
+                      </td>
                       <td className="px-6 py-3.5 text-slate-600">{new Date(req.coo_action_at).toLocaleDateString()}</td>
                       <td className="px-6 py-3.5 text-slate-600 italic truncate max-w-xs">{req.coo_remarks || '—'}</td>
                       <td className="px-6 py-3.5">

@@ -13,7 +13,8 @@ const createRequestSchema = Joi.object({
   travel_date: Joi.date().iso().required(),
   travel_time: Joi.string().required(),
   return_date: Joi.date().iso().allow(null, ''),
-  return_time: Joi.string().allow(null, '')
+  return_time: Joi.string().allow(null, ''),
+  work_type: Joi.string().valid('Personal', 'Company').default('Company')
 });
 
 // ─── CREATE REQUEST ────────────────────────────────────────
@@ -141,7 +142,7 @@ exports.exportMyRequests = catchAsync(async (req, res) => {
   };
 
   const headers = [
-    'Request ID', 'Status', 'Travel Type', 'Destination', 'Pickup Location',
+    'Request ID', 'Status', 'Work Type', 'Travel Type', 'Destination', 'Pickup Location',
     'Purpose', 'Requested On', 'Travel Date', 'Travel Time', 'Return Date',
     'Return Time', 'Passengers', 'Vehicle Registration', 'Assigned Driver',
     'HOD Remarks', 'COO Remarks'
@@ -150,6 +151,7 @@ exports.exportMyRequests = catchAsync(async (req, res) => {
   const rows = requests.map(req => [
     req.id,
     req.status.replace(/_/g, ' '),
+    req.work_type,
     req.travel_type,
     req.destination,
     req.pickup_location,

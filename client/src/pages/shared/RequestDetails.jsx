@@ -128,6 +128,15 @@ export default function RequestDetails() {
                     <p className="text-sm font-medium text-slate-900">{request.passengers}</p>
                   </div>
                 </div>
+                <div className="flex gap-3">
+                  <FileText className="w-5 h-5 text-primary-500 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Category</p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {request.work_type === 'Personal' ? 'Personal Work' : "Company's Work"}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 

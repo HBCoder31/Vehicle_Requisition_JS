@@ -1405,6 +1405,7 @@ CREATE TABLE `vehicle_requests` (
   `gmhr_remarks` text COLLATE utf8mb4_unicode_ci,
   `gmhr_action_by` int DEFAULT NULL,
   `gmhr_action_at` datetime DEFAULT NULL,
+  `work_type` enum('Personal','Company') NOT NULL DEFAULT 'Company',
   PRIMARY KEY (`id`),
   KEY `fk_request_hod_actor` (`hod_action_by`),
   KEY `fk_request_coo_actor` (`coo_action_by`),

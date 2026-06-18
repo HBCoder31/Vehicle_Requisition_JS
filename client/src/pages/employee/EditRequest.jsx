@@ -39,6 +39,7 @@ export default function EditRequest() {
     travel_time: '',
     return_date: '',
     return_time: '',
+    work_type: 'Company',
   });
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export default function EditRequest() {
           travel_time: reqData.travel_time ? reqData.travel_time.substring(0, 5) : '',
           return_date: reqData.return_date ? new Date(reqData.return_date).toISOString().split('T')[0] : '',
           return_time: reqData.return_time ? reqData.return_time.substring(0, 5) : '',
+          work_type: reqData.work_type || 'Company',
         });
       } catch (err) {
         setError('Failed to load request details.');
@@ -133,6 +135,31 @@ export default function EditRequest() {
             {success && (
               <div className="p-3 bg-success-50 border border-success-500/20 rounded-lg text-sm text-success-700">{success}</div>
             )}
+
+            {/* Work Category */}
+            <div>
+              <label className={labelClass}>Requisition Purpose Category</label>
+              <div className="flex gap-6">
+                {[
+                  { label: "Company's Work", value: 'Company' },
+                  { label: 'Personal Work', value: 'Personal' }
+                ].map(item => (
+                  <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group">
+                    <input
+                      type="radio"
+                      name="work_type"
+                      value={item.value}
+                      checked={form.work_type === item.value}
+                      onChange={handleChange}
+                      className="w-4 h-4 text-primary-600 border-border focus:ring-primary-500"
+                    />
+                    <span className={`text-sm ${form.work_type === item.value ? 'text-slate-800 font-semibold' : 'text-slate-500 group-hover:text-slate-700'}`}>
+                      {item.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
 
             {/* Purpose */}
             <div>

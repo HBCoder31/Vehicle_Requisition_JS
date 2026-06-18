@@ -12,8 +12,8 @@ class RequestRepository {
   async createRequest(data, initialStatus = 'Pending_HOD') {
     const [result] = await pool.execute(
       `INSERT INTO vehicle_requests 
-        (employee_id, department_id, purpose, pickup_location, destination, travel_type, passengers, travel_date, travel_time, return_date, return_time, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (employee_id, department_id, purpose, pickup_location, destination, travel_type, passengers, travel_date, travel_time, return_date, return_time, status, work_type)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.employee_id,
         data.department_id,
@@ -26,7 +26,8 @@ class RequestRepository {
         data.travel_time,
         data.return_date || null,
         data.return_time || null,
-        initialStatus
+        initialStatus,
+        data.work_type || 'Company'
       ]
     );
     return result.insertId;
@@ -36,7 +37,8 @@ class RequestRepository {
     const [result] = await pool.execute(
       `UPDATE vehicle_requests 
        SET purpose = ?, pickup_location = ?, destination = ?, travel_type = ?, 
-           passengers = ?, travel_date = ?, travel_time = ?, return_date = ?, return_time = ?
+           passengers = ?, travel_date = ?, travel_time = ?, return_date = ?, return_time = ?,
+           work_type = ?
        WHERE id = ?`,
       [
         data.purpose,
@@ -48,6 +50,7 @@ class RequestRepository {
         data.travel_time,
         data.return_date || null,
         data.return_time || null,
+        data.work_type || 'Company',
         id
       ]
     );

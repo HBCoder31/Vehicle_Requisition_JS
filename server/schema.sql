@@ -371,6 +371,7 @@ CREATE TABLE IF NOT EXISTS vehicle_requests (
   return_time TIME,
   status ENUM('Pending_HOD','Approved_HOD','Rejected_HOD','Pending_COO','Approved_COO','Rejected_COO','Vehicle_Assigned','In_Transit','Completed','Cancelled','Deleted') NOT NULL DEFAULT 'Pending_HOD',
   current_step_id INT,
+  work_type ENUM('Personal', 'Company') NOT NULL DEFAULT 'Company',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (requester_id) REFERENCES users(id),

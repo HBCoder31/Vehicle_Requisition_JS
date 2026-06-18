@@ -116,6 +116,7 @@ export default function HodDashboard() {
                 <tr className="border-b border-border bg-slate-50/50">
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Category</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requested On</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Travel Date</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Type</th>
@@ -131,6 +132,11 @@ export default function HodDashboard() {
                       <p className="text-xs text-muted">{req.requester_email}</p>
                     </td>
                     <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
+                    <td className="px-6 py-3.5">
+                      <span className={`text-xs px-2 py-0.5 rounded-md ${req.work_type === 'Personal' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {req.work_type === 'Personal' ? 'Personal' : 'Company'}
+                      </span>
+                    </td>
                     <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
                     <td className="px-6 py-3.5">
@@ -182,6 +188,7 @@ export default function HodDashboard() {
                 <tr className="border-b border-border bg-slate-50/50">
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">ID</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Category</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requested On</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Travel Date</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
@@ -193,6 +200,11 @@ export default function HodDashboard() {
                   <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-3.5 font-mono text-xs text-slate-500">#{req.id}</td>
                     <td className="px-6 py-3.5 font-medium text-slate-800">{req.destination}</td>
+                    <td className="px-6 py-3.5">
+                      <span className={`text-xs px-2 py-0.5 rounded-md ${req.work_type === 'Personal' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {req.work_type === 'Personal' ? 'Personal' : 'Company'}
+                      </span>
+                    </td>
                     <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-3.5 text-slate-600">{req.travel_date}</td>
                     <td className="px-6 py-3.5"><StatusBadge status={req.status} /></td>
@@ -225,6 +237,7 @@ export default function HodDashboard() {
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">ID</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Category</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action Date</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Remarks</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
@@ -240,6 +253,11 @@ export default function HodDashboard() {
                         <p className="text-xs text-muted">{req.requester_email}</p>
                       </td>
                       <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
+                      <td className="px-6 py-3.5">
+                        <span className={`text-xs px-2 py-0.5 rounded-md ${req.work_type === 'Personal' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                          {req.work_type === 'Personal' ? 'Personal' : 'Company'}
+                        </span>
+                      </td>
                       <td className="px-6 py-3.5 text-slate-600">{new Date(req.hod_action_at).toLocaleDateString()}</td>
                       <td className="px-6 py-3.5 text-slate-600 italic truncate max-w-xs">{req.hod_remarks || '—'}</td>
                       <td className="px-6 py-3.5"><StatusBadge status={req.status} /></td>

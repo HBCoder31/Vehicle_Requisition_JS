@@ -87,6 +87,7 @@ export default function EmployeeDashboard() {
                 <tr className="border-b border-border bg-slate-50/50">
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Destination</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Category</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Requested On</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Travel Date</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Type</th>
@@ -101,6 +102,11 @@ export default function EmployeeDashboard() {
                   <tr key={req.id} className="hover:bg-slate-50/50 transition-colors" style={{ animationDelay: `${i * 50}ms` }}>
                     <td className="px-6 py-3.5 font-mono text-xs text-slate-500">#{req.id}</td>
                     <td className="px-6 py-3.5 font-medium text-slate-800">{req.destination}</td>
+                    <td className="px-6 py-3.5">
+                      <span className={`text-xs px-2 py-0.5 rounded-md ${req.work_type === 'Personal' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {req.work_type === 'Personal' ? 'Personal' : 'Company'}
+                      </span>
+                    </td>
                     <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-3.5 text-slate-600">{req.travel_date}</td>
                     <td className="px-6 py-3.5">

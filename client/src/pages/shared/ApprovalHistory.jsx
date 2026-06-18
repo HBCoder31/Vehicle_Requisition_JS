@@ -66,7 +66,7 @@ export default function ApprovalHistory() {
     };
 
     const headers = [
-      'Request ID', 'Requester Name', 'Requester Email', 'Destination', 'Pickup Location',
+      'Request ID', 'Requester Name', 'Requester Email', 'Work Type', 'Destination', 'Pickup Location',
       'Purpose', 'Requested On', 'Travel Date', 'Travel Time', 'Passengers', 
       'Your Action Date', 'Your Remarks', 'Current Status'
     ];
@@ -75,6 +75,7 @@ export default function ApprovalHistory() {
       req.id,
       req.requester_name,
       req.requester_email,
+      req.work_type,
       req.destination,
       req.pickup_location,
       req.purpose,
@@ -189,6 +190,7 @@ export default function ApprovalHistory() {
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Requester</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Destination</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Category</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Requested On</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Travel Date</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Your Action Date</th>
@@ -206,6 +208,11 @@ export default function ApprovalHistory() {
                       <p className="text-xs text-muted">{req.requester_email}</p>
                     </td>
                     <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
+                    <td className="px-6 py-3.5">
+                      <span className={`text-xs px-2 py-0.5 rounded-md ${req.work_type === 'Personal' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'}`}>
+                        {req.work_type === 'Personal' ? 'Personal' : 'Company'}
+                      </span>
+                    </td>
                     <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
                     <td className="px-6 py-3.5 text-slate-600">
