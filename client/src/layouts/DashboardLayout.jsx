@@ -120,23 +120,7 @@ export default function DashboardLayout() {
   }, [user]);
 
   useEffect(() => {
-    // 1. Detect normal browser reload vs. in-app refresh button reload
-    const navigationEntries = performance.getEntriesByType('navigation');
-    const isReload = (navigationEntries.length > 0 && navigationEntries[0].type === 'reload') || performance.navigation.type === 1;
-
-    if (isReload) {
-      if (sessionStorage.getItem('inAppRefresh') === 'true') {
-        // Allowed in-app refresh: clear the flag and continue session
-        sessionStorage.removeItem('inAppRefresh');
-      } else {
-        // Normal browser reload: force logout & redirect to login
-        logout().then(() => {
-          navigate('/login');
-        });
-      }
-    }
-
-    // 2. Warn user before reloading/unloading normally
+    // Warn user before reloading/unloading normally
     const handleBeforeUnload = (e) => {
       if (sessionStorage.getItem('inAppRefresh') !== 'true') {
         e.preventDefault();
@@ -149,7 +133,7 @@ export default function DashboardLayout() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [logout, navigate]);
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 

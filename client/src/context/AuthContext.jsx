@@ -29,7 +29,28 @@ export function AuthProvider({ children }) {
 
   // Restore session from JWT cookie on mount
   useEffect(() => {
+    // Detect reload on startup
+    const navigationEntries = performance.getEntriesByType('navigation');
+    const isReload = (navigationEntries.length > 0 && navigationEntries[0].type === 'reload') || performance.navigation.type === 1;
+
+    if (isReload) {
+      if (sessionStorage.getItem('inAppRefresh') === 'true') {
+        sessionStorage.removeItem('inAppRefresh');
+      } else {
+        sessionStorage.setItem('forceLogout', 'true');
+      }
+    }
+
     async function checkAuth() {
+      if (sessionStorage.getItem('forceLogout') === 'true') {
+        sessionStorage.removeItem('forceLogout');
+        try {
+          await api.post('/auth/logout');
+        } catch (err) {}
+        dispatch({ type: 'AUTH_ERROR', payload: null });
+        return;
+      }
+
       try {
         const { data } = await api.get('/auth/me');
         dispatch({ type: 'AUTH_SUCCESS', payload: data.user });
