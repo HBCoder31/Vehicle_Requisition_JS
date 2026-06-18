@@ -11,10 +11,20 @@ export default function AuditLogs() {
   const [filter, setFilter] = useState({ action: '', entity_type: '' });
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [empNumber, setEmpNumber] = useState('');
+  const [debouncedEmpNumber, setDebouncedEmpNumber] = useState('');
   const [printLogs, setPrintLogs] = useState([]);
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
 
-  useEffect(() => { fetchLogs(1); }, [filter, fromDate, toDate]);
+  // Debounce employee number input to avoid excessive API requests
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedEmpNumber(empNumber);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [empNumber]);
+
+  useEffect(() => { fetchLogs(1); }, [filter, fromDate, toDate, debouncedEmpNumber]);
 
   async function fetchLogs(page) {
     setLoading(true);
@@ -24,6 +34,7 @@ export default function AuditLogs() {
       if (filter.entity_type) params.set('entity_type', filter.entity_type);
       if (fromDate) params.set('from_date', fromDate);
       if (toDate) params.set('to_date', toDate);
+      if (debouncedEmpNumber) params.set('employee_number', debouncedEmpNumber);
 
       const { data } = await api.get(`/admin/audit-logs?${params}`);
       setLogs(data.logs);
@@ -48,6 +59,7 @@ export default function AuditLogs() {
       if (filter.entity_type) params.set('entity_type', filter.entity_type);
       if (fromDate) params.set('from_date', fromDate);
       if (toDate) params.set('to_date', toDate);
+      if (debouncedEmpNumber) params.set('employee_number', debouncedEmpNumber);
       params.set('page', 1);
       params.set('limit', 10000); // Fetch up to 10k logs for printing
 
@@ -76,6 +88,7 @@ export default function AuditLogs() {
           {filter.entity_type ? ` | Entity: ${filter.entity_type}` : ''}
           {fromDate ? ` | From: ${fromDate}` : ''}
           {toDate ? ` | To: ${toDate}` : ''}
+          {debouncedEmpNumber ? ` | Employee: ${debouncedEmpNumber}` : ''}
         </p>
       </div>
 
@@ -133,6 +146,16 @@ export default function AuditLogs() {
             className="px-3 py-1.5 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none"
           />
         </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-slate-500">Employee No:</span>
+          <input
+            type="text"
+            placeholder="e.g. EMP001"
+            value={empNumber}
+            onChange={e => setEmpNumber(e.target.value)}
+            className="px-3 py-1.5 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none w-32"
+          />
+        </div>
       </div>
 
       <Card noPadding className="no-print">
@@ -154,7 +177,10 @@ export default function AuditLogs() {
                   {logs.map(log => (
                     <tr key={log.id} className="hover:bg-slate-50/50">
                       <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
-                      <td className="px-6 py-3 text-slate-700">{log.actor_name || '—'}</td>
+                      <td className="px-6 py-3 text-slate-700">
+                        {log.actor_name || '—'}
+                        {log.actor_employee_number ? ` (${log.actor_employee_number})` : ''}
+                      </td>
                       <td className="px-6 py-3">
                         <span className="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-mono text-slate-600">{log.action}</span>
                       </td>
@@ -214,7 +240,10 @@ export default function AuditLogs() {
               {(printLogs.length > 0 ? printLogs : logs).map(log => (
                 <tr key={log.id}>
                   <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
-                  <td className="px-6 py-3 text-slate-700">{log.actor_name || '—'}</td>
+                  <td className="px-6 py-3 text-slate-700">
+                    {log.actor_name || '—'}
+                    {log.actor_employee_number ? ` (${log.actor_employee_number})` : ''}
+                  </td>
                   <td className="px-6 py-3">
                     <span className="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-mono text-slate-600">{log.action}</span>
                   </td>

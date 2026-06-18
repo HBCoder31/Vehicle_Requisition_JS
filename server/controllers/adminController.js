@@ -171,14 +171,14 @@ async function deleteEmployee(req, res) {
  */
 async function getAuditLogs(req, res) {
   try {
-    const { action, entity_type, actor_id, from_date, to_date, page = 1, limit = 30 } = req.query;
+    const { action, entity_type, actor_id, from_date, to_date, employee_number, page = 1, limit = 30 } = req.query;
     
     const parsedLimit = parseInt(limit, 10) || 30;
     const parsedPage = parseInt(page, 10) || 1;
     const offset = (parsedPage - 1) * parsedLimit;
 
     let query = `
-      SELECT al.*, e.full_name AS actor_name, e.email AS actor_email
+      SELECT al.*, e.full_name AS actor_name, e.email AS actor_email, e.employee_number AS actor_employee_number
       FROM audit_logs al
       LEFT JOIN employees e ON al.actor_id = e.id
       WHERE 1=1
@@ -190,19 +190,32 @@ async function getAuditLogs(req, res) {
     if (actor_id) { query += ' AND al.actor_id = ?'; params.push(parseInt(actor_id, 10)); }
     if (from_date) { query += ' AND DATE(al.created_at) >= ?'; params.push(from_date); }
     if (to_date) { query += ' AND DATE(al.created_at) <= ?'; params.push(to_date); }
+    if (employee_number) {
+      query += ' AND e.employee_number LIKE ?';
+      params.push(`%${employee_number}%`);
+    }
 
     query += ` ORDER BY al.created_at DESC LIMIT ${parsedLimit} OFFSET ${offset}`;
 
     const [rows] = await pool.execute(query, params);
 
     // Total count
-    let countQuery = 'SELECT COUNT(*) as total FROM audit_logs WHERE 1=1';
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM audit_logs al
+      LEFT JOIN employees e ON al.actor_id = e.id
+      WHERE 1=1
+    `;
     const countParams = [];
-    if (action) { countQuery += ' AND action = ?'; countParams.push(action); }
-    if (entity_type) { countQuery += ' AND entity_type = ?'; countParams.push(entity_type); }
-    if (actor_id) { countQuery += ' AND actor_id = ?'; countParams.push(parseInt(actor_id, 10)); }
-    if (from_date) { countQuery += ' AND DATE(created_at) >= ?'; countParams.push(from_date); }
-    if (to_date) { countQuery += ' AND DATE(created_at) <= ?'; countParams.push(to_date); }
+    if (action) { countQuery += ' AND al.action = ?'; countParams.push(action); }
+    if (entity_type) { countQuery += ' AND al.entity_type = ?'; countParams.push(entity_type); }
+    if (actor_id) { countQuery += ' AND al.actor_id = ?'; countParams.push(parseInt(actor_id, 10)); }
+    if (from_date) { countQuery += ' AND DATE(al.created_at) >= ?'; countParams.push(from_date); }
+    if (to_date) { countQuery += ' AND DATE(al.created_at) <= ?'; countParams.push(to_date); }
+    if (employee_number) {
+      countQuery += ' AND e.employee_number LIKE ?';
+      countParams.push(`%${employee_number}%`);
+    }
 
     const [countRows] = await pool.execute(countQuery, countParams);
 
