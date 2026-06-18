@@ -47,7 +47,7 @@ const roleNavConfig = {
     { to: '/admin/analytics', icon: TrendingUp, label: 'Analytics & Reports' },
     { to: '/admin/employees', icon: Users, label: 'Manage Employees' },
     { to: '/admin/vehicles', icon: Truck, label: 'Vehicle Management' },
-    { to: '/admin/destinations', icon: MapPin, label: 'Destination Management' },
+    // { to: '/admin/destinations', icon: MapPin, label: 'Destination Management' },
     { to: '/admin/audit-logs', icon: ScrollText, label: 'Audit Logs' },
     { to: '/delegations', icon: Users, label: 'Delegations' },
   ],
