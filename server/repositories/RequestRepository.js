@@ -94,13 +94,15 @@ class RequestRepository {
               v.registration_no, v.make AS vehicle_make, v.model AS vehicle_model,
               d.name AS department_name,
               hod.full_name AS hod_name,
-              coo.full_name AS coo_name
+              coo.full_name AS coo_name,
+              drv.phone AS driver_phone
        FROM vehicle_requests vr
        JOIN employees e ON vr.employee_id = e.id
        LEFT JOIN vehicles v ON vr.assigned_vehicle_id = v.id
        LEFT JOIN departments d ON vr.department_id = d.id
        LEFT JOIN employees hod ON vr.hod_action_by = hod.id
        LEFT JOIN employees coo ON vr.coo_action_by = coo.id
+       LEFT JOIN drivers drv ON vr.assigned_driver_id = drv.id
        WHERE vr.id = ?`,
       [id]
     );

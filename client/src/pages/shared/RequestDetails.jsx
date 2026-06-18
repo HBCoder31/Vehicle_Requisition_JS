@@ -169,6 +169,11 @@ export default function RequestDetails() {
                 <div>
                   <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Driver</p>
                   <p className="text-sm font-medium text-slate-900">{request.assigned_driver || 'Not specified'}</p>
+                  {request.driver_phone && (
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Phone: <a href={`tel:${request.driver_phone}`} className="text-primary-600 hover:underline">{request.driver_phone}</a>
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
