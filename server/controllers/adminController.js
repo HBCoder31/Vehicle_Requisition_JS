@@ -171,7 +171,7 @@ async function deleteEmployee(req, res) {
  */
 async function getAuditLogs(req, res) {
   try {
-    const { action, entity_type, actor_id, page = 1, limit = 30 } = req.query;
+    const { action, entity_type, actor_id, from_date, to_date, page = 1, limit = 30 } = req.query;
     
     const parsedLimit = parseInt(limit, 10) || 30;
     const parsedPage = parseInt(page, 10) || 1;
@@ -188,6 +188,8 @@ async function getAuditLogs(req, res) {
     if (action) { query += ' AND al.action = ?'; params.push(action); }
     if (entity_type) { query += ' AND al.entity_type = ?'; params.push(entity_type); }
     if (actor_id) { query += ' AND al.actor_id = ?'; params.push(parseInt(actor_id, 10)); }
+    if (from_date) { query += ' AND DATE(al.created_at) >= ?'; params.push(from_date); }
+    if (to_date) { query += ' AND DATE(al.created_at) <= ?'; params.push(to_date); }
 
     query += ` ORDER BY al.created_at DESC LIMIT ${parsedLimit} OFFSET ${offset}`;
 
@@ -199,6 +201,8 @@ async function getAuditLogs(req, res) {
     if (action) { countQuery += ' AND action = ?'; countParams.push(action); }
     if (entity_type) { countQuery += ' AND entity_type = ?'; countParams.push(entity_type); }
     if (actor_id) { countQuery += ' AND actor_id = ?'; countParams.push(parseInt(actor_id, 10)); }
+    if (from_date) { countQuery += ' AND DATE(created_at) >= ?'; countParams.push(from_date); }
+    if (to_date) { countQuery += ' AND DATE(created_at) <= ?'; countParams.push(to_date); }
 
     const [countRows] = await pool.execute(countQuery, countParams);
 

@@ -9,8 +9,10 @@ export default function AuditLogs() {
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ action: '', entity_type: '' });
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
-  useEffect(() => { fetchLogs(1); }, [filter]);
+  useEffect(() => { fetchLogs(1); }, [filter, fromDate, toDate]);
 
   async function fetchLogs(page) {
     setLoading(true);
@@ -18,6 +20,8 @@ export default function AuditLogs() {
       const params = new URLSearchParams({ page, limit: 20 });
       if (filter.action) params.set('action', filter.action);
       if (filter.entity_type) params.set('entity_type', filter.entity_type);
+      if (fromDate) params.set('from_date', fromDate);
+      if (toDate) params.set('to_date', toDate);
 
       const { data } = await api.get(`/admin/audit-logs?${params}`);
       setLogs(data.logs);
@@ -36,6 +40,8 @@ export default function AuditLogs() {
           Generated on: {new Date().toLocaleString('en-IN')} 
           {filter.action ? ` | Action: ${filter.action}` : ''}
           {filter.entity_type ? ` | Entity: ${filter.entity_type}` : ''}
+          {fromDate ? ` | From: ${fromDate}` : ''}
+          {toDate ? ` | To: ${toDate}` : ''}
         </p>
       </div>
 
@@ -54,7 +60,7 @@ export default function AuditLogs() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 no-print">
+      <div className="flex flex-wrap gap-3 items-center no-print">
         <select
           value={filter.action}
           onChange={e => setFilter(f => ({ ...f, action: e.target.value }))}
@@ -74,6 +80,24 @@ export default function AuditLogs() {
           <option value="vehicle_request">Vehicle Request</option>
           <option value="employee">Employee</option>
         </select>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-slate-500">From:</span>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={e => setFromDate(e.target.value)}
+            className="px-3 py-1.5 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-slate-500">To:</span>
+          <input
+            type="date"
+            value={toDate}
+            onChange={e => setToDate(e.target.value)}
+            className="px-3 py-1.5 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none"
+          />
+        </div>
       </div>
 
       <Card noPadding>
