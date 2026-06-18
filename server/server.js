@@ -24,9 +24,6 @@ app.set('trust proxy', 1);
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
-// Initialize SSE
-socketUtil.init(app);
-
 // ─── Security Middleware ───────────────────────────────────
 app.use((req, res, next) => {
   res.setHeader('X-DNS-Prefetch-Control', 'off');
@@ -87,6 +84,9 @@ app.get('/api/health', (req, res) => {
 
 // ─── Static Files ──────────────────────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Initialize SSE
+socketUtil.init(app);
 
 // ─── API Routes ────────────────────────────────────────────
 app.use('/api/auth',        require('./routes/auth'));

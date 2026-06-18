@@ -7,10 +7,12 @@ exports.authenticate = catchAsync(async (req, res, next) => {
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
-  } else if (req.cookies.jwt) {
+  } else if (req.cookies && req.cookies.jwt) {
     token = req.cookies.jwt;
-  } else if (req.cookies.vrp_token) {
+  } else if (req.cookies && req.cookies.vrp_token) {
     token = req.cookies.vrp_token;
+  } else if (!req.cookies) {
+    console.warn('⚠️ req.cookies is undefined in auth middleware for route:', req.originalUrl);
   }
 
   if (!token) {

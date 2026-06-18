@@ -29,13 +29,15 @@ class DriverRepository {
   }
 
   async findExpiringLicenses(days = 30) {
+    const thresholdDate = new Date();
+    thresholdDate.setDate(thresholdDate.getDate() + days);
     const [rows] = await pool.execute(
       `SELECT * FROM drivers 
        WHERE is_active = 1 
        AND license_expiry IS NOT NULL 
-       AND license_expiry <= DATE_ADD(CURDATE(), INTERVAL ? DAY)
+       AND license_expiry <= ?
        ORDER BY license_expiry ASC`,
-      [days]
+      [thresholdDate]
     );
     return rows;
   }

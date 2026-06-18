@@ -77,7 +77,7 @@ exports.login = catchAsync(async (req, res) => {
  *     tags: [Auth]
  */
 exports.refresh = catchAsync(async (req, res) => {
-  const { refreshToken } = req.cookies;
+  const refreshToken = req.cookies ? req.cookies.refreshToken : null;
   const tokens = await AuthService.refreshTokens(refreshToken, req.ip);
   
   setCookies(res, tokens.accessToken, tokens.refreshToken);
@@ -93,7 +93,7 @@ exports.refresh = catchAsync(async (req, res) => {
  *     tags: [Auth]
  */
 exports.logout = catchAsync(async (req, res) => {
-  const { refreshToken } = req.cookies;
+  const refreshToken = req.cookies ? req.cookies.refreshToken : null;
   if (refreshToken) {
     await AuthService.logout(refreshToken, req.user?.id, req.ip);
   }

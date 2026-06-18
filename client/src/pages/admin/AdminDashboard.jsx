@@ -7,14 +7,16 @@ import { Users, Truck, FileText, Activity, TrendingUp, Building2 } from 'lucide-
 
 function parseUTCDate(dateStr) {
   if (!dateStr) return null;
-  if (dateStr.endsWith('Z') || dateStr.includes('+') || dateStr.includes('-')) {
-    return new Date(dateStr);
+  if (dateStr instanceof Date) return dateStr;
+  const str = String(dateStr);
+  if (str.endsWith('Z') || str.includes('+') || str.includes('-')) {
+    return new Date(str);
   }
-  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(dateStr)) {
-    const isoStr = dateStr.replace(' ', 'T') + (dateStr.endsWith('Z') ? '' : 'Z');
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(str)) {
+    const isoStr = str.replace(' ', 'T') + (str.endsWith('Z') ? '' : 'Z');
     return new Date(isoStr);
   }
-  return new Date(dateStr);
+  return new Date(str);
 }
 
 export default function AdminDashboard() {

@@ -40,13 +40,15 @@ class MaintenanceRepository {
   }
 
   async findExpiringCertificates(days = 30) {
+    const thresholdDate = new Date();
+    thresholdDate.setDate(thresholdDate.getDate() + days);
     const [rows] = await pool.execute(
       `SELECT id, registration_no, make, model, insurance_expiry, fitness_expiry, pollution_expiry 
        FROM vehicles 
-       WHERE (insurance_expiry IS NOT NULL AND insurance_expiry <= DATE_ADD(CURDATE(), INTERVAL ? DAY))
-          OR (fitness_expiry IS NOT NULL AND fitness_expiry <= DATE_ADD(CURDATE(), INTERVAL ? DAY))
-          OR (pollution_expiry IS NOT NULL AND pollution_expiry <= DATE_ADD(CURDATE(), INTERVAL ? DAY))`
-    , [days, days, days]);
+       WHERE (insurance_expiry IS NOT NULL AND insurance_expiry <= ?)
+          OR (fitness_expiry IS NOT NULL AND fitness_expiry <= ?)
+          OR (pollution_expiry IS NOT NULL AND pollution_expiry <= ?)`
+    , [thresholdDate, thresholdDate, thresholdDate]);
     return rows;
   }
 }

@@ -7,16 +7,18 @@ import socket from '../../services/socket';
 
 function parseUTCDate(dateStr) {
   if (!dateStr) return null;
+  if (dateStr instanceof Date) return dateStr;
+  const str = String(dateStr);
   // If it's already an ISO string with timezone, parse it directly
-  if (dateStr.endsWith('Z') || dateStr.includes('+') || dateStr.includes('-')) {
-    return new Date(dateStr);
+  if (str.endsWith('Z') || str.includes('+') || str.includes('-')) {
+    return new Date(str);
   }
   // If it's a MySQL datetime string 'YYYY-MM-DD HH:mm:ss', treat it as UTC!
-  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(dateStr)) {
-    const isoStr = dateStr.replace(' ', 'T') + (dateStr.endsWith('Z') ? '' : 'Z');
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(str)) {
+    const isoStr = str.replace(' ', 'T') + (str.endsWith('Z') ? '' : 'Z');
     return new Date(isoStr);
   }
-  return new Date(dateStr);
+  return new Date(str);
 }
 
 export default function AuditLogs() {

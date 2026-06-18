@@ -195,6 +195,13 @@ async function getAuditLogs(req, res) {
     query += ` ORDER BY al.created_at DESC LIMIT ${parsedLimit} OFFSET ${offset}`;
 
     const [rows] = await pool.execute(query, params);
+    const formattedRows = rows.map(row => {
+      if (row.created_at) {
+        const utcStr = row.created_at.replace(' ', 'T') + (row.created_at.endsWith('Z') ? '' : 'Z');
+        row.created_at = new Date(utcStr);
+      }
+      return row;
+    });
 
     // Total count
     let countQuery = `
@@ -217,7 +224,7 @@ async function getAuditLogs(req, res) {
     const [countRows] = await pool.execute(countQuery, countParams);
 
     res.json({
-      logs: rows,
+      logs: formattedRows,
       pagination: {
         total: countRows[0].total,
         page: parsedPage,
@@ -276,12 +283,20 @@ async function getDashboardStats(req, res) {
        LIMIT 10`
     );
 
+    const formattedActivity = recentActivity.map(log => {
+      if (log.created_at) {
+        const utcStr = log.created_at.replace(' ', 'T') + (log.created_at.endsWith('Z') ? '' : 'Z');
+        log.created_at = new Date(utcStr);
+      }
+      return log;
+    });
+
     res.json({
       requestsByStatus: statusCounts,
       employees: { active: empCount[0].count },
       vehicles: vehStats[0],
       departmentBreakdown: deptBreakdown,
-      recentActivity,
+      recentActivity: formattedActivity,
     });
   } catch (err) {
     console.error('getDashboardStats error:', err);
