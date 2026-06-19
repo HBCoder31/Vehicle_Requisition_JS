@@ -25,8 +25,10 @@ class RequestService {
     let initialStatus = 'Pending_HOD';
     if (user.role === 'COO') {
       initialStatus = 'Approved_COO';
+    } else if (user.role === 'GM-HR') {
+      initialStatus = 'Pending_GM_HR';
     } else if (user.role === 'HOD') {
-      initialStatus = 'Pending_COO';
+      initialStatus = 'Pending_GM_HR';
     }
 
     const requestId = await RequestRepository.createRequest(data, initialStatus);
@@ -37,8 +39,10 @@ class RequestService {
     // History Timeline
     if (user.role === 'COO') {
       await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Approved_COO', 'Request auto-approved by COO');
+    } else if (user.role === 'GM-HR') {
+      await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Pending_GM_HR', 'Request submitted by GM-HR');
     } else if (user.role === 'HOD') {
-      await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Pending_COO', 'Request auto-approved by HOD');
+      await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Pending_GM_HR', 'Request submitted by HOD');
     } else {
       await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Pending_HOD', 'Request submitted by employee');
     }
@@ -55,6 +59,11 @@ class RequestService {
         const cooUsers = await UserRepository.findByRole('COO');
         for (const cUser of cooUsers) {
           await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval');
+        }
+      } else if (initialStatus === 'Pending_GM_HR') {
+        const gmhrUsers = await UserRepository.findByRole('GM-HR');
+        for (const gUser of gmhrUsers) {
+          await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval');
         }
       } else {
         const hodUsers = await UserRepository.findByRoleAndDepartment('HOD', departmentId);
@@ -77,13 +86,18 @@ class RequestService {
       throw new Error('Unauthorized to edit this request');
     }
 
-    if (request.status !== 'Pending_HOD') {
-      throw new Error('Request can only be edited before HOD approval');
+    const allowedStatus = ['Pending_HOD'];
+    if (['HOD', 'GM-HR'].includes(request.requester_role)) {
+      allowedStatus.push('Pending_GM_HR');
+    }
+
+    if (!allowedStatus.includes(request.status)) {
+      throw new Error('Request can only be edited before approval');
     }
 
     await RequestRepository.updateRequestDetails(requestId, updateData);
 
-    await HistoryRepository.addEvent(requestId, userId, 'Edited_Request', 'Pending_HOD', 'Pending_HOD', 'User updated request details');
+    await HistoryRepository.addEvent(requestId, userId, 'Edited_Request', request.status, request.status, 'User updated request details');
 
     return true;
   }
@@ -98,10 +112,10 @@ class RequestService {
       throw new AppError('Request not found.', 404);
     }
 
-    // Access control: owner, same-department HOD, COO, Garage, or Admin
+    // Access control: owner, same-department HOD, COO, Garage, GM-HR, or Admin
     const isOwner = request.employee_id === user.id;
     const isDeptHOD = user.role === 'HOD' && request.department_id === user.department_id;
-    const hasGlobalAccess = ['COO', 'Garage', 'Admin'].includes(user.role);
+    const hasGlobalAccess = ['COO', 'Garage', 'Admin', 'GM-HR'].includes(user.role);
 
     if (!isOwner && !isDeptHOD && !hasGlobalAccess) {
       throw new AppError('Access denied.', 403);
@@ -117,17 +131,22 @@ class RequestService {
       throw new AppError('Request not found or not yours.', 404);
     }
 
-    if (request.status !== 'Pending_HOD') {
-      throw new AppError('Can only delete requests that are still Pending HOD approval.', 400);
+    const allowedStatus = ['Pending_HOD'];
+    if (['HOD', 'GM-HR'].includes(request.requester_role)) {
+      allowedStatus.push('Pending_GM_HR');
+    }
+
+    if (!allowedStatus.includes(request.status)) {
+      throw new AppError('Can only delete requests before approval.', 400);
     }
 
     await RequestRepository.updateRequestStatus(requestId, 'Deleted');
     
     // Audit log
-    await AuditRepository.createLog(user.id, 'DELETE_REQUEST', 'vehicle_request', requestId, { status_from: 'Pending_HOD', status_to: 'Deleted' }, ipAddress);
+    await AuditRepository.createLog(user.id, 'DELETE_REQUEST', 'vehicle_request', requestId, { status_from: request.status, status_to: 'Deleted' }, ipAddress);
     
     // History Timeline
-    await HistoryRepository.addEvent(requestId, user.id, 'Deleted', 'Pending_HOD', 'Deleted', 'Deleted by requester');
+    await HistoryRepository.addEvent(requestId, user.id, 'Deleted', request.status, 'Deleted', 'Deleted by requester');
 
     // Real-time Notification
     // try {

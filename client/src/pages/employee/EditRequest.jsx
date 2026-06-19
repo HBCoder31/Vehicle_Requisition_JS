@@ -54,7 +54,8 @@ export default function EditRequest() {
           setLoading(false);
           return;
         }
-        if (reqData.status !== 'Pending_HOD') {
+        const isEditable = (reqData.status === 'Pending_HOD') || (reqData.status === 'Pending_GM_HR' && ['HOD', 'GM-HR'].includes(user?.role));
+        if (!isEditable) {
           setError('This request can no longer be edited as it has moved past the initial pending stage.');
           setLoading(false);
           return;

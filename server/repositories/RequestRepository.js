@@ -90,7 +90,7 @@ class RequestRepository {
   async getRequestById(id) {
     const [rows] = await pool.execute(
       `SELECT vr.*,
-              e.full_name AS requester_name, e.email AS requester_email,
+              e.full_name AS requester_name, e.email AS requester_email, e.role AS requester_role,
               v.registration_no, v.make AS vehicle_make, v.model AS vehicle_model,
               d.name AS department_name,
               hod.full_name AS hod_name,

@@ -18,7 +18,7 @@ const router = express.Router();
 router.use(authenticate);
 
 // Employee: create a new request
-router.post('/', authorize('Employee', 'HOD', 'COO', 'Admin'), createRequest);
+router.post('/', authorize('Employee', 'HOD', 'COO', 'Admin', 'GM-HR'), createRequest);
 
 // Employee: view own requests
 router.get('/my', getMyRequests);
@@ -33,10 +33,10 @@ router.get('/all', authorize('Admin'), getAllRequests);
 router.get('/:id', getRequestById);
 
 // Employee: update request
-router.put('/:id', authorize('Employee', 'HOD', 'COO', 'Admin'), updateRequest);
+router.put('/:id', authorize('Employee', 'HOD', 'COO', 'Admin', 'GM-HR'), updateRequest);
 
 // Employee: delete own pending request
-router.patch('/:id/delete', authorize('Employee', 'HOD', 'COO', 'Admin'), deleteRequest);
+router.patch('/:id/delete', authorize('Employee', 'HOD', 'COO', 'Admin', 'GM-HR'), deleteRequest);
 
 // Request Timeline History
 router.get('/:id/history', getRequestHistory);

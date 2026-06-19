@@ -17,9 +17,9 @@ router.use(authenticate);
 router.get('/alerts/licenses', authorize('Admin', 'Garage'), getExpiringLicenses);
 
 // CRUD
-router.get('/', authorize('Admin', 'Garage', 'COO', 'HOD'), getAllDrivers);
+router.get('/', authorize('Admin', 'Garage', 'COO', 'HOD', 'GM-HR'), getAllDrivers);
 router.post('/', authorize('Admin', 'Garage'), createDriver);
-router.get('/:id', authorize('Admin', 'Garage', 'COO', 'HOD'), getDriver);
+router.get('/:id', authorize('Admin', 'Garage', 'COO', 'HOD', 'GM-HR'), getDriver);
 router.put('/:id', authorize('Admin', 'Garage'), updateDriver);
 
 module.exports = router;

@@ -68,7 +68,7 @@ export default function RequestDetails() {
           <p className="text-sm text-slate-500">Submitted by {request.requester_name} ({request.department_name})</p>
         </div>
         <div className="ml-auto flex items-center gap-3">
-          {request.status === 'Pending_HOD' && user?.id === request.employee_id && (
+          {((request.status === 'Pending_HOD') || (request.status === 'Pending_GM_HR' && ['HOD', 'GM-HR'].includes(user?.role))) && user?.id === request.employee_id && (
             <>
               <button 
                 onClick={() => navigate(`/requests/edit/${request.id}`)}

@@ -170,15 +170,53 @@ async function run() {
       remarks: 'Approved via API test'
     }, hodCookies);
     if (res.status !== 200) throw new Error(`Got ${res.status}: ${JSON.stringify(res.data)}`);
-    if (res.data.newStatus !== 'Approved_HOD') throw new Error(`Wrong new status: ${res.data.newStatus}`);
+    if (res.data.newStatus !== 'Pending_GM_HR') throw new Error(`Wrong new status: ${res.data.newStatus}`);
     console.log(`     New status: ${res.data.newStatus} ✓`);
   });
 
   await test(`PATCH /approvals/hod/${beyondRequestId} - HOD approves beyond request`, async () => {
     const res = await request('PATCH', `/approvals/hod/${beyondRequestId}`, {
       action: 'approve',
-      remarks: 'Approved, needs COO sign-off'
+      remarks: 'Approved, forward to GM-HR'
     }, hodCookies);
+    if (res.status !== 200) throw new Error(`Got ${res.status}: ${JSON.stringify(res.data)}`);
+    if (res.data.newStatus !== 'Pending_GM_HR') throw new Error(`Wrong new status: ${res.data.newStatus}`);
+    console.log(`     New status: ${res.data.newStatus} ✓`);
+  });
+
+  // ─── Phase 2.5: GM-HR Approval ─────────────────────────────
+  console.log('\n📋 PHASE 2.5: GM-HR Approval');
+
+  let gmhrCookies = {};
+  await test('Login as GM-HR', async () => {
+    gmhrCookies = await login('gmhr@orientpaper.com', 'password123');
+  });
+
+  await test('GET /approvals/gmhr - GM-HR sees pending requests', async () => {
+    const res = await request('GET', '/approvals/gmhr', null, gmhrCookies);
+    if (res.status !== 200) throw new Error(`Got ${res.status}: ${JSON.stringify(res.data)}`);
+    const foundWithin = res.data.requests.some(r => r.id === testRequestId);
+    const foundBeyond = res.data.requests.some(r => r.id === beyondRequestId);
+    if (!foundWithin) throw new Error(`Request ${testRequestId} not in GM-HR pending list`);
+    if (!foundBeyond) throw new Error(`Request ${beyondRequestId} not in GM-HR pending list`);
+    console.log(`     Found ${res.data.requests.length} pending GM-HR requests`);
+  });
+
+  await test(`PATCH /approvals/gmhr/${testRequestId} - GM-HR approves within request`, async () => {
+    const res = await request('PATCH', `/approvals/gmhr/${testRequestId}`, {
+      action: 'approve',
+      remarks: 'Approved by GM-HR'
+    }, gmhrCookies);
+    if (res.status !== 200) throw new Error(`Got ${res.status}: ${JSON.stringify(res.data)}`);
+    if (res.data.newStatus !== 'Approved_GM_HR') throw new Error(`Wrong new status: ${res.data.newStatus}`);
+    console.log(`     New status: ${res.data.newStatus} ✓`);
+  });
+
+  await test(`PATCH /approvals/gmhr/${beyondRequestId} - GM-HR approves beyond request`, async () => {
+    const res = await request('PATCH', `/approvals/gmhr/${beyondRequestId}`, {
+      action: 'approve',
+      remarks: 'Approved by GM-HR, forwarding to COO'
+    }, gmhrCookies);
     if (res.status !== 200) throw new Error(`Got ${res.status}: ${JSON.stringify(res.data)}`);
     if (res.data.newStatus !== 'Pending_COO') throw new Error(`Wrong new status: ${res.data.newStatus}`);
     console.log(`     New status: ${res.data.newStatus} ✓`);
@@ -297,9 +335,10 @@ async function run() {
 
   let newEmpId;
   await test('POST /admin/employees - Create test employee', async () => {
+    const rand = Math.floor(Math.random() * 10000);
     const res = await request('POST', '/admin/employees', {
-      employee_number: 'TEST999',
-      email: 'test.qa@example.com',
+      employee_number: `TEST${rand}`,
+      email: `test.qa${rand}@example.com`,
       password: 'password123',
       full_name: 'Test QA Employee',
       role: 'Employee',
@@ -342,8 +381,9 @@ async function run() {
 
   let newVehicleId;
   await test('POST /garage/vehicles - Create vehicle', async () => {
+    const randReg = 'MP24QA' + Math.floor(Math.random() * 9000 + 1000);
     const res = await request('POST', '/garage/vehicles', {
-      registration_no: 'MP24QA9999',
+      registration_no: randReg,
       make: 'Maruti',
       model: 'Swift',
       vehicle_type: 'Sedan',
@@ -377,20 +417,19 @@ async function run() {
   // ─── Phase 7: GM-HR Flow ───────────────────────────────────
   console.log('\n📋 PHASE 7: GM-HR Approval Flow');
 
-  let gmhrCookies = {};
-  await test('Login as GM-HR (Skipping since seed.sql has none)', async () => {
-    // Skipping or reusing admin since there's no GM-HR
-    gmhrCookies = adminCookies;
+  let gmhrCookies2 = {};
+  await test('Login as GM-HR', async () => {
+    gmhrCookies2 = await login('gmhr@orientpaper.com', 'password123');
   });
 
   await test('GET /approvals/gmhr', async () => {
-    const res = await request('GET', '/approvals/gmhr', null, gmhrCookies);
+    const res = await request('GET', '/approvals/gmhr', null, gmhrCookies2);
     if (res.status !== 200) throw new Error(`Got ${res.status}: ${JSON.stringify(res.data)}`);
     console.log(`     GM-HR pending: ${res.data.requests.length} (Pending_GM_HR requests)`);
   });
 
   await test('GET /approvals/gmhr/stats', async () => {
-    const res = await request('GET', '/approvals/gmhr/stats', null, gmhrCookies);
+    const res = await request('GET', '/approvals/gmhr/stats', null, gmhrCookies2);
     if (res.status !== 200) throw new Error(`Got ${res.status}`);
     console.log(`     GM-HR stats: ${JSON.stringify(res.data.stats)}`);
   });
