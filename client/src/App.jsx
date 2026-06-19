@@ -90,6 +90,7 @@ export default function App() {
       <Route element={<ProtectedRoute allowedRoles={['GM-HR']}><DashboardLayout /></ProtectedRoute>}>
         <Route path="/gmhr" element={<GmHrDashboard />} />
         <Route path="/gmhr/approvals" element={<GmHrDashboard />} />
+        <Route path="/gmhr/history" element={<ApprovalHistory />} />
         <Route path="/gmhr/new-request" element={<RequestForm />} />
       </Route>
 

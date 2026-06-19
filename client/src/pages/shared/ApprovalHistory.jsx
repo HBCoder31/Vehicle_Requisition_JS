@@ -31,7 +31,9 @@ export default function ApprovalHistory() {
       if (toDate) params.to_date = toDate;
       if (travelType) params.type = travelType;
       
-      const endpoint = user.role === 'COO' ? '/approvals/coo/history' : '/approvals/hod/history';
+      const endpoint = user.role === 'COO' ? '/approvals/coo/history' :
+                       user.role === 'GM-HR' ? '/approvals/gmhr/history' :
+                       '/approvals/hod/history';
       const { data } = await api.get(endpoint, { params });
       setRequests(data.requests || []);
     } catch (err) {
@@ -83,8 +85,8 @@ export default function ApprovalHistory() {
       req.travel_date,
       req.travel_time,
       req.passengers,
-      new Date(user.role === 'COO' ? req.coo_action_at : req.hod_action_at).toLocaleString('en-IN'),
-      user.role === 'COO' ? req.coo_remarks || '' : req.hod_remarks || '',
+      new Date(user.role === 'COO' ? req.coo_action_at : user.role === 'GM-HR' ? req.gmhr_action_at : req.hod_action_at).toLocaleString('en-IN'),
+      user.role === 'COO' ? req.coo_remarks || '' : user.role === 'GM-HR' ? req.gmhr_remarks || '' : req.hod_remarks || '',
       req.status.replace(/_/g, ' ')
     ].map(escape));
 
@@ -216,10 +218,10 @@ export default function ApprovalHistory() {
                     <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
                     <td className="px-6 py-3.5 text-slate-600">
-                      {new Date(user.role === 'COO' ? req.coo_action_at : req.hod_action_at).toLocaleString()}
+                      {new Date(user.role === 'COO' ? req.coo_action_at : user.role === 'GM-HR' ? req.gmhr_action_at : req.hod_action_at).toLocaleString()}
                     </td>
-                    <td className="px-6 py-3.5 text-slate-600 italic max-w-xs truncate" title={user.role === 'COO' ? req.coo_remarks : req.hod_remarks}>
-                      {user.role === 'COO' ? req.coo_remarks || '—' : req.hod_remarks || '—'}
+                    <td className="px-6 py-3.5 text-slate-600 italic max-w-xs truncate" title={user.role === 'COO' ? req.coo_remarks : user.role === 'GM-HR' ? req.gmhr_remarks : req.hod_remarks}>
+                      {user.role === 'COO' ? req.coo_remarks || '—' : user.role === 'GM-HR' ? req.gmhr_remarks || '—' : req.hod_remarks || '—'}
                     </td>
                     <td className="px-6 py-3.5"><StatusBadge status={req.status} /></td>
                     <td className="px-6 py-3.5 no-print">

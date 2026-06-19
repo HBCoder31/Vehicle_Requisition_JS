@@ -26,6 +26,8 @@ const roleNavConfig = {
   'GM-HR': [
     { to: '/gmhr', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/gmhr/approvals', icon: CheckSquare, label: 'Pending Approvals' },
+    { to: '/gmhr/history', icon: History, label: 'Approval History' },
+    { to: '/requests/history', icon: History, label: 'Request History' },
     { to: '/delegations', icon: Users, label: 'Delegations' },
   ],
   COO: [

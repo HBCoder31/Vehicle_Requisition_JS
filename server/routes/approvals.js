@@ -10,6 +10,7 @@ const {
   getGmHrPendingRequests,
   gmHrAction,
   getGmHrStats,
+  getGmHrHistory,
   getHodHistory,
   getCooHistory
 } = require('../controllers/approvalController');
@@ -33,6 +34,7 @@ router.patch('/coo/:id', authorize('COO', 'Admin'), cooAction);
 // ─── GM-HR Routes ──────────────────────────────────────────
 router.get('/gmhr', authorize('GM-HR', 'Admin'), getGmHrPendingRequests);
 router.get('/gmhr/stats', authorize('GM-HR', 'Admin'), getGmHrStats);
+router.get('/gmhr/history', authorize('GM-HR', 'Admin'), getGmHrHistory);
 router.patch('/gmhr/:id', authorize('GM-HR', 'Admin'), gmHrAction);
 
 module.exports = router;

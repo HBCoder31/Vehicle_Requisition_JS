@@ -116,6 +116,21 @@ class ApprovalRepository {
     return rows;
   }
 
+  async getGmHrHistory(userId) {
+    const [rows] = await pool.execute(
+      `SELECT vr.*,
+              e.full_name AS requester_name, e.email AS requester_email,
+              d.name AS department_name
+       FROM vehicle_requests vr
+       JOIN employees e ON vr.employee_id = e.id
+       JOIN departments d ON vr.department_id = d.id
+       WHERE vr.gmhr_action_by = ?
+       ORDER BY vr.gmhr_action_at DESC`,
+      [userId]
+    );
+    return rows;
+  }
+
   async getCooHistory(userId) {
     const [rows] = await pool.execute(
       `SELECT vr.*,

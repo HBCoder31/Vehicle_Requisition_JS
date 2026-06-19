@@ -118,6 +118,14 @@ exports.getHodHistory = catchAsync(async (req, res) => {
   res.json({ status: 'success', requests });
 });
 
+exports.getGmHrHistory = catchAsync(async (req, res) => {
+  const { roles } = await delegationUtil.getEffectivePermissions(req.user.id);
+  if (!roles.includes('GM-HR')) throw new AppError('Access denied.', 403);
+
+  const requests = await ApprovalService.getGmHrHistory(req.user.id);
+  res.json({ status: 'success', requests });
+});
+
 exports.getCooHistory = catchAsync(async (req, res) => {
   const { roles } = await delegationUtil.getEffectivePermissions(req.user.id);
   if (!roles.includes('COO')) throw new AppError('Access denied.', 403);

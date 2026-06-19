@@ -5,8 +5,8 @@ class AnalyticsRepository {
     const [requests] = await pool.execute(`
       SELECT 
         COUNT(*) as total,
-        SUM(CASE WHEN status IN ('Approved_HOD', 'Approved_COO', 'Vehicle_Assigned', 'In_Transit', 'Completed') THEN 1 ELSE 0 END) as approved,
-        SUM(CASE WHEN status IN ('Rejected_HOD', 'Rejected_COO') THEN 1 ELSE 0 END) as rejected
+        SUM(CASE WHEN status IN ('Approved_HOD', 'Approved_GM_HR', 'Approved_COO', 'Vehicle_Assigned', 'In_Transit', 'Completed') THEN 1 ELSE 0 END) as approved,
+        SUM(CASE WHEN status IN ('Rejected_HOD', 'Rejected_GM_HR', 'Rejected_COO') THEN 1 ELSE 0 END) as rejected
       FROM vehicle_requests
     `);
 

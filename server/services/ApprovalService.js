@@ -20,8 +20,7 @@ class ApprovalService {
       throw new AppError('Request not found, not in your department, or not pending HOD approval.', 404);
     }
 
-    let newStatus = action === 'reject' ? 'Rejected_HOD' : 
-                    (request.travel_type === 'Beyond Anuppur/Shahdol' ? 'Pending_COO' : 'Approved_HOD');
+    let newStatus = action === 'reject' ? 'Rejected_HOD' : 'Pending_GM_HR';
 
     await ApprovalRepository.updateHodAction(requestId, newStatus, remarks, userId);
     
@@ -37,17 +36,11 @@ class ApprovalService {
       'Approval'
     );
 
-    if (newStatus === 'Pending_COO') {
+    if (newStatus === 'Pending_GM_HR') {
       const UserRepository = require('../repositories/UserRepository');
-      const cooUsers = await UserRepository.findByRole('COO');
-      for (const cUser of cooUsers) {
-        await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval');
-      }
-    } else if (newStatus === 'Approved_HOD') {
-      const UserRepository = require('../repositories/UserRepository');
-      const garageUsers = await UserRepository.findByRole('Garage');
-      for (const gUser of garageUsers) {
-        await NotificationService.notifyUser(gUser.id, 'New Approved Request', `Request #${requestId} to ${request.destination} was approved and needs a vehicle.`, 'Request');
+      const gmhrUsers = await UserRepository.findByRole('GM-HR');
+      for (const gUser of gmhrUsers) {
+        await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval');
       }
     }
 
@@ -162,6 +155,10 @@ class ApprovalService {
 
   async getHodHistory(userId) {
     return await ApprovalRepository.getHodHistory(userId);
+  }
+
+  async getGmHrHistory(userId) {
+    return await ApprovalRepository.getGmHrHistory(userId);
   }
 
   async getCooHistory(userId) {
