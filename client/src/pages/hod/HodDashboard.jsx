@@ -5,7 +5,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, History } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, History, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function HodDashboard() {
@@ -64,7 +64,7 @@ export default function HodDashboard() {
     }
   }
 
-  if (loading) return <DashboardSkeleton cards={4} rows={4} cols={5} />;
+  if (loading) return <DashboardSkeleton cards={5} rows={4} cols={5} />;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -84,12 +84,13 @@ export default function HodDashboard() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
           {[
             { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-warning-600', bg: 'bg-warning-50', delay: 'delay-1' },
             { label: 'Approved', value: stats.approved, icon: CheckCircle, color: 'text-success-600', bg: 'bg-success-50', delay: 'delay-2' },
             { label: 'Rejected', value: stats.rejected, icon: XCircle, color: 'text-danger-600', bg: 'bg-danger-50', delay: 'delay-3' },
-            { label: 'Total', value: stats.total, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50', delay: 'delay-4' },
+            { label: 'Deleted', value: stats.deleted, icon: Trash2, color: 'text-slate-600', bg: 'bg-slate-50', delay: 'delay-4' },
+            { label: 'Total', value: stats.total, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50', delay: 'delay-5' },
           ].map(({ label, value, icon: Icon, color, bg, delay }) => {
             const isPendingGlow = label === 'Pending' && value > 0;
             return (

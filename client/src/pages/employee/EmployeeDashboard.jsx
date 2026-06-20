@@ -4,7 +4,7 @@ import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import StatusBadge from '../../components/ui/StatusBadge';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { FileText, Plus, Clock, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
+import { FileText, Plus, Clock, CheckCircle, XCircle, ExternalLink, Trash2 } from 'lucide-react';
 
 export default function EmployeeDashboard() {
   const [requests, setRequests] = useState([]);
@@ -35,9 +35,10 @@ export default function EmployeeDashboard() {
     pending: requests.filter(r => r.status.includes('Pending')).length,
     approved: requests.filter(r => r.status.includes('Approved') || r.status === 'Vehicle_Assigned' || r.status === 'In_Transit' || r.status === 'Completed').length,
     rejected: requests.filter(r => r.status.includes('Rejected')).length,
+    deleted: requests.filter(r => r.status === 'Deleted').length,
   };
 
-  if (loading) return <DashboardSkeleton cards={4} rows={5} cols={6} />;
+  if (loading) return <DashboardSkeleton cards={5} rows={5} cols={6} />;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -56,12 +57,13 @@ export default function EmployeeDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           { label: 'Total Requests', value: stats.total, icon: FileText, color: 'text-primary-600', bg: 'bg-primary-50', delay: 'delay-1' },
           { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-warning-600', bg: 'bg-warning-50', delay: 'delay-2' },
           { label: 'Approved', value: stats.approved, icon: CheckCircle, color: 'text-success-600', bg: 'bg-success-50', delay: 'delay-3' },
           { label: 'Rejected', value: stats.rejected, icon: XCircle, color: 'text-danger-600', bg: 'bg-danger-50', delay: 'delay-4' },
+          { label: 'Deleted', value: stats.deleted, icon: Trash2, color: 'text-slate-600', bg: 'bg-slate-50', delay: 'delay-5' },
         ].map(({ label, value, icon: Icon, color, bg, delay }) => {
           const isPendingGlow = label === 'Pending' && value > 0;
           return (

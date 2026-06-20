@@ -93,25 +93,27 @@ class ApprovalService {
 
   async getGmHrStats() {
     const rows = await ApprovalRepository.getGmHrStats();
-    const stats = { pending: 0, approved: 0, rejected: 0, total: 0 };
+    const stats = { pending: 0, approved: 0, rejected: 0, deleted: 0, total: 0 };
     rows.forEach((row) => {
       stats.total += row.count;
       if (row.status === 'Pending_GM_HR') stats.pending += row.count;
       else if (row.status === 'Pending_COO' || row.status === 'Approved_GM_HR' || row.status.includes('Approved') || row.status === 'Vehicle_Assigned' || row.status === 'In_Transit' || row.status === 'Completed') stats.approved += row.count;
       else if (row.status.includes('Rejected')) stats.rejected += row.count;
+      else if (row.status === 'Deleted') stats.deleted += row.count;
     });
     return stats;
   }
 
   async getHodStats(departmentIds) {
-    if (!departmentIds || departmentIds.length === 0) return { pending: 0, approved: 0, rejected: 0, total: 0 };
+    if (!departmentIds || departmentIds.length === 0) return { pending: 0, approved: 0, rejected: 0, deleted: 0, total: 0 };
     const rows = await ApprovalRepository.getHodStats(departmentIds);
-    const stats = { pending: 0, approved: 0, rejected: 0, total: 0 };
+    const stats = { pending: 0, approved: 0, rejected: 0, deleted: 0, total: 0 };
     rows.forEach((row) => {
       stats.total += row.count;
       if (row.status === 'Pending_HOD') stats.pending += row.count;
       else if (row.status.includes('Approved') || row.status === 'Vehicle_Assigned' || row.status === 'In_Transit' || row.status === 'Completed') stats.approved += row.count;
       else if (row.status.includes('Rejected')) stats.rejected += row.count;
+      else if (row.status === 'Deleted') stats.deleted += row.count;
     });
     return stats;
   }
