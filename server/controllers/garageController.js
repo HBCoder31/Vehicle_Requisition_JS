@@ -55,9 +55,9 @@ async function assignVehicle(req, res) {
 
     await conn.beginTransaction();
 
-    // Verify request is in assignable state
+    // Verify request is in assignable state (either approved or already assigned but before pickup)
     const [reqRows] = await conn.execute(
-      `SELECT * FROM vehicle_requests WHERE id = ? AND status IN ('Approved_HOD', 'Approved_GM_HR', 'Approved_COO') FOR UPDATE`,
+      `SELECT * FROM vehicle_requests WHERE id = ? AND status IN ('Approved_HOD', 'Approved_GM_HR', 'Approved_COO', 'Vehicle_Assigned') FOR UPDATE`,
       [req.params.id]
     );
 
@@ -67,7 +67,32 @@ async function assignVehicle(req, res) {
       return res.status(404).json({ error: 'Request not found or not in assignable state.' });
     }
 
-    // Verify vehicle exists and is available
+    const isReassignment = reqRows[0].status === 'Vehicle_Assigned';
+    let previousVehicleReg = '';
+    let previousDriverName = '';
+
+    if (isReassignment) {
+      const prevVehId = reqRows[0].assigned_vehicle_id;
+      const prevDrvId = reqRows[0].assigned_driver_id;
+
+      // Fetch previous vehicle info
+      if (prevVehId) {
+        const [prevVeh] = await conn.execute('SELECT registration_no FROM vehicles WHERE id = ?', [prevVehId]);
+        if (prevVeh[0]) previousVehicleReg = prevVeh[0].registration_no;
+        // Release previous vehicle
+        await conn.execute('UPDATE vehicles SET is_available = 1 WHERE id = ?', [prevVehId]);
+      }
+
+      // Fetch previous driver info
+      if (prevDrvId) {
+        const [prevDrv] = await conn.execute('SELECT full_name FROM drivers WHERE id = ?', [prevDrvId]);
+        if (prevDrv[0]) previousDriverName = prevDrv[0].full_name;
+        // Release previous driver
+        await conn.execute('UPDATE drivers SET is_available = 1 WHERE id = ?', [prevDrvId]);
+      }
+    }
+
+    // Verify vehicle exists and is available (will be available now if it was released above)
     const [vehRows] = await conn.execute(
       'SELECT * FROM vehicles WHERE id = ? AND is_available = 1 FOR UPDATE',
       [vehicle_id]
@@ -78,6 +103,7 @@ async function assignVehicle(req, res) {
       conn.release();
       return res.status(400).json({ error: 'Vehicle not found or not available.' });
     }
+    const newVehicleReg = vehRows[0].registration_no;
 
     // Verify driver exists and is available
     const [driverRows] = await conn.execute(
@@ -117,17 +143,76 @@ async function assignVehicle(req, res) {
     await conn.commit();
     conn.release();
 
-    await logAudit(
-      req.user.id,
-      'ASSIGN_VEHICLE',
-      'vehicle_request',
-      parseInt(req.params.id),
-      { vehicle_id, driver_name },
-      req.ip
-    );
+    if (isReassignment) {
+      let changes = [];
+      if (vehicle_id !== reqRows[0].assigned_vehicle_id) {
+        changes.push(`Vehicle updated from ${previousVehicleReg || 'None'} to ${newVehicleReg}`);
+      }
+      if (driver_id !== reqRows[0].assigned_driver_id) {
+        changes.push(`Driver updated from ${previousDriverName || 'None'} to ${driver_name}`);
+      }
+      const changeMsg = changes.length > 0 ? changes.join(', ') : 'Assignment details updated';
 
-    await HistoryRepository.addEvent(req.params.id, req.user.id, 'Assigned', reqRows[0].status, 'Vehicle_Assigned', remarks || `Assigned to driver ${driver_name}`);
-    await NotificationService.notifyUser(reqRows[0].employee_id, 'Vehicle Assigned', `A vehicle has been assigned to your request. Driver: ${driver_name}`, 'System');
+      await logAudit(
+        req.user.id,
+        'REASSIGN_VEHICLE',
+        'vehicle_request',
+        parseInt(req.params.id),
+        {
+          previous_vehicle_id: reqRows[0].assigned_vehicle_id,
+          new_vehicle_id: vehicle_id,
+          previous_vehicle_reg: previousVehicleReg,
+          new_vehicle_reg: newVehicleReg,
+          previous_driver_id: reqRows[0].assigned_driver_id,
+          new_driver_id: driver_id,
+          previous_driver_name: previousDriverName,
+          new_driver_name: driver_name,
+          remarks: remarks || null
+        },
+        req.ip
+      );
+
+      await HistoryRepository.addEvent(
+        req.params.id,
+        req.user.id,
+        'Vehicle_Reassigned',
+        'Vehicle_Assigned',
+        'Vehicle_Assigned',
+        remarks || changeMsg
+      );
+
+      await NotificationService.notifyUser(
+        reqRows[0].employee_id,
+        'Vehicle Assignment Updated',
+        `Your assigned vehicle details have been updated. Details: ${changeMsg}. Driver: ${driver_name}, Vehicle: ${newVehicleReg}.`,
+        'System'
+      );
+    } else {
+      await logAudit(
+        req.user.id,
+        'ASSIGN_VEHICLE',
+        'vehicle_request',
+        parseInt(req.params.id),
+        { vehicle_id, driver_name },
+        req.ip
+      );
+
+      await HistoryRepository.addEvent(
+        req.params.id,
+        req.user.id,
+        'Assigned',
+        reqRows[0].status,
+        'Vehicle_Assigned',
+        remarks || `Assigned to driver ${driver_name}`
+      );
+
+      await NotificationService.notifyUser(
+        reqRows[0].employee_id,
+        'Vehicle Assigned',
+        `A vehicle has been assigned to your request. Driver: ${driver_name}, Vehicle: ${newVehicleReg}.`,
+        'System'
+      );
+    }
 
     res.json({ message: 'Vehicle assigned successfully.' });
   } catch (err) {

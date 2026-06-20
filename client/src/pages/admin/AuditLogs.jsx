@@ -253,7 +253,7 @@ export default function AuditLogs() {
         >
           <option value="">All Actions</option>
           {['CREATE_REQUEST', 'CANCEL_REQUEST', 'HOD_APPROVE', 'HOD_REJECT', 'COO_APPROVE', 'COO_REJECT',
-            'ASSIGN_VEHICLE', 'RECORD_PICKUP', 'RECORD_DROPOFF', 'CREATE_EMPLOYEE', 'UPDATE_EMPLOYEE', 'DEACTIVATE_EMPLOYEE']
+            'ASSIGN_VEHICLE', 'REASSIGN_VEHICLE', 'RECORD_PICKUP', 'RECORD_DROPOFF', 'CREATE_EMPLOYEE', 'UPDATE_EMPLOYEE', 'DEACTIVATE_EMPLOYEE']
             .map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
         </select>
         <select

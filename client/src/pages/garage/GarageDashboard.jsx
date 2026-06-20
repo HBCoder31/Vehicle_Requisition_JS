@@ -76,8 +76,12 @@ export default function GarageDashboard() {
     } catch (err) { alert(err.response?.data?.error || 'Failed.'); }
   }
 
-  const availableVehicles = vehicles.filter(v => v.is_available);
-  const availableDrivers = drivers.filter(d => d.is_available);
+  const availableVehicles = vehicles.filter(v => {
+    return v.is_available || (assignModal.request && assignModal.request.assigned_vehicle_id === v.id);
+  });
+  const availableDrivers = drivers.filter(d => {
+    return d.is_available || (assignModal.request && assignModal.request.assigned_driver_id === d.id);
+  });
 
   if (loading) return <DashboardSkeleton cards={3} rows={4} cols={5} />;
 
@@ -228,9 +232,25 @@ export default function GarageDashboard() {
                     <td className="px-6 py-3.5"><StatusBadge status={trip.status} /></td>
                     <td className="px-6 py-3.5 text-right">
                       {trip.status === 'Vehicle_Assigned' && (
-                        <Button size="sm" variant="success" onClick={() => handlePickup(trip.id)}>
-                          <PlayCircle className="w-3.5 h-3.5" /> Pickup
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => {
+                              setAssignModal({ open: true, request: trip });
+                              setAssignForm({
+                                vehicle_id: trip.assigned_vehicle_id || '',
+                                driver_id: trip.assigned_driver_id || '',
+                                remarks: trip.garage_remarks || ''
+                              });
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button size="sm" variant="success" onClick={() => handlePickup(trip.id)}>
+                            <PlayCircle className="w-3.5 h-3.5" /> Pickup
+                          </Button>
+                        </div>
                       )}
                       {trip.status === 'In_Transit' && (
                         <Button size="sm" variant="danger" onClick={() => handleDropoff(trip.id)}>
@@ -268,7 +288,9 @@ export default function GarageDashboard() {
       <Modal
         isOpen={assignModal.open}
         onClose={() => { setAssignModal({ open: false, request: null }); setAssignForm({ vehicle_id: '', driver_id: '', remarks: '' }); }}
-        title={`Assign Vehicle — Request #${assignModal.request?.id}`}
+        title={assignModal.request?.status === 'Vehicle_Assigned'
+          ? `Edit Assignment — Request #${assignModal.request?.id}`
+          : `Assign Vehicle — Request #${assignModal.request?.id}`}
       >
         <div className="space-y-3">
           <div className="p-2.5 bg-slate-50 rounded-lg text-sm space-y-0.5">
@@ -317,7 +339,7 @@ export default function GarageDashboard() {
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" onClick={() => { setAssignModal({ open: false, request: null }); setAssignForm({ vehicle_id: '', driver_id: '', remarks: '' }); }}>Cancel</Button>
             <Button loading={processing} onClick={handleAssign}>
-              <Truck className="w-4 h-4" /> Assign Vehicle
+              <Truck className="w-4 h-4" /> {assignModal.request?.status === 'Vehicle_Assigned' ? 'Update Assignment' : 'Assign Vehicle'}
             </Button>
           </div>
         </div>
