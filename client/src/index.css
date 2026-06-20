@@ -156,6 +156,16 @@ select:focus {
   transition: border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
 }
 
+@keyframes focusGlowPulseBlue {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18); }
+  50%      { box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.3); }
+}
+
+.login-card input:focus {
+  border-color: #3b82f6 !important;
+  animation: focusGlowPulseBlue 2.5s infinite ease-in-out !important;
+}
+
 /* Staggered delay utility classes */
 .delay-1 { animation-delay: 50ms; }
 .delay-2 { animation-delay: 100ms; }
