@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const delegationController = require('../controllers/delegationController');
 const { authenticate } = require('../middleware/auth');
+const { authorize } = require('../middleware/rbac');
 
-// All delegation routes require authentication
+// All delegation routes require authentication and authorization
 router.use(authenticate);
+router.use(authorize('Admin', 'HOD', 'COO', 'GM-HR', 'Garage'));
 
-// HOD, COO, GM-HR and Admin are generally the ones delegating, but any employee might need it depending on company policy.
-// We'll allow all employees for now, or restrict if needed.
 router.get('/', delegationController.getDelegations);
 router.post('/', delegationController.createDelegation);
 router.get('/eligible-users', delegationController.getEligibleUsers);

@@ -462,6 +462,12 @@ async function run() {
     console.log(`     Delegations loaded`);
   });
 
+  await test('GET /delegations - Employee should be Forbidden', async () => {
+    const res = await request('GET', '/delegations', null, empCookies);
+    if (res.status !== 403) throw new Error(`Expected 403, got ${res.status}`);
+    console.log(`     Forbidden for Employee as expected ✓`);
+  });
+
   console.log('\n=== ✅ AUDIT COMPLETE ===\n');
   process.exit(0);
 }

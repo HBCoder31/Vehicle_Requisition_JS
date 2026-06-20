@@ -63,7 +63,6 @@ export default function App() {
         <Route path="/requests/:id" element={<RequestDetails />} />
         <Route path="/requests/edit/:id" element={<EditRequest />} />
         <Route path="/requests/history" element={<RequestHistory />} />
-        <Route path="/delegations" element={<Delegations />} />
         <Route path="/requisitions" element={<Navigate to="/requests/history" replace />} />
         <Route path="/requisitions/new" element={<Navigate to="/employee/new-request" replace />} />
         <Route path="/requisitions/:id" element={<Navigate to="/requests/:id" replace />} />
@@ -71,6 +70,11 @@ export default function App() {
         <Route path="/reports" element={<Navigate to="/admin/analytics" replace />} />
         <Route path="/audit-logs" element={<Navigate to="/admin/audit-logs" replace />} />
         <Route path="/notifications" element={<Navigate to="/dashboard" replace />} />
+      </Route>
+
+      {/* Restricted Delegations Route */}
+      <Route element={<ProtectedRoute allowedRoles={['HOD', 'GM-HR', 'COO', 'Garage', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+        <Route path="/delegations" element={<Delegations />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={['Employee']}><DashboardLayout /></ProtectedRoute>}>

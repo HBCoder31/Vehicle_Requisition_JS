@@ -14,7 +14,6 @@ const roleNavConfig = {
     { to: '/employee', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/employee/new-request', icon: FileText, label: 'New Request' },
     { to: '/requests/history', icon: History, label: 'Request History' },
-    { to: '/delegations', icon: Users, label: 'Delegations' },
   ],
   HOD: [
     { to: '/hod', icon: LayoutDashboard, label: 'Dashboard' },
@@ -43,6 +42,7 @@ const roleNavConfig = {
     { to: '/garage/drivers', icon: Users, label: 'Driver Management' },
     { to: '/garage/maintenance', icon: CheckSquare, label: 'Maintenance' },
     { to: '/garage/fuel', icon: FileText, label: 'Fuel Logs' },
+    { to: '/delegations', icon: Users, label: 'Delegations' },
   ],
   Admin: [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
