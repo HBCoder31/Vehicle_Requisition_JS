@@ -148,7 +148,7 @@ export default function HodDashboard() {
                     <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
                     <td className="px-6 py-3.5">
                       <span className={`text-xs px-2 py-0.5 rounded-md ${req.travel_type.includes('Beyond') ? 'bg-warning-50 text-warning-600' : 'bg-primary-50 text-primary-600'}`}>
-                        {req.travel_type.includes('Beyond') ? 'Beyond' : 'Within'}
+                        {req.travel_type}
                       </span>
                     </td>
                     <td className="px-6 py-3.5 text-slate-600">{req.passengers}</td>

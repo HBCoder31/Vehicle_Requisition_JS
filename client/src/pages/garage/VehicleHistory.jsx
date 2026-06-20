@@ -285,7 +285,7 @@ export default function VehicleHistory() {
                           ? 'bg-warning-50 text-warning-600'
                           : 'bg-primary-50 text-primary-600'
                       }`}>
-                        {trip.travel_type?.includes('Beyond') ? 'Beyond' : 'Within'}
+                        {trip.travel_type}
                       </span>
                     </td>
                     <td className="px-6 py-3.5 text-slate-700">{trip.pickup_location || '—'}</td>
