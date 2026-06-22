@@ -5,7 +5,7 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import StatusBadge from '../../components/ui/StatusBadge';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { Wrench, Plus, Calendar, Truck, CheckCircle, XCircle, PlayCircle, AlertTriangle, ArrowUpDown } from 'lucide-react';
+import { Wrench, Plus, Calendar, Truck, CheckCircle, XCircle, PlayCircle, AlertTriangle, ArrowUpDown, Download } from 'lucide-react';
 
 export default function MaintenanceManagement() {
   const [schedules, setSchedules] = useState([]);
@@ -194,6 +194,64 @@ export default function MaintenanceManagement() {
   const inProgressCount = schedules.filter(s => s.status === 'In_Progress').length;
   const completedCount = schedules.filter(s => s.status === 'Completed').length;
 
+  const exportPDF = () => {
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Add document title and stats header
+      doc.setFontSize(18);
+      doc.text("Vehicle Maintenance Schedules Report", 14, 15);
+      
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleString('en-IN')}`, 14, 22);
+      doc.text(`Total Schedules: ${schedules.length} | Scheduled: ${scheduledCount} | In Progress: ${inProgressCount} | Completed: ${completedCount}`, 14, 27);
+      
+      // Format rows for autoTable
+      const tableBody = sortedSchedules.map(schedule => [
+        `${schedule.registration_no || ''} (${schedule.make || ''} ${schedule.model || ''})`,
+        new Date(schedule.scheduled_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        schedule.description || '',
+        schedule.creator_name || 'System',
+        schedule.status.replace('_', ' ')
+      ]);
+      
+      doc.autoTable({
+        startY: 33,
+        head: [['Vehicle', 'Scheduled Date', 'Description', 'Scheduled By', 'Status']],
+        body: tableBody,
+      });
+      
+      doc.save("vehicle-maintenance-schedules.pdf");
+    } catch (err) {
+      alert('Failed to generate PDF. Make sure CDNs are loaded.');
+      console.error(err);
+    }
+  };
+
+  const exportExcel = () => {
+    try {
+      const XLSX = window.XLSX;
+      const dataToExport = sortedSchedules.map(schedule => ({
+        'Vehicle Registration': schedule.registration_no || '',
+        'Vehicle Make': schedule.make || '',
+        'Vehicle Model': schedule.model || '',
+        'Scheduled Date': new Date(schedule.scheduled_date).toLocaleDateString('en-US'),
+        'Description': schedule.description || '',
+        'Scheduled By': schedule.creator_name || 'System',
+        'Status': schedule.status.replace('_', ' ')
+      }));
+      
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Maintenance Schedules");
+      XLSX.writeFile(wb, "vehicle-maintenance-schedules.xlsx");
+    } catch (err) {
+      alert('Failed to generate Excel. Make sure CDNs are loaded.');
+      console.error(err);
+    }
+  };
+
   if (loading) return <DashboardSkeleton cards={3} rows={4} cols={5} />;
 
   return (
@@ -203,9 +261,17 @@ export default function MaintenanceManagement() {
           <h1 className="text-2xl font-bold text-slate-800">Vehicle Maintenance</h1>
           <p className="text-sm text-muted mt-1">Schedule and track vehicle maintenance activities</p>
         </div>
-        <Button onClick={openModal}>
-          <Plus className="w-4 h-4" /> Schedule Service
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={exportPDF}>
+            <Download className="w-4 h-4" /> PDF
+          </Button>
+          <Button variant="secondary" onClick={exportExcel}>
+            <Download className="w-4 h-4" /> Excel
+          </Button>
+          <Button onClick={openModal}>
+            <Plus className="w-4 h-4" /> Schedule Service
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

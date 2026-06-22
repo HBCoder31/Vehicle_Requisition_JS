@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { Fuel, Plus, Calendar, Truck, User, Gauge, ArrowUpDown, Search, AlertTriangle, Coins } from 'lucide-react';
+import { Fuel, Plus, Calendar, Truck, User, Gauge, ArrowUpDown, Search, AlertTriangle, Coins, Download } from 'lucide-react';
 
 export default function FuelManagement() {
   const [logs, setLogs] = useState([]);
@@ -165,6 +165,66 @@ export default function FuelManagement() {
   // Filter out deactivated vehicles for selection
   const activeVehicles = vehicles.filter(v => v.is_active === 1);
 
+  const exportPDF = () => {
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Add document title and stats header
+      doc.setFontSize(18);
+      doc.text("Garage Fuel Logs Report", 14, 15);
+      
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleString('en-IN')}`, 14, 22);
+      doc.text(`Total Records: ${sortedLogs.length} | Total Volume: ${totalLiters.toFixed(2)} L | Total Cost: Rs ${totalCost.toFixed(2)}`, 14, 27);
+      
+      // Format rows for autoTable
+      const tableBody = sortedLogs.map(log => [
+        formatDate(log.log_date),
+        `${log.registration_no || ''} (${log.make || ''} ${log.model || ''})`,
+        log.driver_name || 'No driver assigned',
+        `${parseFloat(log.liters || 0).toFixed(2)} L`,
+        `Rs ${parseFloat(log.cost || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+        `${log.odometer_reading != null ? Number(log.odometer_reading).toLocaleString() : '0'} km`
+      ]);
+      
+      doc.autoTable({
+        startY: 33,
+        head: [['Date & Time', 'Vehicle', 'Driver', 'Fuel Volume', 'Total Cost', 'Odometer']],
+        body: tableBody,
+      });
+      
+      doc.save("garage-fuel-logs.pdf");
+    } catch (err) {
+      alert('Failed to generate PDF. Make sure CDNs are loaded.');
+      console.error(err);
+    }
+  };
+
+  const exportExcel = () => {
+    try {
+      const XLSX = window.XLSX;
+      const dataToExport = sortedLogs.map(log => ({
+        'Date & Time': formatDate(log.log_date),
+        'Vehicle Registration': log.registration_no || '',
+        'Vehicle Make': log.make || '',
+        'Vehicle Model': log.model || '',
+        'Driver Name': log.driver_name || 'No driver assigned',
+        'Fuel Volume (Liters)': parseFloat(log.liters || 0),
+        'Total Cost (INR)': parseFloat(log.cost || 0),
+        'Odometer (km)': log.odometer_reading != null ? parseInt(log.odometer_reading) : 0
+      }));
+      
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Fuel Logs");
+      XLSX.writeFile(wb, "garage-fuel-logs.xlsx");
+    } catch (err) {
+      alert('Failed to generate Excel. Make sure CDNs are loaded.');
+      console.error(err);
+    }
+  };
+
   if (loading) return <DashboardSkeleton cards={3} rows={4} cols={6} />;
 
   return (
@@ -174,9 +234,17 @@ export default function FuelManagement() {
           <h1 className="text-2xl font-bold text-slate-800">Fuel Management</h1>
           <p className="text-sm text-muted mt-1">Track vehicle fueling logs, costs, and odometer history</p>
         </div>
-        <Button onClick={openModal}>
-          <Plus className="w-4 h-4" /> Log Fuel
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={exportPDF}>
+            <Download className="w-4 h-4" /> PDF
+          </Button>
+          <Button variant="secondary" onClick={exportExcel}>
+            <Download className="w-4 h-4" /> Excel
+          </Button>
+          <Button onClick={openModal}>
+            <Plus className="w-4 h-4" /> Log Fuel
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
