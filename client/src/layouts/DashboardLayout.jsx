@@ -396,7 +396,9 @@ export default function DashboardLayout() {
               >
                 <Bell className="w-5 h-5 text-slate-600" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-danger-500 rounded-full border-2 border-surface animate-pulse" />
+                  <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-danger-500 px-1 text-[9px] font-extrabold text-white border-2 border-white shadow-sm">
+                    {unreadCount}
+                  </span>
                 )}
               </button>
 

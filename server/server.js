@@ -98,6 +98,7 @@ app.use('/api/drivers',       require('./routes/drivers'));
 app.use('/api/maintenance',   require('./routes/maintenance'));
 app.use('/api/fuel',          require('./routes/fuel'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/feedback',      require('./routes/feedback'));
 app.use('/api/attachments',   require('./routes/attachments'));
 app.use('/api/analytics',     require('./routes/analytics'));
 app.use('/api/search',        require('./routes/search'));

@@ -468,6 +468,42 @@ async function run() {
     console.log(`     Forbidden for Employee as expected ✓`);
   });
 
+  // ─── Phase 9: Driver Feedback ──────────────────────────────
+  console.log('\n📋 PHASE 9: Driver Feedback Flow');
+
+  await test('POST /api/feedback/:id/feedback - Submit driver feedback', async () => {
+    const res = await request('POST', `/feedback/${testRequestId}/feedback`, {
+      rating: 5,
+      comments: 'Excellent and safe driver!'
+    }, empCookies);
+    if (res.status !== 211) throw new Error(`Expected 211, got ${res.status}: ${JSON.stringify(res.data)}`);
+    console.log(`     Feedback submitted successfully`);
+  });
+
+  await test('POST /api/feedback/:id/feedback - Duplicate feedback should fail', async () => {
+    const res = await request('POST', `/feedback/${testRequestId}/feedback`, {
+      rating: 3,
+      comments: 'Duplicate'
+    }, empCookies);
+    if (res.status !== 400) throw new Error(`Expected 400, got ${res.status}`);
+    console.log(`     Duplicate feedback blocked correctly`);
+  });
+
+  await test('GET /api/feedback/:id/feedback - Requester views feedback', async () => {
+    const res = await request('GET', `/feedback/${testRequestId}/feedback`, null, empCookies);
+    if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
+    if (res.data.data.rating !== 5) throw new Error(`Expected rating 5, got ${res.data.data.rating}`);
+    console.log(`     Feedback retrieved: Rating ${res.data.data.rating}, Comment: "${res.data.data.comments}"`);
+  });
+
+  await test('GET /api/feedback/all/garage - Garage views all feedbacks', async () => {
+    const res = await request('GET', '/feedback/all/garage', null, garageCookies);
+    if (res.status !== 200) throw new Error(`Expected 200, got ${res.status}`);
+    const found = res.data.data.some(f => f.request_id === testRequestId);
+    if (!found) throw new Error('Feedback not found in garage list');
+    console.log(`     Found feedback in garage feedbacks table`);
+  });
+
   console.log('\n=== ✅ AUDIT COMPLETE ===\n');
   process.exit(0);
 }

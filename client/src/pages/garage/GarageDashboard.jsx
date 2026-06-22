@@ -5,7 +5,7 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import StatusBadge from '../../components/ui/StatusBadge';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { Truck, PlayCircle, StopCircle, ClipboardList, Car, ExternalLink } from 'lucide-react';
+import { Truck, PlayCircle, StopCircle, ClipboardList, Car, ExternalLink, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function GarageDashboard() {
@@ -15,6 +15,8 @@ export default function GarageDashboard() {
   const [drivers, setDrivers] = useState([]);
   const [licenseAlerts, setLicenseAlerts] = useState([]);
   const [certAlerts, setCertAlerts] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [activeTab, setActiveTab] = useState('assignments'); // 'assignments', 'trips', 'fleet', 'feedbacks'
   const [loading, setLoading] = useState(true);
   const loadStart = useRef(Date.now());
   const [assignModal, setAssignModal] = useState({ open: false, request: null });
@@ -26,13 +28,14 @@ export default function GarageDashboard() {
   async function fetchAll() {
     loadStart.current = Date.now();
     try {
-      const [pendRes, activeRes, vehRes, driverRes, licAlertsRes, certAlertsRes] = await Promise.all([
+      const [pendRes, activeRes, vehRes, driverRes, licAlertsRes, certAlertsRes, feedbackRes] = await Promise.all([
         api.get('/garage/pending'),
         api.get('/garage/active'),
         api.get('/garage/vehicles'),
         api.get('/garage/drivers'),
         api.get('/drivers/alerts/licenses'),
-        api.get('/maintenance/alerts/certificates')
+        api.get('/maintenance/alerts/certificates'),
+        api.get('/feedback/all/garage')
       ]);
       setPending(pendRes.data.requests);
       setActive(activeRes.data.trips);
@@ -40,6 +43,7 @@ export default function GarageDashboard() {
       setDrivers(driverRes.data.drivers);
       setLicenseAlerts(licAlertsRes.data.data || []);
       setCertAlerts(certAlertsRes.data.data || []);
+      setFeedbacks(feedbackRes.data.data || []);
     } catch (err) {
       console.error('Failed to fetch data:', err);
     } finally {
@@ -156,134 +160,272 @@ export default function GarageDashboard() {
         </Card>
       )}
 
-      {/* Pending Assignments */}
-      <Card header="Ready for Vehicle Assignment" noPadding>
-        {pending.length === 0 ? (
-          <div className="p-10 text-center">
-            <Truck className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-            <p className="text-sm text-muted">No requests pending assignment.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-slate-50/50">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requested On</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Travel Date</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Passengers</th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {pending.map(req => (
-                  <tr key={req.id} className="hover:bg-slate-50/50">
-                    <td className="px-6 py-3.5">
-                      <p className="font-medium text-slate-800">{req.requester_name}</p>
-                      <p className="text-xs text-muted">{req.department_name}</p>
-                    </td>
-                    <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{req.passengers}</td>
-                    <td className="px-6 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link to={`/requests/${req.id}`} className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 p-1.5 rounded-md transition-colors" title="View Details">
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
-                        <Button size="sm" onClick={() => setAssignModal({ open: true, request: req })}>
-                          <Truck className="w-3.5 h-3.5" /> Assign
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+      {/* Tabs */}
+      <div className="flex border-b border-border space-x-2 mb-6">
+        <button
+          onClick={() => setActiveTab('assignments')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 outline-none ${
+            activeTab === 'assignments'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+          }`}
+        >
+          <ClipboardList className="w-4 h-4" />
+          Pending Assignments
+          {pending.length > 0 && (
+            <span className="ml-1 px-2 py-0.5 text-xs font-bold bg-primary-100 text-primary-800 rounded-full">
+              {pending.length}
+            </span>
+          )}
+        </button>
 
-      {/* Active Trips */}
-      <Card header="Active Trips" noPadding>
-        {active.length === 0 ? (
-          <div className="p-10 text-center">
-            <p className="text-sm text-muted">No active trips.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-slate-50/50">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Vehicle</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Driver</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {active.map(trip => (
-                  <tr key={trip.id} className="hover:bg-slate-50/50">
-                    <td className="px-6 py-3.5 font-medium text-slate-800">{trip.requester_name}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{trip.registration_no} ({trip.vehicle_make} {trip.vehicle_model})</td>
-                    <td className="px-6 py-3.5 text-slate-600">{trip.assigned_driver}</td>
-                    <td className="px-6 py-3.5"><StatusBadge status={trip.status} /></td>
-                    <td className="px-6 py-3.5 text-right">
-                      {/* Trigger Vercel redeploy for edit assignment feature */}
-                      {trip.status === 'Vehicle_Assigned' && (
+        <button
+          onClick={() => setActiveTab('trips')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 outline-none ${
+            activeTab === 'trips'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+          }`}
+        >
+          <Car className="w-4 h-4" />
+          Active Trips
+          {active.length > 0 && (
+            <span className="ml-1 px-2 py-0.5 text-xs font-bold bg-primary-100 text-primary-800 rounded-full">
+              {active.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('fleet')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 outline-none ${
+            activeTab === 'fleet'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+          }`}
+        >
+          <Truck className="w-4 h-4" />
+          Vehicle Fleet
+        </button>
+
+        <button
+          onClick={() => setActiveTab('feedbacks')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 outline-none ${
+            activeTab === 'feedbacks'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+          }`}
+        >
+          <Star className="w-4 h-4" />
+          Driver Feedbacks
+          {feedbacks.length > 0 && (
+            <span className="ml-1 px-2 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded-full">
+              {feedbacks.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* Pending Assignments Tab */}
+      {activeTab === 'assignments' && (
+        <Card header="Ready for Vehicle Assignment" noPadding>
+          {pending.length === 0 ? (
+            <div className="p-10 text-center">
+              <Truck className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+              <p className="text-sm text-muted">No requests pending assignment.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requested On</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Travel Date</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Passengers</th>
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {pending.map(req => (
+                    <tr key={req.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-3.5">
+                        <p className="font-medium text-slate-800">{req.requester_name}</p>
+                        <p className="text-xs text-muted">{req.department_name}</p>
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
+                      <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
+                      <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
+                      <td className="px-6 py-3.5 text-slate-600">{req.passengers}</td>
+                      <td className="px-6 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => {
-                              setAssignModal({ open: true, request: trip });
-                              setAssignForm({
-                                vehicle_id: trip.assigned_vehicle_id || '',
-                                driver_id: trip.assigned_driver_id || '',
-                                remarks: trip.garage_remarks || ''
-                              });
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button size="sm" variant="success" onClick={() => handlePickup(trip.id)}>
-                            <PlayCircle className="w-3.5 h-3.5" /> Pickup
+                          <Link to={`/requests/${req.id}`} className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 p-1.5 rounded-md transition-colors" title="View Details">
+                            <ExternalLink className="w-4 h-4" />
+                          </Link>
+                          <Button size="sm" onClick={() => setAssignModal({ open: true, request: req })}>
+                            <Truck className="w-3.5 h-3.5" /> Assign
                           </Button>
                         </div>
-                      )}
-                      {trip.status === 'In_Transit' && (
-                        <Button size="sm" variant="danger" onClick={() => handleDropoff(trip.id)}>
-                          <StopCircle className="w-3.5 h-3.5" /> Drop-off
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
-      {/* Vehicle Fleet */}
-      <Card header="Vehicle Fleet">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {vehicles.map(v => (
-            <div key={v.id} className={`p-4 rounded-xl border ${v.is_available ? 'border-success-500/30 bg-success-50/30' : 'border-danger-500/30 bg-danger-50/30'}`}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-sm font-semibold text-slate-800">{v.registration_no}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${v.is_available ? 'bg-success-500 text-white' : 'bg-danger-500 text-white'}`}>
-                  {v.is_available ? 'Available' : 'In Use'}
-                </span>
-              </div>
-              <p className="text-sm text-slate-600">{v.make} {v.model}</p>
-              <p className="text-xs text-muted">{v.vehicle_type} • {v.capacity} seats • {v.fuel_type}</p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
-      </Card>
+          )}
+        </Card>
+      )}
+
+      {/* Active Trips Tab */}
+      {activeTab === 'trips' && (
+        <Card header="Active Trips" noPadding>
+          {active.length === 0 ? (
+            <div className="p-10 text-center">
+              <p className="text-sm text-muted">No active trips.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Vehicle</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Driver</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {active.map(trip => (
+                    <tr key={trip.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-3.5">
+                        <Link to={`/requests/${trip.id}`} className="font-medium text-primary-600 hover:underline">
+                          {trip.requester_name}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-600">{trip.registration_no} ({trip.vehicle_make} {trip.vehicle_model})</td>
+                      <td className="px-6 py-3.5 text-slate-600">{trip.assigned_driver}</td>
+                      <td className="px-6 py-3.5"><StatusBadge status={trip.status} /></td>
+                      <td className="px-6 py-3.5 text-right">
+                        {trip.status === 'Vehicle_Assigned' && (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                setAssignModal({ open: true, request: trip });
+                                setAssignForm({
+                                  vehicle_id: trip.assigned_vehicle_id || '',
+                                  driver_id: trip.assigned_driver_id || '',
+                                  remarks: trip.garage_remarks || ''
+                                });
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button size="sm" variant="success" onClick={() => handlePickup(trip.id)}>
+                              <PlayCircle className="w-3.5 h-3.5" /> Pickup
+                            </Button>
+                          </div>
+                        )}
+                        {trip.status === 'In_Transit' && (
+                          <Button size="sm" variant="danger" onClick={() => handleDropoff(trip.id)}>
+                            <StopCircle className="w-3.5 h-3.5" /> Drop-off
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Vehicle Fleet Tab */}
+      {activeTab === 'fleet' && (
+        <Card header="Vehicle Fleet">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {vehicles.map(v => (
+              <div key={v.id} className={`p-4 rounded-xl border ${v.is_available ? 'border-success-500/30 bg-success-50/30' : 'border-danger-500/30 bg-danger-50/30'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono text-sm font-semibold text-slate-800">{v.registration_no}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${v.is_available ? 'bg-success-500 text-white' : 'bg-danger-500 text-white'}`}>
+                    {v.is_available ? 'Available' : 'In Use'}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600">{v.make} {v.model}</p>
+                <p className="text-xs text-muted">{v.vehicle_type} • {v.capacity} seats • {v.fuel_type}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Driver Feedbacks Tab */}
+      {activeTab === 'feedbacks' && (
+        <Card header="Driver Feedbacks" noPadding>
+          {feedbacks.length === 0 ? (
+            <div className="p-10 text-center">
+              <Star className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+              <p className="text-sm text-muted">No driver feedbacks submitted yet.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Request</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Driver</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Rating</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Comments</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Submitted On</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {feedbacks.map(fb => (
+                    <tr key={fb.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-3.5 font-medium text-slate-800">
+                        <Link to={`/requests/${fb.request_id}`} className="text-primary-600 hover:underline">
+                          #{fb.request_id}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <p className="font-medium text-slate-800">{fb.requester_name}</p>
+                        <p className="text-xs text-muted">{fb.department_name || 'N/A'}</p>
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-700 font-medium">{fb.driver_name}</td>
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-4 h-4 ${
+                                star <= fb.rating
+                                  ? 'text-amber-400 fill-amber-400'
+                                  : 'text-slate-200'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-600 max-w-xs truncate" title={fb.comments}>
+                        {fb.comments || <span className="text-slate-400 italic">No comments</span>}
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-500">
+                        {new Date(fb.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Assign Modal */}
       <Modal
