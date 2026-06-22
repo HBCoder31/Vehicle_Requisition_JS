@@ -39,9 +39,9 @@ export default function FuelManagement() {
         api.get('/garage/vehicles'),
         api.get('/drivers')
       ]);
-      setLogs(logsRes.data.data || []);
-      setVehicles(vehRes.data.vehicles || []);
-      setDrivers(drvRes.data.data || []);
+      setLogs(logsRes.data?.data || []);
+      setVehicles(vehRes.data?.vehicles || []);
+      setDrivers(drvRes.data?.data || []);
     } catch (err) {
       console.error('Failed to fetch fuel management data:', err);
     } finally {
@@ -58,6 +58,13 @@ export default function FuelManagement() {
     const localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 16);
     return localISOTime;
   }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? '—' : d.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
 
   function openModal() {
     setFormData({
@@ -263,7 +270,7 @@ export default function FuelManagement() {
                     <td className="px-6 py-3.5 whitespace-nowrap text-slate-600">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{new Date(log.log_date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                        <span>{formatDate(log.log_date)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-3.5 whitespace-nowrap">
@@ -288,13 +295,13 @@ export default function FuelManagement() {
                       )}
                     </td>
                     <td className="px-6 py-3.5 whitespace-nowrap text-slate-800 font-semibold">
-                      {parseFloat(log.liters).toFixed(2)} L
+                      {parseFloat(log.liters || 0).toFixed(2)} L
                     </td>
                     <td className="px-6 py-3.5 whitespace-nowrap font-bold text-rose-600">
-                      ₹{parseFloat(log.cost).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{parseFloat(log.cost || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="px-6 py-3.5 whitespace-nowrap text-slate-600 font-mono">
-                      {log.odometer_reading.toLocaleString()} km
+                      {log.odometer_reading != null ? Number(log.odometer_reading).toLocaleString() : '0'} km
                     </td>
                   </tr>
                 ))}
