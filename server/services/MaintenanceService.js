@@ -21,6 +21,7 @@ class MaintenanceService {
 
     await MaintenanceRepository.addRecord(recordData);
     await MaintenanceRepository.updateStatus(id, 'Completed');
+    await MaintenanceRepository.releaseVehicle(maintenance.vehicle_id);
 
     return { message: 'Maintenance completed and record saved' };
   }

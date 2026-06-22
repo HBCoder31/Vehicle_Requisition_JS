@@ -51,6 +51,11 @@ class MaintenanceRepository {
     , [thresholdDate, thresholdDate, thresholdDate]);
     return rows;
   }
+
+  async releaseVehicle(vehicleId) {
+    await pool.execute('UPDATE vehicles SET is_available = 1 WHERE id = ?', [vehicleId]);
+  }
 }
 
 module.exports = new MaintenanceRepository();
+

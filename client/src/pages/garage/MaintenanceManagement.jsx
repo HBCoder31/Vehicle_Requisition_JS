@@ -23,6 +23,19 @@ export default function MaintenanceManagement() {
   });
   const [formError, setFormError] = useState('');
 
+  // Complete maintenance modal state
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [completeId, setCompleteId] = useState(null);
+  const [completeFormData, setCompleteFormData] = useState({
+    maintenance_date: '',
+    cost: '',
+    description: '',
+    vendor: '',
+    invoice_url: ''
+  });
+  const [completeFormError, setCompleteFormError] = useState('');
+
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -105,6 +118,53 @@ export default function MaintenanceManagement() {
     setFormError('');
     setShowModal(true);
   }
+
+  function openCompleteModal(schedule) {
+    setCompleteId(schedule.id);
+    setCompleteFormData({
+      maintenance_date: getTodayStr(),
+      cost: '',
+      description: schedule.description || '',
+      vendor: '',
+      invoice_url: ''
+    });
+    setCompleteFormError('');
+    setShowCompleteModal(true);
+  }
+
+  async function handleCompleteSubmit(e) {
+    e.preventDefault();
+    setCompleteFormError('');
+
+    const cost = parseFloat(completeFormData.cost);
+    if (!completeFormData.maintenance_date || isNaN(cost) || !completeFormData.description.trim()) {
+      setCompleteFormError('Date, cost, and description are required.');
+      return;
+    }
+
+    if (cost < 0) {
+      setCompleteFormError('Cost cannot be negative.');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      await api.post(`/maintenance/${completeId}/complete`, {
+        maintenance_date: completeFormData.maintenance_date,
+        cost,
+        description: completeFormData.description,
+        vendor: completeFormData.vendor || null,
+        invoice_url: completeFormData.invoice_url || null
+      });
+      setShowCompleteModal(false);
+      fetchData();
+    } catch (err) {
+      setCompleteFormError(err.response?.data?.message || err.response?.data?.error || 'Failed to complete maintenance.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
 
   // Sort schedules
   const sortedSchedules = [...schedules].sort((a, b) => {
@@ -268,7 +328,7 @@ export default function MaintenanceManagement() {
                             <Button
                               size="sm"
                               variant="success"
-                              onClick={() => handleStatusUpdate(schedule.id, 'Completed')}
+                              onClick={() => openCompleteModal(schedule)}
                               loading={statusProcessing === schedule.id}
                               title="Mark as Completed"
                             >
@@ -290,7 +350,7 @@ export default function MaintenanceManagement() {
                             <Button
                               size="sm"
                               variant="success"
-                              onClick={() => handleStatusUpdate(schedule.id, 'Completed')}
+                              onClick={() => openCompleteModal(schedule)}
                               loading={statusProcessing === schedule.id}
                               title="Mark as Completed"
                             >
@@ -401,6 +461,107 @@ export default function MaintenanceManagement() {
           </div>
         </form>
       </Modal>
+
+      {/* Complete Maintenance Modal */}
+      <Modal
+        isOpen={showCompleteModal}
+        onClose={() => { setShowCompleteModal(false); setCompleteFormError(''); }}
+        title="Complete Maintenance & Log Costs"
+      >
+        <form onSubmit={handleCompleteSubmit} className="space-y-4">
+          {completeFormError && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+              <span>{completeFormError}</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="comp-date" className="block text-xs font-medium text-slate-700 mb-1">Completion Date *</label>
+              <input
+                type="date"
+                id="comp-date"
+                name="maintenance_date"
+                value={completeFormData.maintenance_date}
+                onChange={e => setCompleteFormData(f => ({ ...f, maintenance_date: e.target.value }))}
+                required
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label htmlFor="comp-cost" className="block text-xs font-medium text-slate-700 mb-1">Maintenance Cost (₹) *</label>
+              <input
+                type="number"
+                step="0.01"
+                id="comp-cost"
+                name="cost"
+                value={completeFormData.cost}
+                onChange={e => setCompleteFormData(f => ({ ...f, cost: e.target.value }))}
+                required
+                placeholder="e.g. 4500"
+                min="0"
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="comp-vendor" className="block text-xs font-medium text-slate-700 mb-1">Vendor (Optional)</label>
+              <input
+                type="text"
+                id="comp-vendor"
+                name="vendor"
+                value={completeFormData.vendor}
+                onChange={e => setCompleteFormData(f => ({ ...f, vendor: e.target.value }))}
+                placeholder="Service Center name"
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label htmlFor="comp-invoice" className="block text-xs font-medium text-slate-700 mb-1">Invoice Receipt URL (Optional)</label>
+              <input
+                type="text"
+                id="comp-invoice"
+                name="invoice_url"
+                value={completeFormData.invoice_url}
+                onChange={e => setCompleteFormData(f => ({ ...f, invoice_url: e.target.value }))}
+                placeholder="Link to invoice document"
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="comp-desc" className="block text-xs font-medium text-slate-700 mb-1">Description of Work Done *</label>
+            <textarea
+              id="comp-desc"
+              name="description"
+              value={completeFormData.description}
+              onChange={e => setCompleteFormData(f => ({ ...f, description: e.target.value }))}
+              required
+              rows={3}
+              placeholder="Provide details about the parts changed or repairs done..."
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none transition-colors resize-none"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => { setShowCompleteModal(false); setCompleteFormError(''); }}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={processing}>
+              <CheckCircle className="w-4 h-4" /> Save & Complete
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
     </div>
   );
 }

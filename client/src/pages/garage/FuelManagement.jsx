@@ -72,6 +72,10 @@ export default function FuelManagement() {
     setShowModal(true);
   }
 
+  function handleChange(e) {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setFormError('');
