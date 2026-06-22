@@ -231,6 +231,7 @@ export default function GarageDashboard() {
                     <td className="px-6 py-3.5 text-slate-600">{trip.assigned_driver}</td>
                     <td className="px-6 py-3.5"><StatusBadge status={trip.status} /></td>
                     <td className="px-6 py-3.5 text-right">
+                      {/* Trigger Vercel redeploy for edit assignment feature */}
                       {trip.status === 'Vehicle_Assigned' && (
                         <div className="flex items-center justify-end gap-2">
                           <Button
