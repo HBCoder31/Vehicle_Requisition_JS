@@ -81,11 +81,33 @@ export default function GarageDashboard() {
   }
 
   const availableVehicles = vehicles.filter(v => {
-    return v.is_available || (assignModal.request && assignModal.request.assigned_vehicle_id === v.id);
+    return (v.is_available && v.is_active === 1) || (assignModal.request && assignModal.request.assigned_vehicle_id === v.id);
   });
   const availableDrivers = drivers.filter(d => {
     return d.is_available || (assignModal.request && assignModal.request.assigned_driver_id === d.id);
   });
+
+  function getVehicleStatusInfo(v) {
+    if (v.is_active === 0) {
+      return { label: 'Deactivated', className: 'bg-slate-100 text-slate-700 border-slate-200' };
+    }
+    if (v.maintenance_status === 'In_Progress') {
+      return { label: 'In Maintenance', className: 'bg-blue-100 text-blue-800 border-blue-200' };
+    }
+    if (v.maintenance_status === 'Scheduled') {
+      return { label: 'Maint. Scheduled', className: 'bg-amber-100 text-amber-800 border-amber-200' };
+    }
+    if (v.trip_status === 'In_Transit') {
+      return { label: 'On Trip (Transit)', className: 'bg-indigo-100 text-indigo-800 border-indigo-200' };
+    }
+    if (v.trip_status === 'Vehicle_Assigned') {
+      return { label: 'Assigned to Trip', className: 'bg-purple-100 text-purple-800 border-purple-200' };
+    }
+    if (v.is_available === 1) {
+      return { label: 'Available', className: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+    }
+    return { label: 'In Use', className: 'bg-rose-100 text-rose-800 border-rose-200' };
+  }
 
   if (loading) return <DashboardSkeleton cards={3} rows={4} cols={5} />;
 
@@ -290,6 +312,8 @@ export default function GarageDashboard() {
                 <thead>
                   <tr className="border-b border-border bg-slate-50/50">
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Travel Date/Time</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Vehicle</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Driver</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
@@ -298,14 +322,31 @@ export default function GarageDashboard() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {active.map(trip => (
-                    <tr key={trip.id} className="hover:bg-slate-50/50">
+                    <tr key={trip.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-3.5">
                         <Link to={`/requests/${trip.id}`} className="font-medium text-primary-600 hover:underline">
                           {trip.requester_name}
                         </Link>
+                        <p className="text-xs text-muted">{trip.department_name}</p>
                       </td>
-                      <td className="px-6 py-3.5 text-slate-600">{trip.registration_no} ({trip.vehicle_make} {trip.vehicle_model})</td>
-                      <td className="px-6 py-3.5 text-slate-600">{trip.assigned_driver}</td>
+                      <td className="px-6 py-3.5 text-slate-700 font-medium">
+                        {trip.destination}
+                        {trip.passengers > 0 && <span className="text-[11px] text-muted block">{trip.passengers} passenger(s)</span>}
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-600">
+                        <p className="text-sm font-medium">{trip.travel_date}</p>
+                        <p className="text-xs text-muted">{trip.travel_time}</p>
+                        {trip.pickup_time && (
+                          <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded block w-fit mt-1">
+                            Departed: {new Date(trip.pickup_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <p className="font-mono text-sm font-semibold text-slate-800">{trip.registration_no}</p>
+                        <p className="text-xs text-muted">{trip.vehicle_make} {trip.vehicle_model}</p>
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-600 font-medium">{trip.assigned_driver}</td>
                       <td className="px-6 py-3.5"><StatusBadge status={trip.status} /></td>
                       <td className="px-6 py-3.5 text-right">
                         {trip.status === 'Vehicle_Assigned' && (
@@ -348,18 +389,45 @@ export default function GarageDashboard() {
       {activeTab === 'fleet' && (
         <Card header="Vehicle Fleet">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {vehicles.map(v => (
-              <div key={v.id} className={`p-4 rounded-xl border ${v.is_available ? 'border-success-500/30 bg-success-50/30' : 'border-danger-500/30 bg-danger-50/30'}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-mono text-sm font-semibold text-slate-800">{v.registration_no}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${v.is_available ? 'bg-success-500 text-white' : 'bg-danger-500 text-white'}`}>
-                    {v.is_available ? 'Available' : 'In Use'}
-                  </span>
+            {vehicles.map(v => {
+              const statusInfo = getVehicleStatusInfo(v);
+              // Border and background classes based on state
+              let statusCardStyle = 'border-border bg-white';
+              if (v.is_active === 0) {
+                statusCardStyle = 'border-slate-200 bg-slate-50/50 opacity-70';
+              } else if (v.maintenance_status === 'In_Progress') {
+                statusCardStyle = 'border-blue-200 bg-blue-50/5';
+              } else if (v.maintenance_status === 'Scheduled') {
+                statusCardStyle = 'border-amber-200 bg-amber-50/5';
+              } else if (v.trip_status === 'In_Transit') {
+                statusCardStyle = 'border-indigo-200 bg-indigo-50/5';
+              } else if (v.trip_status === 'Vehicle_Assigned') {
+                statusCardStyle = 'border-purple-200 bg-purple-50/5';
+              } else if (v.is_available === 1) {
+                statusCardStyle = 'border-emerald-200 bg-emerald-50/5';
+              } else {
+                statusCardStyle = 'border-rose-200 bg-rose-50/5';
+              }
+
+              return (
+                <div key={v.id} className={`p-4 rounded-xl border ${statusCardStyle} transition-all duration-200 hover:shadow-sm hover:border-slate-300`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-sm font-semibold text-slate-800">{v.registration_no}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border ${statusInfo.className}`}>
+                      {statusInfo.label}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700">{v.make} {v.model}</p>
+                  <p className="text-xs text-muted mt-0.5">{v.vehicle_type} • {v.capacity} seats • {v.fuel_type}</p>
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-muted">
+                    <span>Odometer: <span className="font-mono text-slate-700 font-semibold">{v.current_odometer || 0} km</span></span>
+                    {v.is_active === 1 && v.is_available === 1 && (
+                      <span className="text-emerald-600 font-medium">Ready for dispatch</span>
+                    )}
+                  </div>
                 </div>
-                <p className="text-sm text-slate-600">{v.make} {v.model}</p>
-                <p className="text-xs text-muted">{v.vehicle_type} • {v.capacity} seats • {v.fuel_type}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
       )}

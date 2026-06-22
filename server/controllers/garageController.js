@@ -322,9 +322,17 @@ async function recordDropoff(req, res) {
  */
 async function getVehicles(req, res) {
   try {
-    const [rows] = await pool.execute(
-      'SELECT * FROM vehicles ORDER BY is_available DESC, make ASC'
-    );
+    const [rows] = await pool.execute(`
+      SELECT v.*,
+             (SELECT status FROM vehicle_requests 
+              WHERE assigned_vehicle_id = v.id AND status IN ('Vehicle_Assigned', 'In_Transit') 
+              LIMIT 1) AS trip_status,
+             (SELECT status FROM vehicle_maintenance 
+              WHERE vehicle_id = v.id AND status IN ('Scheduled', 'In_Progress') 
+              LIMIT 1) AS maintenance_status
+      FROM vehicles v
+      ORDER BY v.is_available DESC, v.make ASC
+    `);
     res.json({ vehicles: rows });
   } catch (err) {
     console.error('getVehicles error:', err);
