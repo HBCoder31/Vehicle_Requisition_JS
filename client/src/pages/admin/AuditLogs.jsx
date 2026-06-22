@@ -30,6 +30,7 @@ export default function AuditLogs() {
   const [toDate, setToDate] = useState('');
   const [empNumber, setEmpNumber] = useState('');
   const [debouncedEmpNumber, setDebouncedEmpNumber] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [printLogs, setPrintLogs] = useState([]);
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -42,7 +43,7 @@ export default function AuditLogs() {
     return () => clearTimeout(timer);
   }, [empNumber]);
 
-  useEffect(() => { fetchLogs(1); }, [filter, fromDate, toDate, debouncedEmpNumber]);
+  useEffect(() => { fetchLogs(1); }, [filter, fromDate, toDate, debouncedEmpNumber, sortOrder]);
 
   useEffect(() => {
     function handleNewAuditLog(newLog) {
@@ -88,6 +89,7 @@ export default function AuditLogs() {
       if (fromDate) params.set('from_date', fromDate);
       if (toDate) params.set('to_date', toDate);
       if (debouncedEmpNumber) params.set('employee_number', debouncedEmpNumber);
+      params.set('sort_order', sortOrder);
 
       const { data } = await api.get(`/admin/audit-logs?${params}`);
       setLogs(data.logs);
@@ -113,6 +115,7 @@ export default function AuditLogs() {
       if (fromDate) params.set('from_date', fromDate);
       if (toDate) params.set('to_date', toDate);
       if (debouncedEmpNumber) params.set('employee_number', debouncedEmpNumber);
+      params.set('sort_order', sortOrder);
       params.set('page', 1);
       params.set('limit', 10000); // Fetch up to 10k logs for printing
 
@@ -141,6 +144,7 @@ export default function AuditLogs() {
         if (fromDate) params.set('from_date', fromDate);
         if (toDate) params.set('to_date', toDate);
         if (debouncedEmpNumber) params.set('employee_number', debouncedEmpNumber);
+        params.set('sort_order', sortOrder);
         params.set('page', 1);
         params.set('limit', 10000); // Fetch up to 10k logs for exporting
 
@@ -293,6 +297,14 @@ export default function AuditLogs() {
             className="px-3 py-1.5 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none w-32"
           />
         </div>
+        <select
+          value={sortOrder}
+          onChange={e => setSortOrder(e.target.value)}
+          className="px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none"
+        >
+          <option value="desc">Newest First (Descending)</option>
+          <option value="asc">Oldest First (Ascending)</option>
+        </select>
       </div>
 
       <Card noPadding className="no-print">

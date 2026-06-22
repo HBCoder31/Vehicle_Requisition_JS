@@ -168,7 +168,7 @@ async function deleteEmployee(req, res) {
  */
 async function getAuditLogs(req, res) {
   try {
-    const { action, entity_type, actor_id, from_date, to_date, employee_number, page = 1, limit = 30 } = req.query;
+    const { action, entity_type, actor_id, from_date, to_date, employee_number, page = 1, limit = 30, sort_order = 'desc' } = req.query;
     
     const parsedLimit = parseInt(limit, 10) || 30;
     const parsedPage = parseInt(page, 10) || 1;
@@ -192,7 +192,8 @@ async function getAuditLogs(req, res) {
       params.push(`%${employee_number}%`);
     }
 
-    query += ` ORDER BY al.created_at DESC LIMIT ${parsedLimit} OFFSET ${offset}`;
+    const orderDir = sort_order === 'asc' ? 'ASC' : 'DESC';
+    query += ` ORDER BY al.created_at ${orderDir} LIMIT ${parsedLimit} OFFSET ${offset}`;
 
     const [rows] = await pool.execute(query, params);
     const formattedRows = rows.map(row => {

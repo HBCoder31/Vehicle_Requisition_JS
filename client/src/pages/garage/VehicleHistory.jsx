@@ -17,6 +17,7 @@ export default function VehicleHistory() {
   const [driverFilter, setDriverFilter] = useState('');
   const [pickupFrom, setPickupFrom] = useState('');
   const [pickupTo, setPickupTo] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     fetchHistory();
@@ -61,6 +62,14 @@ export default function VehicleHistory() {
     });
   }, [history, empFilter, typeFilter, vehicleFilter, driverFilter, pickupFrom, pickupTo]);
 
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      const dateA = new Date(a.pickup_time || a.travel_date || a.created_at);
+      const dateB = new Date(b.pickup_time || b.travel_date || b.created_at);
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+  }, [filtered, sortOrder]);
+
   const hasFilters = empFilter || typeFilter || vehicleFilter || driverFilter || pickupFrom || pickupTo;
 
   const clearFilters = () => {
@@ -73,7 +82,7 @@ export default function VehicleHistory() {
   };
 
   const exportToExcel = async () => {
-    if (filtered.length === 0) return;
+    if (sorted.length === 0) return;
 
     const escape = (val) => {
       if (val == null) return '';
@@ -90,7 +99,7 @@ export default function VehicleHistory() {
       'Pickup Time', 'Travel Date', 'Drop-off Time'
     ];
 
-    const rows = filtered.map(trip => [
+    const rows = sorted.map(trip => [
       trip.requester_name,
       trip.employee_number,
       trip.department_name,
@@ -240,6 +249,19 @@ export default function VehicleHistory() {
             </select>
           </div>
 
+          {/* Sort Order */}
+          <div className="flex-1 min-w-[160px] space-y-1">
+            <label className="text-xs font-medium text-slate-600">Sort Order</label>
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none"
+            >
+              <option value="desc">Newest First (Descending)</option>
+              <option value="asc">Oldest First (Ascending)</option>
+            </select>
+          </div>
+
           {/* Clear */}
           {hasFilters && (
             <button
@@ -254,7 +276,7 @@ export default function VehicleHistory() {
 
       {/* Table */}
       <Card noPadding>
-        {filtered.length === 0 ? (
+        {sorted.length === 0 ? (
           <div className="p-10 text-center">
             <p className="text-sm text-muted">No completed trips match the filters.</p>
           </div>
@@ -275,7 +297,7 @@ export default function VehicleHistory() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filtered.map(trip => (
+                {sorted.map(trip => (
                   <tr key={trip.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-3.5 font-medium text-slate-800">{trip.requester_name}</td>
                     <td className="px-6 py-3.5 text-slate-600 font-mono text-xs">{trip.employee_number}</td>

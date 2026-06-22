@@ -11,6 +11,7 @@ export default function RequestHistory() {
   const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState('desc');
   
   // Filters
   const [fromDate, setFromDate] = useState('');
@@ -21,6 +22,12 @@ export default function RequestHistory() {
     fetchRequests();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromDate, toDate, travelType]);
+
+  const sortedRequests = [...requests].sort((a, b) => {
+    const dateA = new Date(a.created_at);
+    const dateB = new Date(b.created_at);
+    return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+  });
 
   async function fetchRequests() {
     setLoading(true);
@@ -140,6 +147,17 @@ export default function RequestHistory() {
               <option value="Beyond Anuppur/Shahdol">Beyond Anuppur/Shahdol</option>
             </select>
           </div>
+          <div className="flex-1 space-y-1">
+            <label className="text-xs font-medium text-slate-700">Sort Order</label>
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none"
+            >
+              <option value="desc">Newest First (Descending)</option>
+              <option value="asc">Oldest First (Ascending)</option>
+            </select>
+          </div>
         </div>
       </Card>
 
@@ -168,7 +186,7 @@ export default function RequestHistory() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {requests.map((req, i) => (
+                {sortedRequests.map((req, i) => (
                   <tr key={req.id} className="hover:bg-slate-50/50 transition-colors" style={{ animationDelay: `${(i % 10) * 50}ms` }}>
                     <td className="px-6 py-3.5 font-mono text-xs text-slate-500">#{req.id}</td>
                     <td className="px-6 py-3.5 font-medium text-slate-800">{req.destination}</td>

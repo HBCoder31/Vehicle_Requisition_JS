@@ -11,6 +11,7 @@ export default function ApprovalHistory() {
   const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState('desc');
 
   // Filters
   const [fromDate, setFromDate] = useState('');
@@ -56,6 +57,12 @@ export default function ApprovalHistory() {
       if (travelType === 'Beyond Anuppur/Shahdol' && !req.travel_type.includes('Beyond')) return false;
     }
     return true;
+  });
+
+  const sortedRequests = [...filteredRequests].sort((a, b) => {
+    const dateA = new Date(a.created_at);
+    const dateB = new Date(b.created_at);
+    return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
   });
 
   const exportToCSV = () => {
@@ -124,7 +131,7 @@ export default function ApprovalHistory() {
         <div className="flex gap-2 shrink-0">
           <button
             onClick={() => window.print()}
-            disabled={filteredRequests.length === 0}
+            disabled={sortedRequests.length === 0}
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             <Printer className="w-4 h-4" />
@@ -132,7 +139,7 @@ export default function ApprovalHistory() {
           </button>
           <button
             onClick={exportToCSV}
-            disabled={filteredRequests.length === 0}
+            disabled={sortedRequests.length === 0}
             className="inline-flex items-center gap-2 px-4 py-2 bg-success-600 hover:bg-success-700 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             <Download className="w-4 h-4" />
@@ -173,13 +180,24 @@ export default function ApprovalHistory() {
               <option value="Beyond Anuppur/Shahdol">Beyond Anuppur/Shahdol</option>
             </select>
           </div>
+          <div className="flex-1 space-y-1">
+            <label className="text-xs font-medium text-slate-700">Sort Order</label>
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none"
+            >
+              <option value="desc">Newest First (Descending)</option>
+              <option value="asc">Oldest First (Ascending)</option>
+            </select>
+          </div>
         </div>
       </Card>
 
       <Card noPadding>
         {loading ? (
           <Spinner size="md" className="py-20" />
-        ) : filteredRequests.length === 0 ? (
+        ) : sortedRequests.length === 0 ? (
           <div className="p-10 text-center">
             <History className="w-12 h-12 text-slate-200 mx-auto mb-3" />
             <p className="text-sm text-muted">No processed requests found matching the filters.</p>
@@ -202,7 +220,7 @@ export default function ApprovalHistory() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredRequests.map((req, i) => (
+                {sortedRequests.map((req, i) => (
                   <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-3.5 font-mono text-xs text-slate-500">#{req.id}</td>
                     <td className="px-6 py-3.5">
