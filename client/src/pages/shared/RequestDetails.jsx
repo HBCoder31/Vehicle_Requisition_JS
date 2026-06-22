@@ -278,15 +278,21 @@ export default function RequestDetails() {
                 
                 const actionStr = item.action_type || item.status_to || '';
 
-                if (actionStr.includes('Approve')) {
+                if (actionStr.includes('Approved') || actionStr.includes('Approve')) {
                   Icon = CheckCircle;
                   colorClass = 'text-success-600 bg-success-100';
-                } else if (actionStr.includes('Reject')) {
+                } else if (actionStr.includes('Rejected') || actionStr.includes('Reject') || actionStr.includes('Deleted')) {
                   Icon = XCircle;
                   colorClass = 'text-danger-600 bg-danger-100';
-                } else if (actionStr.includes('Assign') || actionStr.includes('Transit')) {
+                } else if (actionStr.includes('Assign') || actionStr.includes('Transit') || actionStr.includes('Pickup')) {
                   Icon = Truck;
                   colorClass = 'text-primary-600 bg-primary-100';
+                } else if (actionStr.includes('Completed')) {
+                  Icon = CheckCircle;
+                  colorClass = 'text-success-600 bg-success-100';
+                } else if (actionStr.includes('Feedback')) {
+                  Icon = Star;
+                  colorClass = 'text-amber-600 bg-amber-100';
                 } else if (actionStr === 'Created' || actionStr.includes('Pending')) {
                   Icon = FileText;
                   colorClass = 'text-info-600 bg-info-100';
