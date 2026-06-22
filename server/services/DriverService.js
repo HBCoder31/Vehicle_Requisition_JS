@@ -18,7 +18,10 @@ class DriverService {
   }
 
   async updateDriver(id, data) {
-    await this.getDriver(id); // Check exists
+    const driver = await this.getDriver(id); // Check exists
+    if (data.is_active === false && driver.is_available === 0) {
+      throw new AppError('Cannot set driver on leave while they are on an active trip.', 400);
+    }
     await DriverRepository.update(id, data);
     return await this.getDriver(id);
   }

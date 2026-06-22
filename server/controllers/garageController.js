@@ -434,6 +434,11 @@ async function updateDriverStatus(req, res) {
     const [[driver]] = await pool.execute('SELECT * FROM drivers WHERE id = ?', [id]);
     if (!driver) return res.status(404).json({ error: 'Driver not found.' });
 
+    // Validate: if driver is on trip (is_available = 0) and setting status to 'On Leave' (is_active = 0)
+    if (is_active === 0 && driver.is_available === 0) {
+      return res.status(400).json({ error: 'Cannot set driver on leave while they are on an active trip.' });
+    }
+
     const previousStatus = driver.is_active ? 'Active' : 'On Leave';
 
     // Update driver status

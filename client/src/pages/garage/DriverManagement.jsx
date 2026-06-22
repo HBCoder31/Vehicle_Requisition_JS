@@ -97,6 +97,10 @@ export default function DriverManagement() {
 
   async function handleStatusToggle(driver) {
     const newStatus = driver.is_active ? 'On Leave' : 'Active';
+    if (newStatus === 'On Leave' && !driver.is_available) {
+      alert('Cannot set driver on leave while they are on an active trip.');
+      return;
+    }
     if (!window.confirm(`Set ${driver.full_name} to "${newStatus}"?`)) return;
 
     setUpdatingId(driver.id);
@@ -266,6 +270,8 @@ export default function DriverManagement() {
                             size="sm"
                             variant={isActive ? 'danger' : 'success'}
                             loading={isUpdating}
+                            disabled={isActive && !driver.is_available}
+                            title={isActive && !driver.is_available ? 'Driver is currently on a trip and cannot be set on leave.' : ''}
                             onClick={() => handleStatusToggle(driver)}
                           >
                             {isActive ? (
