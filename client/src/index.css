@@ -341,4 +341,14 @@ input[type="button"]:active:not(:disabled) {
   box-shadow: none;
 }
 
+@keyframes shrinkBar {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+.animate-progress-shrink {
+  animation: shrinkBar 6000ms linear forwards;
+}
+
+
 

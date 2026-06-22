@@ -64,6 +64,44 @@ const roleBadgeColors = {
   Admin:    'bg-danger-50 text-danger-700',
 };
 
+const getPopupStyles = (notif) => {
+  if (!notif) return {};
+  const type = (notif.type || '').toLowerCase();
+  const title = (notif.title || '').toLowerCase();
+  const msg = (notif.message || '').toLowerCase();
+
+  if (type === 'approval' || title.includes('approval') || msg.includes('approval') || title.includes('pending')) {
+    return {
+      bg: 'bg-amber-50/95 border-amber-200/60 text-amber-800 border-l-warning-500',
+      iconBg: 'bg-amber-100 text-amber-600',
+      progressBarBg: 'bg-warning-500',
+      badge: 'Approval'
+    };
+  }
+  if (type === 'request' || title.includes('approved') || msg.includes('approved') || title.includes('success')) {
+    return {
+      bg: 'bg-emerald-50/95 border-emerald-200/60 text-emerald-800 border-l-success-500',
+      iconBg: 'bg-emerald-100 text-emerald-600',
+      progressBarBg: 'bg-success-500',
+      badge: 'Approved'
+    };
+  }
+  if (type === 'vehicle_assigned' || type === 'vehicle_reassigned' || title.includes('assigned') || title.includes('reassigned') || msg.includes('assigned') || msg.includes('driver')) {
+    return {
+      bg: 'bg-blue-50/95 border-blue-200/60 text-blue-800 border-l-info-500',
+      iconBg: 'bg-blue-100 text-blue-600',
+      progressBarBg: 'bg-info-500',
+      badge: 'Trip Update'
+    };
+  }
+  return {
+    bg: 'bg-slate-50/95 border-slate-200/60 text-slate-800 border-l-primary-500',
+    iconBg: 'bg-slate-100 text-slate-600',
+    progressBarBg: 'bg-primary-500',
+    badge: 'System'
+  };
+};
+
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -71,6 +109,7 @@ export default function DashboardLayout() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [newNotificationPopup, setNewNotificationPopup] = useState(null);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
@@ -129,6 +168,7 @@ export default function DashboardLayout() {
       socket.connect();
       socket.on('notification', (newNotif) => {
         setNotifications((prev) => [newNotif, ...prev]);
+        setNewNotificationPopup(newNotif);
       });
       return () => {
         socket.off('notification');
@@ -136,6 +176,15 @@ export default function DashboardLayout() {
       };
     }
   }, [user]);
+
+  useEffect(() => {
+    if (newNotificationPopup) {
+      const timer = setTimeout(() => {
+        setNewNotificationPopup(null);
+      }, 6000); // Auto close after 6 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [newNotificationPopup]);
 
   useEffect(() => {
     // Warn user before reloading/unloading normally
@@ -350,6 +399,44 @@ export default function DashboardLayout() {
                   <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-danger-500 rounded-full border-2 border-surface animate-pulse" />
                 )}
               </button>
+
+              {newNotificationPopup && !notifOpen && (() => {
+                const styles = getPopupStyles(newNotificationPopup);
+                return (
+                  <div className={`absolute right-0 top-12 w-80 bg-white/95 backdrop-blur-md border ${styles.bg} border-l-4 rounded-r-xl rounded-l-md shadow-[0_10px_30px_rgba(0,0,0,0.15)] overflow-hidden z-50 animate-fade-in`}>
+                    <div className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-lg shrink-0 ${styles.iconBg}`}>
+                          <Bell className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start gap-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider opacity-75">
+                              {styles.badge}
+                            </span>
+                            <button
+                              onClick={() => setNewNotificationPopup(null)}
+                              className="text-slate-400 hover:text-slate-600 hover:bg-slate-100/50 rounded-full p-0.5 transition-all"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <p className="text-sm font-semibold text-slate-900 leading-tight mt-0.5">
+                            {newNotificationPopup.title}
+                          </p>
+                          <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                            {newNotificationPopup.message}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Shrinking progress bar */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-100/50">
+                      <div className={`h-full ${styles.progressBarBg} animate-progress-shrink`} />
+                    </div>
+                  </div>
+                );
+              })()}
 
               {notifOpen && (
                 <>
