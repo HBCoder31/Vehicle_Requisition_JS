@@ -5,19 +5,27 @@ class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: process.env.SMTP_PORT || 587,
-      secure: false,
+      port: Number(process.env.SMTP_PORT) || 465,
+      secure: true,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
+      tls: {
+        rejectUnauthorized: false
+      }
     });
   }
 
   async sendEmail(to, subject, htmlBody) {
-    if (!to) return;
+    if (!to) {
+      console.log('No recipient email found');
+      return;
+    }
 
     try {
+      console.log(`Sending email to: ${to}`);
+
       await this.transporter.sendMail({
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
         to,
@@ -25,7 +33,7 @@ class EmailService {
         html: htmlBody,
       });
 
-      console.log(`Email sent to ${to}`);
+      console.log(`Email sent successfully to ${to}`);
 
       await this._logEmail(
         to,
