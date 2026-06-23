@@ -14,32 +14,33 @@ class EmailService {
     this.isProduction = process.env.NODE_ENV === 'production';
   }
 
-  async sendEmail(to, subject, htmlBody) {
-    if (!to) return;
+ async sendEmail(to, subject, htmlBody) {
+  if (!to) return;
 
-    try {
-      if (this.isProduction) {
-        await this.transporter.sendMail({
-          from: process.env.SMTP_FROM || '"Vehicle Requisition Portal" <noreply@example.com>',
-          to,
-          subject,
-          html: htmlBody,
-        });
-      } else {
-        // Mock mode for development
-        console.log(`\n=================================================`);
-        console.log(`[MOCK EMAIL SENT] To: ${to}`);
-        console.log(`Subject: ${subject}`);
-        console.log(`Body: ${htmlBody.substring(0, 150)}...`);
-        console.log(`=================================================\n`);
-      }
+  try {
+    await this.transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to,
+      subject,
+      html: htmlBody,
+    });
 
-      await this._logEmail(to, subject, htmlBody, 'Sent');
-    } catch (err) {
-      console.error('Failed to send email:', err);
-      await this._logEmail(to, subject, htmlBody, 'Failed', err.message);
-    }
+    console.log(`Email sent to ${to}`);
+
+    await this._logEmail(to, subject, htmlBody, 'Sent');
+
+  } catch (err) {
+    console.error('Failed to send email:', err);
+
+    await this._logEmail(
+      to,
+      subject,
+      htmlBody,
+      'Failed',
+      err.message
+    );
   }
+}
 
   async _logEmail(to, subject, body, status, errorMessage = null) {
     try {
