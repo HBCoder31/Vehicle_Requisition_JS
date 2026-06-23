@@ -23,12 +23,33 @@ class RequestService {
     data.department_id = departmentId;
 
     let initialStatus = 'Pending_HOD';
+    let isHRDept = false;
+
+    // Check if user is in HR department
+    try {
+      const { pool } = require('../config/db');
+      const [[dept]] = await pool.execute('SELECT code FROM departments WHERE id = ?', [departmentId]);
+      isHRDept = dept && dept.code === 'HR';
+    } catch (err) {
+      console.error('Failed to fetch department code:', err);
+    }
+
     if (user.role === 'COO') {
       initialStatus = 'Approved_COO';
     } else if (user.role === 'GM-HR') {
-      initialStatus = 'Pending_GM_HR';
+      if (data.travel_type === 'Within Anuppur/Shahdol') {
+        initialStatus = 'Approved_GM_HR';
+      } else {
+        initialStatus = 'Pending_COO';
+      }
     } else if (user.role === 'HOD') {
       initialStatus = 'Pending_GM_HR';
+    } else {
+      if (isHRDept) {
+        initialStatus = 'Pending_GM_HR';
+      } else {
+        initialStatus = 'Pending_HOD';
+      }
     }
 
     const requestId = await RequestRepository.createRequest(data, initialStatus);
@@ -37,12 +58,15 @@ class RequestService {
     await AuditRepository.createLog(user.id, 'CREATE_REQUEST', 'vehicle_request', requestId, { destination: data.destination, travel_type: data.travel_type, status: initialStatus }, ipAddress);
     
     // History Timeline
-    if (user.role === 'COO') {
+    if (initialStatus === 'Approved_COO') {
       await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Approved_COO', 'Request auto-approved by COO');
-    } else if (user.role === 'GM-HR') {
-      await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Pending_GM_HR', 'Request submitted by GM-HR');
-    } else if (user.role === 'HOD') {
-      await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Pending_GM_HR', 'Request submitted by HOD');
+    } else if (initialStatus === 'Approved_GM_HR') {
+      await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Approved_GM_HR', 'Request auto-approved for GM-HR (Within)');
+    } else if (initialStatus === 'Pending_COO') {
+      await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Pending_COO', 'Request submitted by GM-HR (Beyond)');
+    } else if (initialStatus === 'Pending_GM_HR') {
+      const msg = user.role === 'HOD' ? 'Request submitted by HOD' : (user.role === 'GM-HR' ? 'Request submitted by GM-HR' : 'Request submitted by HR employee');
+      await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Pending_GM_HR', msg);
     } else {
       await HistoryRepository.addEvent(requestId, user.id, 'Created', null, 'Pending_HOD', 'Request submitted by employee');
     }
@@ -50,10 +74,10 @@ class RequestService {
     // Notify appropriate party
     try {
       const UserRepository = require('../repositories/UserRepository');
-      if (initialStatus === 'Approved_COO') {
+      if (initialStatus === 'Approved_COO' || initialStatus === 'Approved_GM_HR') {
         const garageUsers = await UserRepository.findByRole('Garage');
         for (const gUser of garageUsers) {
-          await NotificationService.notifyUser(gUser.id, 'New Approved Request', `Request #${requestId} to ${data.destination} was auto-approved and needs a vehicle.`, 'Request');
+          await NotificationService.notifyUser(gUser.id, 'New Approved Request', `Request #${requestId} to ${data.destination} was approved and needs a vehicle.`, 'Request');
         }
       } else if (initialStatus === 'Pending_COO') {
         const cooUsers = await UserRepository.findByRole('COO');
