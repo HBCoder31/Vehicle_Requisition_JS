@@ -4,9 +4,9 @@ const { pool } = require('../config/db');
 class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 465,
-      secure: true,
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: false, // Port 587 = false
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -43,7 +43,6 @@ class EmailService {
       );
 
     } catch (err) {
-
       console.error('Failed to send email:', err);
 
       await this._logEmail(
@@ -77,10 +76,7 @@ class EmailService {
         ]
       );
     } catch (err) {
-      console.error(
-        'Failed to log email:',
-        err
-      );
+      console.error('Failed to log email:', err);
     }
   }
 }
