@@ -1,29 +1,7 @@
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 const { pool } = require('../config/db');
 
 class EmailService {
-  constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: 587,
-      secure: false,
-      requireTLS: true,
-
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-
-      connectionTimeout: 60000,
-      greetingTimeout: 60000,
-      socketTimeout: 60000,
-
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
-  }
-
   async sendEmail(to, subject, htmlBody) {
     if (!to) {
       console.log('No recipient email found');
@@ -33,14 +11,30 @@ class EmailService {
     try {
       console.log(`Sending email to: ${to}`);
 
-      await this.transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to,
-        subject,
-        html: htmlBody,
-      });
+      const response = await axios.post(
+        'https://api.brevo.com/v3/smtp/email',
+        {
+          sender: {
+            name: 'Vehicle Requisition Portal',
+            email: process.env.SMTP_FROM || 'harshbohra41@gmail.com'
+          },
+          to: [
+            {
+              email: to
+            }
+          ],
+          subject: subject,
+          htmlContent: htmlBody
+        },
+        {
+          headers: {
+            'api-key': process.env.BREVO_API_KEY,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-      console.log(`Email sent successfully to ${to}`);
+      console.log('Brevo Email Sent:', response.data);
 
       await this._logEmail(
         to,
@@ -50,14 +44,20 @@ class EmailService {
       );
 
     } catch (err) {
-      console.error('Failed to send email:', err);
+
+      console.error(
+        'Brevo Email Failed:',
+        err.response?.data || err.message
+      );
 
       await this._logEmail(
         to,
         subject,
         htmlBody,
         'Failed',
-        err.message
+        JSON.stringify(
+          err.response?.data || err.message
+        )
       );
     }
   }
@@ -83,7 +83,10 @@ class EmailService {
         ]
       );
     } catch (err) {
-      console.error('Failed to log email:', err);
+      console.error(
+        'Failed to log email:',
+        err
+      );
     }
   }
 }
