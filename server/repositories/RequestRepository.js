@@ -93,7 +93,7 @@ class RequestRepository {
               e.full_name AS requester_name, e.email AS requester_email, e.role AS requester_role,
               v.registration_no, v.make AS vehicle_make, v.model AS vehicle_model,
               d.name AS department_name,
-              hod.full_name AS hod_name,
+              COALESCE(hod.full_name, IF(d.code = 'HR', (SELECT full_name FROM employees WHERE role = 'GM-HR' LIMIT 1), NULL)) AS hod_name,
               coo.full_name AS coo_name,
               drv.phone AS driver_phone
        FROM vehicle_requests vr

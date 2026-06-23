@@ -23,7 +23,7 @@ class ApprovalRepository {
       `SELECT vr.*,
               e.full_name AS requester_name, e.email AS requester_email,
               d.name AS department_name,
-              hod.full_name AS hod_name,
+              COALESCE(hod.full_name, IF(d.code = 'HR', (SELECT full_name FROM employees WHERE role = 'GM-HR' LIMIT 1), NULL)) AS hod_name,
               gmhr.full_name AS gmhr_name
        FROM vehicle_requests vr
        JOIN employees e ON vr.employee_id = e.id
@@ -41,7 +41,7 @@ class ApprovalRepository {
       `SELECT vr.*,
               e.full_name AS requester_name, e.email AS requester_email,
               d.name AS department_name,
-              hod.full_name AS hod_name
+              COALESCE(hod.full_name, IF(d.code = 'HR', (SELECT full_name FROM employees WHERE role = 'GM-HR' LIMIT 1), NULL)) AS hod_name
        FROM vehicle_requests vr
        JOIN employees e ON vr.employee_id = e.id
        JOIN departments d ON vr.department_id = d.id
