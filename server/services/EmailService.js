@@ -16,21 +16,25 @@ class EmailService {
         {
           sender: {
             name: 'Vehicle Requisition Portal',
-            email: process.env.SMTP_FROM || 'harshbohra41@gmail.com'
+            email: process.env.SMTP_FROM || 'guest@opil.in'
           },
+
           to: [
             {
               email: to
             }
           ],
+
           subject: subject,
           htmlContent: htmlBody
         },
         {
           headers: {
             'api-key': process.env.BREVO_API_KEY,
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          timeout: 30000
         }
       );
 
