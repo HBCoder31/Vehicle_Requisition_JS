@@ -122,6 +122,7 @@ export default function HodDashboard() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-slate-50/50">
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">ID</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Category</th>
@@ -135,6 +136,7 @@ export default function HodDashboard() {
               <tbody className="divide-y divide-border">
                 {requests.map(req => (
                   <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-3.5 font-mono text-xs text-slate-500">#{req.id}</td>
                     <td className="px-6 py-3.5">
                       <p className="font-medium text-slate-800">{req.requester_name}</p>
                       <p className="text-xs text-muted">{req.requester_email}</p>
