@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
-import { Plus, Edit2, Trash2, Search, CheckCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, CheckCircle, Upload } from 'lucide-react';
 
 export default function ManageEmployees() {
   const [employees, setEmployees] = useState([]);
@@ -74,6 +74,32 @@ export default function ManageEmployees() {
     } catch (err) { alert(err.response?.data?.error || 'Failed.'); }
   }
 
+  async function handleImportCSV(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target.result;
+      setLoading(true);
+      try {
+        const res = await api.post('/admin/employees/import', { csvData: text });
+        let report = `CSV import completed:\n- Inserted: ${res.data.inserted}\n- Skipped: ${res.data.skippedCount}`;
+        if (res.data.skipped && res.data.skipped.length > 0) {
+          report += `\n\nSkipped details:\n` + res.data.skipped.map(s => `- ${s.email || s.employee_number || 'Row'}: ${s.reason}`).join('\n');
+        }
+        alert(report);
+        fetchData();
+      } catch (err) {
+        alert(err.response?.data?.error || 'Failed to import CSV.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = null;
+  }
+
   const filtered = employees.filter(e =>
     e.full_name.toLowerCase().includes(search.toLowerCase()) ||
     e.email.toLowerCase().includes(search.toLowerCase())
@@ -97,7 +123,18 @@ export default function ManageEmployees() {
           <h1 className="text-2xl font-bold text-slate-800">Employee Management</h1>
           <p className="text-sm text-muted mt-1">{employees.length} employees registered</p>
         </div>
-        <Button onClick={openCreate}><Plus className="w-4 h-4" /> Add Employee</Button>
+        <div className="flex items-center gap-2">
+          <label className="inline-flex items-center gap-1.5 px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-sm transition-colors shadow-sm cursor-pointer">
+            <Upload className="w-4 h-4 text-slate-500" /> Import CSV
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleImportCSV}
+              className="hidden"
+            />
+          </label>
+          <Button onClick={openCreate}><Plus className="w-4 h-4" /> Add Employee</Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -122,6 +159,7 @@ export default function ManageEmployees() {
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Email</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Role</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Department</th>
+                <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Phone</th>
                 <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
                 <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Actions</th>
               </tr>
@@ -143,6 +181,7 @@ export default function ManageEmployees() {
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${roleBadge[emp.role]}`}>{emp.role}</span>
                   </td>
                   <td className="px-6 py-3.5 text-slate-600">{emp.department_name || '—'}</td>
+                  <td className="px-6 py-3.5 text-slate-600">{emp.phone || '—'}</td>
                   <td className="px-6 py-3.5">
                     <span className={`text-xs font-medium ${emp.is_active ? 'text-success-600' : 'text-danger-600'}`}>
                       {emp.is_active ? 'Active' : 'Inactive'}

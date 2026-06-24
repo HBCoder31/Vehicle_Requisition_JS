@@ -9,6 +9,7 @@ const {
   getAuditLogs,
   getDashboardStats,
   getDepartments,
+  importEmployees,
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.get('/dashboard', getDashboardStats);
 // Employee CRUD
 router.get('/employees', getEmployees);
 router.post('/employees', createEmployee);
+router.post('/employees/import', importEmployees);
 router.put('/employees/:id', updateEmployee);
 router.delete('/employees/:id', deleteEmployee);
 

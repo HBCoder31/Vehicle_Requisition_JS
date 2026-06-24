@@ -321,6 +321,141 @@ async function getDepartments(req, res) {
   }
 }
 
+/**
+ * POST /api/admin/employees/import
+ * Bulk import employees from CSV data.
+ */
+async function importEmployees(req, res) {
+  try {
+    const { csvData } = req.body;
+    if (!csvData) {
+      return res.status(400).json({ error: 'csvData is required.' });
+    }
+
+    // Custom CSV parser handling quotes
+    const parseCSV = (content) => {
+      const lines = content.split(/\r?\n/);
+      if (lines.length < 2) return [];
+      
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/^["']|["']$/g, ''));
+      const results = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        for (let j = 0; j < line.length; j++) {
+          const char = line[j];
+          if (char === '"' || char === "'") {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim());
+        
+        const row = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index] ? values[index].replace(/^["']|["']$/g, '') : null;
+        });
+        results.push(row);
+      }
+      return results;
+    };
+
+    const parsedRows = parseCSV(csvData);
+    if (parsedRows.length === 0) {
+      return res.status(400).json({ error: 'No data found in CSV.' });
+    }
+
+    // Fetch all departments to resolve department_id dynamically
+    const [depts] = await pool.execute('SELECT id, name, code FROM departments');
+    const deptMap = {};
+    depts.forEach(d => {
+      deptMap[d.code.toLowerCase()] = d.id;
+      deptMap[d.name.toLowerCase()] = d.id;
+      deptMap[d.id.toString()] = d.id;
+    });
+
+    const validRoles = ['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin'];
+    let insertedCount = 0;
+    const skipped = [];
+
+    for (const row of parsedRows) {
+      const rawEmpNo = row.employee_number || row.emp_no || row['employee number'] || row.employeenumber;
+      const rawEmail = row.email || row.mail;
+      const rawName = row.full_name || row.name || row['full name'] || row.fullname;
+      const rawRole = row.role || 'Employee';
+      const rawPassword = row.password || 'password123';
+      const rawPhone = row.phone || row.phone_number || row.mobile || row['phone number'];
+      const rawDept = row.department_code || row.department || row.dept || row.department_id;
+
+      if (!rawEmpNo || !rawEmail || !rawName) {
+        skipped.push({ row, reason: 'Missing required employee_number, email, or full_name.' });
+        continue;
+      }
+
+      const employee_number = rawEmpNo.trim();
+      const email = rawEmail.trim();
+      const full_name = rawName.trim();
+      const role = rawRole.trim();
+      const phone = rawPhone ? rawPhone.trim() : null;
+
+      // Validate role
+      let formattedRole = validRoles.find(r => r.toLowerCase() === role.toLowerCase());
+      if (!formattedRole) {
+        skipped.push({ email, employee_number, reason: `Invalid role "${role}". Must be one of: ${validRoles.join(', ')}` });
+        continue;
+      }
+
+      // Resolve department
+      let department_id = null;
+      if (rawDept) {
+        const key = rawDept.trim().toLowerCase();
+        if (deptMap[key]) {
+          department_id = deptMap[key];
+        }
+      }
+
+      // Check duplicates
+      const [existing] = await pool.execute(
+        'SELECT id FROM employees WHERE email = ? OR employee_number = ?',
+        [email, employee_number]
+      );
+      if (existing.length > 0) {
+        skipped.push({ email, employee_number, reason: 'Duplicate email or employee number already exists.' });
+        continue;
+      }
+
+      const password_hash = await bcrypt.hash(rawPassword, 10);
+      const [result] = await pool.execute(
+        `INSERT INTO employees (employee_number, email, password_hash, full_name, role, department_id, phone)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [employee_number, email, password_hash, full_name, formattedRole, department_id, phone]
+      );
+
+      await logAudit(req.user.id, 'CREATE_EMPLOYEE', 'employee', result.insertId, { employee_number, email, role: formattedRole, via: 'csv_import' }, req.ip);
+      insertedCount++;
+    }
+
+    res.json({
+      message: 'CSV import completed.',
+      inserted: insertedCount,
+      skippedCount: skipped.length,
+      skipped
+    });
+  } catch (err) {
+    console.error('importEmployees error:', err);
+    res.status(500).json({ error: 'Failed to import employees from CSV.' });
+  }
+}
+
 module.exports = {
   getEmployees,
   createEmployee,
@@ -329,4 +464,5 @@ module.exports = {
   getAuditLogs,
   getDashboardStats,
   getDepartments,
+  importEmployees,
 };
