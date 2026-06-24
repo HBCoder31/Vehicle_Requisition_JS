@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
-import { Plus, Edit2, Trash2, Search, CheckCircle, Upload } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, CheckCircle, Upload, Download, Printer, Info } from 'lucide-react';
 
 export default function ManageEmployees() {
   const [employees, setEmployees] = useState([]);
@@ -14,6 +14,7 @@ export default function ManageEmployees() {
   const [editModal, setEditModal] = useState({ open: false, employee: null });
   const [form, setForm] = useState({ employee_number: '', email: '', password: '', full_name: '', role: 'Employee', department_id: '', phone: '' });
   const [processing, setProcessing] = useState(false);
+  const [formatModalOpen, setFormatModalOpen] = useState(false);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -100,6 +101,215 @@ export default function ManageEmployees() {
     e.target.value = null;
   }
 
+  function handleDownloadTemplate() {
+    const headers = 'employee_number,email,password,full_name,role,department,phone\n';
+    const sampleRow1 = 'EMP1001,john.doe@example.com,pass1234,John Doe,Employee,IT,9876543210\n';
+    const sampleRow2 = 'EMP1002,jane.smith@example.com,,Jane Smith,HOD,HR,\n';
+    const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(headers + sampleRow1 + sampleRow2);
+    
+    const link = document.createElement('a');
+    link.setAttribute('href', csvContent);
+    link.setAttribute('download', 'employee_import_template.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function handlePrintFormat() {
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    if (!printWindow) {
+      alert('Pop-up blocked. Please allow pop-ups for this website.');
+      return;
+    }
+    
+    const deptList = departments.map(d => `${d.name} (${d.code})`).join(', ') || 'None registered yet';
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>CSV Format Guidelines - Vehicle Requisition Portal</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              color: #334155;
+              line-height: 1.5;
+              padding: 40px;
+              margin: 0;
+            }
+            h1 {
+              font-size: 24px;
+              color: #0f172a;
+              margin-bottom: 8px;
+              border-bottom: 2px solid #e2e8f0;
+              padding-bottom: 12px;
+            }
+            p {
+              font-size: 14px;
+              color: #64748b;
+              margin-bottom: 24px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 24px;
+            }
+            th, td {
+              border: 1px solid #cbd5e1;
+              padding: 10px 12px;
+              text-align: left;
+              font-size: 13px;
+            }
+            th {
+              background-color: #f8fafc;
+              color: #475569;
+              font-weight: 600;
+            }
+            tr:nth-child(even) {
+              background-color: #f8fafc;
+            }
+            .badge {
+              display: inline-block;
+              padding: 2px 6px;
+              font-size: 11px;
+              font-weight: 600;
+              border-radius: 4px;
+              text-transform: uppercase;
+            }
+            .badge-required {
+              background-color: #fee2e2;
+              color: #991b1b;
+            }
+            .badge-optional {
+              background-color: #f1f5f9;
+              color: #334155;
+            }
+            h3 {
+              font-size: 16px;
+              color: #1e293b;
+              margin-top: 24px;
+              margin-bottom: 8px;
+            }
+            ul {
+              padding-left: 20px;
+              margin-bottom: 24px;
+            }
+            li {
+              font-size: 13px;
+              color: #475569;
+              margin-bottom: 6px;
+            }
+            .no-print-btn {
+              background-color: #3b82f6;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              font-size: 14px;
+              font-weight: 600;
+              border-radius: 6px;
+              cursor: pointer;
+              margin-bottom: 20px;
+            }
+            .no-print-btn:hover {
+              background-color: #2563eb;
+            }
+            @media print {
+              .no-print {
+                display: none;
+              }
+              body {
+                padding: 0;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print" style="text-align: right;">
+            <button class="no-print-btn" onclick="window.print()">Print Document</button>
+          </div>
+          <h1>CSV Employee Import Format Guide</h1>
+          <p>Please structure your CSV columns exactly as specified below. The CSV importer is flexible and recognizes various header aliases.</p>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Recommended Header</th>
+                <th>Required</th>
+                <th>Recognized Aliases</th>
+                <th>Rules & Guidelines</th>
+                <th>Sample Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>employee_number</strong></td>
+                <td><span class="badge badge-required">Yes</span></td>
+                <td>emp_no, employee number, employeenumber</td>
+                <td>Unique employee code to identify the user.</td>
+                <td>EMP1001</td>
+              </tr>
+              <tr>
+                <td><strong>email</strong></td>
+                <td><span class="badge badge-required">Yes</span></td>
+                <td>mail</td>
+                <td>Unique, valid email address used for login.</td>
+                <td>john.doe@example.com</td>
+              </tr>
+              <tr>
+                <td><strong>full_name</strong></td>
+                <td><span class="badge badge-required">Yes</span></td>
+                <td>name, full name, fullname</td>
+                <td>Display name of the employee.</td>
+                <td>John Doe</td>
+              </tr>
+              <tr>
+                <td><strong>password</strong></td>
+                <td><span class="badge badge-optional">No</span></td>
+                <td>—</td>
+                <td>User's password. Defaults to <strong>password123</strong> if omitted.</td>
+                <td>pass1234</td>
+              </tr>
+              <tr>
+                <td><strong>role</strong></td>
+                <td><span class="badge badge-optional">No</span></td>
+                <td>—</td>
+                <td>Must match one of: Employee, HOD, GM-HR, COO, Garage, Admin. Defaults to <strong>Employee</strong>.</td>
+                <td>Employee</td>
+              </tr>
+              <tr>
+                <td><strong>department</strong></td>
+                <td><span class="badge badge-optional">No</span></td>
+                <td>department_code, dept, department_id</td>
+                <td>Matches name or code of any system department.</td>
+                <td>IT</td>
+              </tr>
+              <tr>
+                <td><strong>phone</strong></td>
+                <td><span class="badge badge-optional">No</span></td>
+                <td>phone_number, mobile, phone number</td>
+                <td>Optional contact number.</td>
+                <td>9876543210</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>System Validation Rules:</h3>
+          <ul>
+            <li><strong>Unique Constraints:</strong> Rows containing duplicate email addresses or employee numbers will be automatically skipped to prevent data corruption.</li>
+            <li><strong>Valid Roles:</strong> Acceptable roles are: <code>Employee</code>, <code>HOD</code>, <code>GM-HR</code>, <code>COO</code>, <code>Garage</code>, <code>Admin</code>. If a role is incorrect or misspelled, the row is skipped.</li>
+            <li><strong>Active Departments:</strong> Currently configured departments in the portal are: <strong>${deptList}</strong>. You can use either the full department name or the department code.</li>
+          </ul>
+
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
+
   const filtered = employees.filter(e =>
     e.full_name.toLowerCase().includes(search.toLowerCase()) ||
     e.email.toLowerCase().includes(search.toLowerCase())
@@ -124,6 +334,13 @@ export default function ManageEmployees() {
           <p className="text-sm text-muted mt-1">{employees.length} employees registered</p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setFormatModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-sm transition-colors shadow-sm cursor-pointer"
+            title="View CSV Import Format Guide"
+          >
+            <Info className="w-4 h-4 text-slate-500" /> CSV Format
+          </button>
           <label className="inline-flex items-center gap-1.5 px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-sm transition-colors shadow-sm cursor-pointer">
             <Upload className="w-4 h-4 text-slate-500" /> Import CSV
             <input
@@ -277,6 +494,123 @@ export default function ManageEmployees() {
             <Button loading={processing} onClick={handleSave}>
               {editModal.employee ? 'Update' : 'Create'}
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* CSV Format Guidelines Modal */}
+      <Modal
+        isOpen={formatModalOpen}
+        onClose={() => setFormatModalOpen(false)}
+        title="CSV Import Format & Guidelines"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            To import employees in bulk, upload a CSV file matching the structure below. Column headers are case-insensitive and support multiple common aliases.
+          </p>
+
+          <div className="overflow-x-auto border border-slate-200 rounded-lg">
+            <table className="w-full text-xs text-left border-collapse">
+              <thead className="bg-slate-50 text-slate-500 border-b border-slate-200 font-semibold">
+                <tr>
+                  <th className="px-3 py-2 border-r border-slate-200">Header</th>
+                  <th className="px-3 py-2 border-r border-slate-200 text-center">Required</th>
+                  <th className="px-3 py-2 border-r border-slate-200">Recognized Aliases</th>
+                  <th className="px-3 py-2">Rules & Defaults</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 text-slate-600">
+                <tr>
+                  <td className="px-3 py-2 border-r border-slate-200 font-semibold text-slate-800">employee_number</td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-center">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-50 text-red-600 font-semibold uppercase border border-red-100">Yes</span>
+                  </td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-slate-500">emp_no, employee number, employeenumber</td>
+                  <td className="px-3 py-2">Unique employee code.</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-2 border-r border-slate-200 font-semibold text-slate-800">email</td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-center">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-50 text-red-600 font-semibold uppercase border border-red-100">Yes</span>
+                  </td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-slate-500">mail</td>
+                  <td className="px-3 py-2">Unique valid email address.</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-2 border-r border-slate-200 font-semibold text-slate-800">full_name</td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-center">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-50 text-red-600 font-semibold uppercase border border-red-100">Yes</span>
+                  </td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-slate-500">name, full name, fullname</td>
+                  <td className="px-3 py-2">Display name.</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-2 border-r border-slate-200 font-semibold text-slate-800">password</td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-center">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-600 font-semibold uppercase border border-slate-200">No</span>
+                  </td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-slate-500">—</td>
+                  <td className="px-3 py-2">Defaults to <code className="bg-slate-50 px-1 py-0.5 rounded border border-slate-200 text-slate-800">password123</code>.</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-2 border-r border-slate-200 font-semibold text-slate-800">role</td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-center">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-600 font-semibold uppercase border border-slate-200">No</span>
+                  </td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-slate-500">—</td>
+                  <td className="px-3 py-2">Employee, HOD, GM-HR, COO, Garage, Admin. Defaults to <code className="bg-slate-50 px-1 py-0.5 rounded border border-slate-200 text-slate-800">Employee</code>.</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-2 border-r border-slate-200 font-semibold text-slate-800">department</td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-center">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-600 font-semibold uppercase border border-slate-200">No</span>
+                  </td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-slate-500">department_code, dept, department_id</td>
+                  <td className="px-3 py-2">Name or Code (e.g. IT, HR, Finance).</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-2 border-r border-slate-200 font-semibold text-slate-800">phone</td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-center">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-600 font-semibold uppercase border border-slate-200">No</span>
+                  </td>
+                  <td className="px-3 py-2 border-r border-slate-200 text-slate-500">phone_number, mobile, phone number</td>
+                  <td className="px-3 py-2">Optional phone number.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-150 text-xs text-slate-600 space-y-1">
+            <span className="font-semibold text-slate-700 block mb-1 flex items-center gap-1">
+              <Info className="w-4 h-4 text-blue-500" /> Validation & Import Rules:
+            </span>
+            <ul className="list-disc list-inside space-y-1 pl-1">
+              <li>Duplicate employee numbers or emails will be skipped.</li>
+              <li>Roles must match system design (e.g. GM-HR, COO).</li>
+              <li>Currently active departments: <span className="font-medium">{departments.map(d => `${d.name} (${d.code})`).join(', ') || 'None'}</span></li>
+            </ul>
+          </div>
+
+          <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+            <Button
+              variant="secondary"
+              onClick={handlePrintFormat}
+              className="inline-flex items-center gap-1.5"
+            >
+              <Printer className="w-4 h-4" /> Print Format Guide
+            </Button>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={handleDownloadTemplate}
+                className="inline-flex items-center gap-1.5"
+              >
+                <Download className="w-4 h-4" /> Download Template
+              </Button>
+              <Button onClick={() => setFormatModalOpen(false)}>Close</Button>
+            </div>
           </div>
         </div>
       </Modal>
