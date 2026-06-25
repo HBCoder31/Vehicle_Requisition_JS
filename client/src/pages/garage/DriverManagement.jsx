@@ -6,6 +6,7 @@ import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { UserCheck, UserX, Plus, Pencil, AlertTriangle, Shield, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { parseDate } from '../../utils/date';
 
 export default function DriverManagement() {
   const { user } = useAuth();
@@ -122,7 +123,7 @@ export default function DriverManagement() {
   const activeCount = drivers.filter(d => d.is_active).length;
   const onLeaveCount = drivers.filter(d => !d.is_active).length;
   const expiringCount = drivers.filter(d =>
-    d.license_expiry && new Date(d.license_expiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    d.license_expiry && parseDate(d.license_expiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
   ).length;
 
   if (loading) return <DashboardSkeleton cards={3} rows={5} cols={7} />;
@@ -207,9 +208,9 @@ export default function DriverManagement() {
               <tbody className="divide-y divide-border">
                 {drivers.map(driver => {
                   const isExpiring = driver.license_expiry &&
-                    new Date(driver.license_expiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                    parseDate(driver.license_expiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
                   const isExpired = driver.license_expiry &&
-                    new Date(driver.license_expiry) < new Date();
+                    parseDate(driver.license_expiry) < new Date();
                   const isActive = Boolean(driver.is_active);
                   const isUpdating = updatingId === driver.id;
 
@@ -236,7 +237,7 @@ export default function DriverManagement() {
                               ? 'bg-amber-100 text-amber-700 border-amber-200'
                               : 'bg-slate-100 text-slate-600 border-slate-200'
                           }`}>
-                            {new Date(driver.license_expiry).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            {parseDate(driver.license_expiry)?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                             {isExpired ? ' ⚠ Expired' : isExpiring ? ' ⚠ Expiring' : ''}
                           </span>
                         ) : (

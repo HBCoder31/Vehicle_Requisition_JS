@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import Spinner from '../../components/ui/Spinner';
 import { useAuth } from '../../context/AuthContext';
 import { Users, XCircle } from 'lucide-react';
+import { parseDate } from '../../utils/date';
 
 export default function Delegations() {
   const { user } = useAuth();
@@ -137,7 +138,7 @@ export default function Delegations() {
                       </td>
                     </tr>
                   ) : delegations.map(del => {
-                    const isActive = del.is_active === 1 && new Date(del.end_date) >= new Date(new Date().setHours(0,0,0,0));
+                    const isActive = del.is_active === 1 && parseDate(del.end_date) >= new Date(new Date().setHours(0,0,0,0));
                     const isOwner = del.delegator_id === user.id;
 
                     return (
@@ -149,7 +150,7 @@ export default function Delegations() {
                           {del.delegatee_id === user.id ? 'You' : del.delegatee_name}
                         </td>
                         <td className="px-6 py-3.5 text-slate-600">
-                          {new Date(del.start_date).toLocaleDateString()} - {new Date(del.end_date).toLocaleDateString()}
+                          {parseDate(del.start_date)?.toLocaleDateString()} - {parseDate(del.end_date)?.toLocaleDateString()}
                         </td>
                         <td className="px-6 py-3.5">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-success-100 text-success-700' : 'bg-slate-100 text-slate-600'}`}>

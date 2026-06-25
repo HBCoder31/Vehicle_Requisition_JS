@@ -7,6 +7,7 @@ import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { parseDate } from '../../utils/date';
 
 export default function GmHrDashboard() {
   const [requests, setRequests] = useState([]);
@@ -138,8 +139,8 @@ export default function GmHrDashboard() {
                       <p className="text-xs text-muted">{req.requester_email}</p>
                     </td>
                     <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.created_at)?.toLocaleDateString()}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.travel_date)?.toLocaleDateString()} {req.travel_time}</td>
                     <td className="px-6 py-3.5">
                       <span className={`text-xs px-2 py-0.5 rounded-md ${req.travel_type.includes('Beyond') ? 'bg-warning-50 text-warning-600' : 'bg-primary-50 text-primary-600'}`}>
                         {req.travel_type}
@@ -200,8 +201,8 @@ export default function GmHrDashboard() {
                   <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-3.5 font-mono text-xs text-slate-500">#{req.id}</td>
                     <td className="px-6 py-3.5 font-medium text-slate-800">{req.destination}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{req.travel_date}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.created_at)?.toLocaleDateString()}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.travel_date)?.toLocaleDateString()}</td>
                     <td className="px-6 py-3.5"><StatusBadge status={req.status} /></td>
                     <td className="px-6 py-3.5">
                       <Link to={`/requests/${req.id}`} className="text-primary-600 hover:text-primary-700 font-medium">

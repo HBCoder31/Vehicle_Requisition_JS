@@ -6,6 +6,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Spinner from '../../components/ui/Spinner';
 import { History, ExternalLink, Download, Printer } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { parseDate } from '../../utils/date';
 
 export default function ApprovalHistory() {
   const { user } = useAuth();
@@ -46,11 +47,11 @@ export default function ApprovalHistory() {
 
   // Frontend local filtering for now if server doesn't support params yet
   const filteredRequests = requests.filter(req => {
-    if (fromDate && new Date(req.created_at) < new Date(fromDate)) return false;
+    if (fromDate && parseDate(req.created_at) < parseDate(fromDate)) return false;
     if (toDate) {
-      const nextDay = new Date(toDate);
+      const nextDay = parseDate(toDate);
       nextDay.setDate(nextDay.getDate() + 1);
-      if (new Date(req.created_at) >= nextDay) return false;
+      if (parseDate(req.created_at) >= nextDay) return false;
     }
     if (travelType) {
       if (travelType === 'Within Anuppur/Shahdol' && req.travel_type.includes('Beyond')) return false;
@@ -60,8 +61,8 @@ export default function ApprovalHistory() {
   });
 
   const sortedRequests = [...filteredRequests].sort((a, b) => {
-    const dateA = new Date(a.created_at);
-    const dateB = new Date(b.created_at);
+    const dateA = parseDate(a.created_at);
+    const dateB = parseDate(b.created_at);
     return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
   });
 
@@ -88,11 +89,13 @@ export default function ApprovalHistory() {
       req.destination,
       req.pickup_location,
       req.purpose,
-      new Date(req.created_at).toLocaleString('en-IN'),
+      parseDate(req.created_at) ? parseDate(req.created_at).toLocaleString('en-IN') : '',
       req.travel_date,
       req.travel_time,
       req.passengers,
-      new Date(user.role === 'COO' ? req.coo_action_at : user.role === 'GM-HR' ? req.gmhr_action_at : req.hod_action_at).toLocaleString('en-IN'),
+      (user.role === 'COO' ? req.coo_action_at : user.role === 'GM-HR' ? req.gmhr_action_at : req.hod_action_at)
+        ? parseDate(user.role === 'COO' ? req.coo_action_at : user.role === 'GM-HR' ? req.gmhr_action_at : req.hod_action_at).toLocaleString('en-IN')
+        : '',
       user.role === 'COO' ? req.coo_remarks || '' : user.role === 'GM-HR' ? req.gmhr_remarks || '' : req.hod_remarks || '',
       req.status.replace(/_/g, ' ')
     ].map(escape));
@@ -233,10 +236,10 @@ export default function ApprovalHistory() {
                         {req.work_type === 'Personal' ? 'Personal' : 'Company'}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.created_at)?.toLocaleDateString() || '—'}</td>
                     <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
                     <td className="px-6 py-3.5 text-slate-600">
-                      {new Date(user.role === 'COO' ? req.coo_action_at : user.role === 'GM-HR' ? req.gmhr_action_at : req.hod_action_at).toLocaleString()}
+                      {parseDate(user.role === 'COO' ? req.coo_action_at : user.role === 'GM-HR' ? req.gmhr_action_at : req.hod_action_at)?.toLocaleString() || '—'}
                     </td>
                     <td className="px-6 py-3.5 text-slate-600 italic max-w-xs truncate" title={user.role === 'COO' ? req.coo_remarks : user.role === 'GM-HR' ? req.gmhr_remarks : req.hod_remarks}>
                       {user.role === 'COO' ? req.coo_remarks || '—' : user.role === 'GM-HR' ? req.gmhr_remarks || '—' : req.hod_remarks || '—'}

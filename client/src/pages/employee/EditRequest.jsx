@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { getLocalDateString } from '../../utils/date';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Spinner from '../../components/ui/Spinner';
@@ -67,9 +68,9 @@ export default function EditRequest() {
           destination: reqData.destination || '',
           travel_type: reqData.travel_type || 'Within Anuppur/Shahdol',
           passengers: reqData.passengers || 1,
-          travel_date: reqData.travel_date ? new Date(reqData.travel_date).toISOString().split('T')[0] : '',
+          travel_date: getLocalDateString(reqData.travel_date),
           travel_time: reqData.travel_time ? reqData.travel_time.substring(0, 5) : '',
-          return_date: reqData.return_date ? new Date(reqData.return_date).toISOString().split('T')[0] : '',
+          return_date: getLocalDateString(reqData.return_date),
           return_time: reqData.return_time ? reqData.return_time.substring(0, 5) : '',
           work_type: reqData.work_type || 'Company',
         });

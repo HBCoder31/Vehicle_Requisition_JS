@@ -44,7 +44,7 @@ module.exports = {
           emit: (event, payload) => {
             const data = JSON.stringify({ type: event, payload });
             for (const client of clients) {
-              if (room === `user_${client.id}` || room === client.role || room === 'Admin') {
+              if (room === `user_${client.id}` || room === client.role) {
                 client.res.write(`data: ${data}\n\n`);
               }
             }

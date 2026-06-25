@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { Fuel, Plus, Calendar, Truck, User, Gauge, ArrowUpDown, Search, AlertTriangle, Coins, Download } from 'lucide-react';
+import { parseDate } from '../../utils/date';
 
 export default function FuelManagement() {
   const [logs, setLogs] = useState([]);
@@ -61,8 +62,8 @@ export default function FuelManagement() {
 
   function formatDate(dateStr) {
     if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? '—' : d.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+    const d = parseDate(dateStr);
+    return !d || isNaN(d.getTime()) ? '—' : d.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
   }
 
 
@@ -157,8 +158,8 @@ export default function FuelManagement() {
 
   // Sort logs by date
   const sortedLogs = [...filteredLogs].sort((a, b) => {
-    const dateA = new Date(a.log_date);
-    const dateB = new Date(b.log_date);
+    const dateA = parseDate(a.log_date);
+    const dateB = parseDate(b.log_date);
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
 

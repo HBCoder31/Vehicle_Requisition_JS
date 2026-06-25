@@ -4,22 +4,9 @@ import Card from '../../components/ui/Card';
 import Spinner from '../../components/ui/Spinner';
 import { ScrollText, ChevronLeft, ChevronRight, Printer, Download } from 'lucide-react';
 import socket from '../../services/socket';
+import { parseDate } from '../../utils/date';
 
-function parseUTCDate(dateStr) {
-  if (!dateStr) return null;
-  if (dateStr instanceof Date) return dateStr;
-  const str = String(dateStr);
-  // If it's already an ISO string with timezone, parse it directly
-  if (str.endsWith('Z') || str.includes('+') || str.includes('-')) {
-    return new Date(str);
-  }
-  // If it's a MySQL datetime string 'YYYY-MM-DD HH:mm:ss', treat it as UTC!
-  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(str)) {
-    const isoStr = str.replace(' ', 'T') + (str.endsWith('Z') ? '' : 'Z');
-    return new Date(isoStr);
-  }
-  return new Date(str);
-}
+
 
 export default function AuditLogs() {
   const [logs, setLogs] = useState([]);
@@ -185,7 +172,7 @@ export default function AuditLogs() {
       }
 
       return [
-        parseUTCDate(log.created_at).toLocaleString(),
+        parseDate(log.created_at)?.toLocaleString() || '',
         log.actor_name ? `${log.actor_name}${log.actor_employee_number ? ` (${log.actor_employee_number})` : ''}` : '—',
         log.action,
         log.entity_type,
@@ -325,7 +312,7 @@ export default function AuditLogs() {
                 <tbody className="divide-y divide-border">
                   {logs.map(log => (
                     <tr key={log.id} className="hover:bg-slate-50/50">
-                      <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{parseUTCDate(log.created_at)?.toLocaleString()}</td>
+                      <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{parseDate(log.created_at)?.toLocaleString() || '—'}</td>
                       <td className="px-6 py-3 text-slate-700">
                         {log.actor_name || '—'}
                         {log.actor_employee_number ? ` (${log.actor_employee_number})` : ''}
@@ -388,7 +375,7 @@ export default function AuditLogs() {
             <tbody className="divide-y divide-border">
               {(printLogs.length > 0 ? printLogs : logs).map(log => (
                 <tr key={log.id}>
-                  <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{parseUTCDate(log.created_at)?.toLocaleString()}</td>
+                  <td className="px-6 py-3 text-xs text-slate-500 whitespace-nowrap">{parseDate(log.created_at)?.toLocaleString() || '—'}</td>
                   <td className="px-6 py-3 text-slate-700">
                     {log.actor_name || '—'}
                     {log.actor_employee_number ? ` (${log.actor_employee_number})` : ''}

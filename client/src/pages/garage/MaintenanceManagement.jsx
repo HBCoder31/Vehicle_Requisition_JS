@@ -6,6 +6,7 @@ import Modal from '../../components/ui/Modal';
 import StatusBadge from '../../components/ui/StatusBadge';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { Wrench, Plus, Calendar, Truck, CheckCircle, XCircle, PlayCircle, AlertTriangle, ArrowUpDown, Download } from 'lucide-react';
+import { parseDate } from '../../utils/date';
 
 export default function MaintenanceManagement() {
   const [schedules, setSchedules] = useState([]);
@@ -79,7 +80,7 @@ export default function MaintenanceManagement() {
     // Additional frontend date validation
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const selected = new Date(formData.scheduled_date);
+    const selected = parseDate(formData.scheduled_date);
     selected.setHours(0, 0, 0, 0);
     if (selected < today) {
       setFormError('Cannot schedule maintenance for a past date.');
@@ -168,8 +169,8 @@ export default function MaintenanceManagement() {
 
   // Sort schedules
   const sortedSchedules = [...schedules].sort((a, b) => {
-    const dateA = new Date(a.scheduled_date);
-    const dateB = new Date(b.scheduled_date);
+    const dateA = parseDate(a.scheduled_date);
+    const dateB = parseDate(b.scheduled_date);
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
@@ -210,7 +211,7 @@ export default function MaintenanceManagement() {
       // Format rows for autoTable
       const tableBody = sortedSchedules.map(schedule => [
         `${schedule.registration_no || ''} (${schedule.make || ''} ${schedule.model || ''})`,
-        new Date(schedule.scheduled_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        parseDate(schedule.scheduled_date) ? parseDate(schedule.scheduled_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '',
         schedule.description || '',
         schedule.creator_name || 'System',
         schedule.status.replace('_', ' ')
@@ -236,7 +237,7 @@ export default function MaintenanceManagement() {
         'Vehicle Registration': schedule.registration_no || '',
         'Vehicle Make': schedule.make || '',
         'Vehicle Model': schedule.model || '',
-        'Scheduled Date': new Date(schedule.scheduled_date).toLocaleDateString('en-US'),
+        'Scheduled Date': parseDate(schedule.scheduled_date) ? parseDate(schedule.scheduled_date).toLocaleDateString('en-US') : '',
         'Description': schedule.description || '',
         'Scheduled By': schedule.creator_name || 'System',
         'Status': schedule.status.replace('_', ' ')
@@ -364,7 +365,7 @@ export default function MaintenanceManagement() {
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                        <span className="text-slate-700">{new Date(schedule.scheduled_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                        <span className="text-slate-700">{parseDate(schedule.scheduled_date) ? parseDate(schedule.scheduled_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-3.5 text-slate-600 max-w-xs">

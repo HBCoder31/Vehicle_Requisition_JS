@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { parseDate } from '../utils/date';
 import {
   LayoutDashboard, FileText, CheckSquare, Truck, Users, ScrollText,
   Menu, X, LogOut, ChevronDown, Shield, Bell, Check, TrendingUp, Search, RefreshCw, MapPin, History
@@ -472,7 +473,7 @@ export default function DashboardLayout() {
                                 )}
                               </div>
                               <p className="text-xs text-slate-500 mt-1">{n.message}</p>
-                              <p className="text-[10px] text-slate-400 mt-2">{new Date(n.created_at).toLocaleString()}</p>
+                              <p className="text-[10px] text-slate-400 mt-2">{parseDate(n.created_at)?.toLocaleString()}</p>
                             </div>
                           ))}
                         </div>

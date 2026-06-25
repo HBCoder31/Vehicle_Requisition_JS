@@ -4,20 +4,9 @@ import Card from '../../components/ui/Card';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { Users, Truck, FileText, Activity, TrendingUp, Building2 } from 'lucide-react';
+import { parseDate } from '../../utils/date';
 
-function parseUTCDate(dateStr) {
-  if (!dateStr) return null;
-  if (dateStr instanceof Date) return dateStr;
-  const str = String(dateStr);
-  if (str.endsWith('Z') || str.includes('+') || str.includes('-')) {
-    return new Date(str);
-  }
-  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/.test(str)) {
-    const isoStr = str.replace(' ', 'T') + (str.endsWith('Z') ? '' : 'Z');
-    return new Date(isoStr);
-  }
-  return new Date(str);
-}
+
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
@@ -134,7 +123,7 @@ export default function AdminDashboard() {
                   <p className="text-xs text-muted">{log.entity_type} #{log.entity_id}</p>
                 </div>
               </div>
-              <span className="text-xs text-muted shrink-0">{parseUTCDate(log.created_at)?.toLocaleString()}</span>
+              <span className="text-xs text-muted shrink-0">{parseDate(log.created_at)?.toLocaleString()}</span>
             </div>
           ))}
           {data.recentActivity.length === 0 && (

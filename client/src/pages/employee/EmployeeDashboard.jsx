@@ -5,6 +5,7 @@ import Card from '../../components/ui/Card';
 import StatusBadge from '../../components/ui/StatusBadge';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { FileText, Plus, Clock, CheckCircle, XCircle, ExternalLink, Trash2 } from 'lucide-react';
+import { parseDate } from '../../utils/date';
 
 export default function EmployeeDashboard() {
   const [requests, setRequests] = useState([]);
@@ -116,8 +117,8 @@ export default function EmployeeDashboard() {
                         {req.work_type === 'Personal' ? 'Personal' : 'Company'}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{req.travel_date}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.created_at)?.toLocaleDateString()}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.travel_date)?.toLocaleDateString()}</td>
                     <td className="px-6 py-3.5">
                       <span className={`text-xs px-2 py-0.5 rounded-md ${req.travel_type.includes('Beyond') ? 'bg-warning-50 text-warning-600' : 'bg-primary-50 text-primary-600'}`}>
                         {req.travel_type}

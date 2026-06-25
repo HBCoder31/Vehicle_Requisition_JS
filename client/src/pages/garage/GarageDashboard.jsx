@@ -7,6 +7,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { Truck, PlayCircle, StopCircle, ClipboardList, Car, ExternalLink, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { parseDate } from '../../utils/date';
 
 export default function GarageDashboard() {
   const [pending, setPending] = useState([]);
@@ -158,7 +159,7 @@ export default function GarageDashboard() {
                 <h3 className="font-semibold text-red-800 mb-2">Driver Licenses Expiring (Next 30 Days)</h3>
                 <ul className="space-y-1 text-sm text-red-700">
                   {licenseAlerts.map(d => (
-                    <li key={d.id}>• {d.full_name} ({d.employee_number}) - <span className="font-bold">{new Date(d.license_expiry).toLocaleDateString()}</span></li>
+                    <li key={d.id}>• {d.full_name} ({d.employee_number}) - <span className="font-bold">{parseDate(d.license_expiry)?.toLocaleDateString() || '—'}</span></li>
                   ))}
                 </ul>
               </div>
@@ -170,9 +171,9 @@ export default function GarageDashboard() {
                   {certAlerts.map(v => (
                     <li key={v.id}>
                       • {v.registration_no} 
-                      {v.insurance_expiry && new Date(v.insurance_expiry) < new Date(Date.now() + 30*24*60*60*1000) ? ` - Insurance: ${new Date(v.insurance_expiry).toLocaleDateString()}` : ''}
-                      {v.fitness_expiry && new Date(v.fitness_expiry) < new Date(Date.now() + 30*24*60*60*1000) ? ` - Fitness: ${new Date(v.fitness_expiry).toLocaleDateString()}` : ''}
-                      {v.pollution_expiry && new Date(v.pollution_expiry) < new Date(Date.now() + 30*24*60*60*1000) ? ` - Pollution: ${new Date(v.pollution_expiry).toLocaleDateString()}` : ''}
+                      {v.insurance_expiry && parseDate(v.insurance_expiry) < new Date(Date.now() + 30*24*60*60*1000) ? ` - Insurance: ${parseDate(v.insurance_expiry).toLocaleDateString()}` : ''}
+                      {v.fitness_expiry && parseDate(v.fitness_expiry) < new Date(Date.now() + 30*24*60*60*1000) ? ` - Fitness: ${parseDate(v.fitness_expiry).toLocaleDateString()}` : ''}
+                      {v.pollution_expiry && parseDate(v.pollution_expiry) < new Date(Date.now() + 30*24*60*60*1000) ? ` - Pollution: ${parseDate(v.pollution_expiry).toLocaleDateString()}` : ''}
                     </li>
                   ))}
                 </ul>
@@ -277,7 +278,7 @@ export default function GarageDashboard() {
                         <p className="text-xs text-muted">{req.department_name}</p>
                       </td>
                       <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
-                      <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
+                      <td className="px-6 py-3.5 text-slate-600">{parseDate(req.created_at)?.toLocaleDateString() || '—'}</td>
                       <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
                       <td className="px-6 py-3.5 text-slate-600">{req.passengers}</td>
                       <td className="px-6 py-3.5 text-right">
@@ -338,7 +339,7 @@ export default function GarageDashboard() {
                         <p className="text-xs text-muted">{trip.travel_time}</p>
                         {trip.pickup_time && (
                           <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded block w-fit mt-1">
-                            Departed: {new Date(trip.pickup_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            Departed: {parseDate(trip.pickup_time) ? parseDate(trip.pickup_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                           </span>
                         )}
                       </td>
@@ -484,7 +485,7 @@ export default function GarageDashboard() {
                         {fb.comments || <span className="text-slate-400 italic">No comments</span>}
                       </td>
                       <td className="px-6 py-3.5 text-slate-500">
-                        {new Date(fb.created_at).toLocaleDateString()}
+                        {parseDate(fb.created_at)?.toLocaleDateString() || '—'}
                       </td>
                     </tr>
                   ))}

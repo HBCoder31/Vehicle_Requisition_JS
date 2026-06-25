@@ -5,8 +5,8 @@ import Card from '../../components/ui/Card';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Spinner from '../../components/ui/Spinner';
 import { ArrowLeft, Clock, FileText, CheckCircle, XCircle, Edit, MessageSquare, MapPin, Users, Calendar, Truck, Trash2, Star } from 'lucide-react';
-
 import { useAuth } from '../../context/AuthContext';
+import { parseDate } from '../../utils/date';
 
 export default function RequestDetails() {
   const { id } = useParams();
@@ -157,7 +157,7 @@ export default function RequestDetails() {
                   <div>
                     <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Travel Date & Time</p>
                     <p className="text-sm font-medium text-slate-900">
-                      {new Date(request.travel_date).toLocaleDateString()} at {request.travel_time}
+                      {parseDate(request.travel_date)?.toLocaleDateString()} at {request.travel_time}
                     </p>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ export default function RequestDetails() {
                   <p className="text-sm text-slate-500 italic">No comments provided.</p>
                 )}
                 <p className="text-[10px] text-slate-400">
-                  Submitted by {feedback.requester_name || 'Requester'} on {new Date(feedback.created_at).toLocaleDateString()}
+                  Submitted by {feedback.requester_name || 'Requester'} on {parseDate(feedback.created_at)?.toLocaleDateString()}
                 </p>
               </div>
             </Card>
@@ -309,7 +309,7 @@ export default function RequestDetails() {
                       </p>
                       <p className="text-xs text-slate-500 mb-2">
                         by <span className="font-semibold">{item.actor_name}</span> ({item.actor_role}) <br/>
-                        {new Date(item.changed_at).toLocaleString()}
+                        {parseDate(item.changed_at)?.toLocaleString()}
                       </p>
                       {item.comments && (
                         <div className="flex items-start gap-2 bg-slate-50 p-2.5 rounded text-sm text-slate-700 border border-slate-100 mt-1">

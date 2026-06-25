@@ -6,6 +6,7 @@ import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { CheckCircle, XCircle, MapPin, Building2, ExternalLink, History } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { parseDate } from '../../utils/date';
 
 export default function CooDashboard() {
   const [requests, setRequests] = useState([]);
@@ -130,8 +131,8 @@ export default function CooDashboard() {
                         {req.work_type === 'Personal' ? 'Personal' : 'Company'}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{req.travel_date}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.created_at)?.toLocaleDateString()}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.travel_date)?.toLocaleDateString()}</td>
                     <td className="px-6 py-3.5 text-xs text-success-600">✓ {req.hod_name || 'Approved'}</td>
                     <td className="px-6 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -185,8 +186,8 @@ export default function CooDashboard() {
                         {req.work_type === 'Personal' ? 'Personal' : 'Company'}
                       </span>
                     </td>
-                    <td className="px-6 py-3.5 text-slate-600">{new Date(req.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{req.travel_date}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.created_at)?.toLocaleDateString()}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{parseDate(req.travel_date)?.toLocaleDateString()}</td>
                     <td className="px-6 py-3.5">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${req.status.includes('Approved') ? 'bg-success-50 text-success-700' : 'bg-slate-100 text-slate-700'}`}>
                         {req.status.replace('_', ' ')}
@@ -239,7 +240,7 @@ export default function CooDashboard() {
                           {req.work_type === 'Personal' ? 'Personal' : 'Company'}
                         </span>
                       </td>
-                      <td className="px-6 py-3.5 text-slate-600">{new Date(req.coo_action_at).toLocaleDateString()}</td>
+                      <td className="px-6 py-3.5 text-slate-600">{parseDate(req.coo_action_at)?.toLocaleDateString()}</td>
                       <td className="px-6 py-3.5 text-slate-600 italic truncate max-w-xs">{req.coo_remarks || '—'}</td>
                       <td className="px-6 py-3.5">
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${req.status.includes('Approved') ? 'bg-success-50 text-success-700' : 'bg-slate-100 text-slate-700'}`}>

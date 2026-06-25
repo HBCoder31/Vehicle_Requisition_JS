@@ -4,6 +4,7 @@ import Card from '../../components/ui/Card';
 import Spinner from '../../components/ui/Spinner';
 import { Download, Filter, X, Printer } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { parseDate } from '../../utils/date';
 
 export default function VehicleHistory() {
   const { user } = useAuth();
@@ -52,11 +53,13 @@ export default function VehicleHistory() {
       if (vehicleFilter && trip.registration_no !== vehicleFilter) return false;
       if (driverFilter && trip.assigned_driver !== driverFilter) return false;
       if (pickupFrom && trip.pickup_time) {
-        if (new Date(trip.pickup_time) < new Date(pickupFrom)) return false;
+        if (parseDate(trip.pickup_time) < parseDate(pickupFrom)) return false;
       }
       if (pickupTo && trip.pickup_time) {
         // include full end day
-        if (new Date(trip.pickup_time) > new Date(new Date(pickupTo).setHours(23, 59, 59, 999))) return false;
+        const endLimit = parseDate(pickupTo);
+        endLimit.setHours(23, 59, 59, 999);
+        if (parseDate(trip.pickup_time) > endLimit) return false;
       }
       return true;
     });
@@ -64,8 +67,8 @@ export default function VehicleHistory() {
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
-      const dateA = new Date(a.pickup_time || a.travel_date || a.created_at);
-      const dateB = new Date(b.pickup_time || b.travel_date || b.created_at);
+      const dateA = parseDate(a.pickup_time || a.travel_date || a.created_at);
+      const dateB = parseDate(b.pickup_time || b.travel_date || b.created_at);
       return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
     });
   }, [filtered, sortOrder]);
@@ -108,9 +111,9 @@ export default function VehicleHistory() {
       trip.destination,
       `${trip.registration_no} (${trip.vehicle_make} ${trip.vehicle_model})`,
       trip.assigned_driver,
-      trip.pickup_time ? new Date(trip.pickup_time).toLocaleString('en-IN') : '',
+      trip.pickup_time ? parseDate(trip.pickup_time).toLocaleString('en-IN') : '',
       trip.travel_date,
-      trip.dropoff_time ? new Date(trip.dropoff_time).toLocaleString('en-IN') : ''
+      trip.dropoff_time ? parseDate(trip.dropoff_time).toLocaleString('en-IN') : ''
     ].map(escape));
 
     const BOM = '\uFEFF';
@@ -314,8 +317,8 @@ export default function VehicleHistory() {
                     <td className="px-6 py-3.5 text-slate-700">{trip.destination}</td>
                     <td className="px-6 py-3.5 text-slate-600">{trip.registration_no} ({trip.vehicle_make} {trip.vehicle_model})</td>
                     <td className="px-6 py-3.5 text-slate-600">{trip.assigned_driver}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{trip.pickup_time ? new Date(trip.pickup_time).toLocaleString() : '—'}</td>
-                    <td className="px-6 py-3.5 text-slate-600">{new Date(trip.dropoff_time).toLocaleString()}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{trip.pickup_time ? parseDate(trip.pickup_time).toLocaleString() : '—'}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{trip.dropoff_time ? parseDate(trip.dropoff_time).toLocaleString() : '—'}</td>
                   </tr>
                 ))}
               </tbody>

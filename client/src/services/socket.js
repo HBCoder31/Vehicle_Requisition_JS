@@ -1,5 +1,8 @@
 // Simple wrapper around EventSource to mimic basic socket.io syntax
-const URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+const getEventSourceURL = () => {
+  const apiUrl = import.meta.env.VITE_API_URL || '/api';
+  return `${apiUrl}/events`;
+};
 
 class SSEClient {
   constructor() {
@@ -9,7 +12,7 @@ class SSEClient {
 
   connect() {
     if (this.eventSource) return;
-    this.eventSource = new EventSource(`${URL}/api/events`, { withCredentials: true });
+    this.eventSource = new EventSource(getEventSourceURL(), { withCredentials: true });
     
     this.eventSource.onmessage = (event) => {
       try {
