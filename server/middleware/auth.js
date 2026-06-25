@@ -27,6 +27,17 @@ exports.authenticate = catchAsync(async (req, res, next) => {
     return next(new AppError('The user belonging to this token no longer exists.', 401));
   }
 
+  try {
+    const delegationUtil = require('../utils/delegationUtil');
+    const { roles, departmentIds } = await delegationUtil.getEffectivePermissions(currentUser.id);
+    currentUser.effectiveRoles = roles;
+    currentUser.effectiveDepartments = departmentIds;
+  } catch (err) {
+    console.error('Failed to resolve effective permissions:', err);
+    currentUser.effectiveRoles = [currentUser.role];
+    currentUser.effectiveDepartments = currentUser.department_id ? [currentUser.department_id] : [];
+  }
+
   req.user = currentUser;
   next();
 });

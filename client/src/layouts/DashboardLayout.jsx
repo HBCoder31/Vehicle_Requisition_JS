@@ -137,7 +137,19 @@ export default function DashboardLayout() {
     return () => clearTimeout(timer);
   }, [isRefreshHovered]);
 
-  const navItems = roleNavConfig[user?.role] || [];
+  const userRoles = user?.effectiveRoles || (user?.role ? [user.role] : []);
+  const navItems = [];
+  const addedPaths = new Set();
+  
+  for (const r of userRoles) {
+    const items = roleNavConfig[r] || [];
+    for (const item of items) {
+      if (!addedPaths.has(item.to)) {
+        addedPaths.add(item.to);
+        navItems.push(item);
+      }
+    }
+  }
 
   // Search logic
   useEffect(() => {

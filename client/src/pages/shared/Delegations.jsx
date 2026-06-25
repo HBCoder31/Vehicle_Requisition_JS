@@ -14,6 +14,7 @@ export default function Delegations() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ delegatee_id: '', start_date: '', end_date: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [selectedApprovals, setSelectedApprovals] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -125,6 +126,7 @@ export default function Delegations() {
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Delegator</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Delegatee</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Period</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Approvals Done</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
                     <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action</th>
                   </tr>
@@ -132,7 +134,7 @@ export default function Delegations() {
                 <tbody className="divide-y divide-border">
                   {delegations.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-8 text-center text-slate-500">
+                      <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
                         <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                         No delegations found.
                       </td>
@@ -151,6 +153,18 @@ export default function Delegations() {
                         </td>
                         <td className="px-6 py-3.5 text-slate-600">
                           {parseDate(del.start_date)?.toLocaleDateString()} - {parseDate(del.end_date)?.toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-3.5 text-slate-600">
+                          {del.approvals && del.approvals.length > 0 ? (
+                            <button
+                              onClick={() => setSelectedApprovals(del)}
+                              className="px-2.5 py-1 bg-primary-50 text-primary-700 border border-primary-100 rounded-full text-xs font-semibold hover:bg-primary-100 transition-colors inline-flex items-center gap-1"
+                            >
+                              <span>{del.approvals.length} {del.approvals.length === 1 ? 'Approval' : 'Approvals'}</span>
+                            </button>
+                          ) : (
+                            <span className="text-slate-400 text-xs font-normal">None</span>
+                          )}
                         </td>
                         <td className="px-6 py-3.5">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${isActive ? 'bg-success-100 text-success-700' : 'bg-slate-100 text-slate-600'}`}>
@@ -173,6 +187,55 @@ export default function Delegations() {
           </Card>
         </div>
       </div>
+
+      {selectedApprovals && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 animate-slide-up max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center pb-4 border-b border-border">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Approvals Done</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  By {selectedApprovals.delegatee_name} on behalf of {selectedApprovals.delegator_name}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedApprovals(null)}
+                className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full p-1.5 transition-colors"
+              >
+                <XCircle className="w-5.5 h-5.5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto py-4 space-y-3">
+              {selectedApprovals.approvals.map(app => (
+                <div key={app.request_id} className="p-3 border border-border rounded-lg bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">Request #{app.request_id}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Destination: {app.destination}</p>
+                      <p className="text-xs text-slate-500">Requested By: {app.requester_name}</p>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                      app.action_type.includes('Approved') 
+                        ? 'bg-success-100 text-success-700' 
+                        : 'bg-danger-100 text-danger-700'
+                    }`}>
+                      {app.action_type.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <div className="mt-2 text-[10px] text-slate-400">
+                    {parseDate(app.changed_at)?.toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="pt-4 border-t border-border flex justify-end">
+              <Button onClick={() => setSelectedApprovals(null)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

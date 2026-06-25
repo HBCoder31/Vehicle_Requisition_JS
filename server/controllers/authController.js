@@ -118,5 +118,12 @@ exports.forgotPassword = catchAsync(async (req, res) => {
 });
 
 exports.getMe = catchAsync(async (req, res) => {
-  res.json({ status: 'success', user: req.user });
+  res.json({ 
+    status: 'success', 
+    user: {
+      ...req.user,
+      effectiveRoles: req.user.effectiveRoles,
+      effectiveDepartments: req.user.effectiveDepartments
+    } 
+  });
 });

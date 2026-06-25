@@ -28,7 +28,9 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  const userRoles = user.effectiveRoles || [user.role];
+  const hasAccess = allowedRoles ? allowedRoles.some(r => userRoles.includes(r)) : true;
+  if (!hasAccess) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center animate-fade-in">

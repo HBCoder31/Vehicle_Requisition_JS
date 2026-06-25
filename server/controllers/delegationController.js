@@ -9,17 +9,41 @@ const AuditRepository = require('../repositories/AuditRepository');
 exports.getDelegations = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    // Get delegations where user is delegator or delegatee
-    const [rows] = await pool.execute(`
+    const isAdmin = req.user.role === 'Admin';
+    
+    let query = `
       SELECT d.*, 
              u1.full_name as delegator_name, 
              u2.full_name as delegatee_name 
       FROM delegations d
       JOIN employees u1 ON d.delegator_id = u1.id
       JOIN employees u2 ON d.delegatee_id = u2.id
-      WHERE d.delegator_id = ? OR d.delegatee_id = ?
-      ORDER BY d.created_at DESC
-    `, [userId, userId]);
+    `;
+    let params = [];
+    
+    if (!isAdmin) {
+      query += ` WHERE d.delegator_id = ? OR d.delegatee_id = ?`;
+      params = [userId, userId];
+    }
+    
+    query += ` ORDER BY d.created_at DESC`;
+    
+    const [rows] = await pool.execute(query, params);
+
+    // Fetch approvals performed by each delegatee during delegation period
+    for (const row of rows) {
+      const [approvals] = await pool.execute(`
+        SELECT h.request_id, h.action_type, h.changed_at, r.destination, e.full_name as requester_name
+        FROM request_history h
+        JOIN vehicle_requests r ON h.request_id = r.id
+        JOIN employees e ON r.employee_id = e.id
+        WHERE h.changed_by = ? 
+          AND h.action_type IN ('HOD_Approved', 'HOD_Rejected', 'GMHR_Approved', 'GMHR_Rejected', 'COO_Approved', 'COO_Rejected')
+          AND DATE(h.changed_at) BETWEEN DATE(?) AND DATE(?)
+        ORDER BY h.changed_at DESC
+      `, [row.delegatee_id, row.start_date, row.end_date]);
+      row.approvals = approvals;
+    }
 
     res.json({ status: 'success', delegations: rows });
   } catch (err) {

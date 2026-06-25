@@ -77,22 +77,30 @@ class RequestService {
       if (initialStatus === 'Approved_COO' || initialStatus === 'Approved_GM_HR') {
         const garageUsers = await UserRepository.findByRole('Garage');
         for (const gUser of garageUsers) {
-          await NotificationService.notifyUser(gUser.id, 'New Approved Request', `Request #${requestId} to ${data.destination} was approved and needs a vehicle.`, 'Request');
+          if (gUser.id !== user.id) {
+            await NotificationService.notifyUser(gUser.id, 'New Approved Request', `Request #${requestId} to ${data.destination} was approved and needs a vehicle.`, 'Request');
+          }
         }
       } else if (initialStatus === 'Pending_COO') {
         const cooUsers = await UserRepository.findByRole('COO');
         for (const cUser of cooUsers) {
-          await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval');
+          if (cUser.id !== user.id) {
+            await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval');
+          }
         }
       } else if (initialStatus === 'Pending_GM_HR') {
         const gmhrUsers = await UserRepository.findByRole('GM-HR');
         for (const gUser of gmhrUsers) {
-          await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval');
+          if (gUser.id !== user.id) {
+            await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval');
+          }
         }
       } else {
         const hodUsers = await UserRepository.findByRoleAndDepartment('HOD', departmentId);
         for (const hUser of hodUsers) {
-          await NotificationService.notifyUser(hUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} from your department requires approval.`, 'Approval');
+          if (hUser.id !== user.id) {
+            await NotificationService.notifyUser(hUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} from your department requires approval.`, 'Approval');
+          }
         }
       }
     } catch (err) {

@@ -40,7 +40,9 @@ class ApprovalService {
       const UserRepository = require('../repositories/UserRepository');
       const gmhrUsers = await UserRepository.findByRole('GM-HR');
       for (const gUser of gmhrUsers) {
-        await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval');
+        if (gUser.id !== request.employee_id) {
+          await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval');
+        }
       }
     }
 
@@ -78,13 +80,17 @@ class ApprovalService {
       const UserRepository = require('../repositories/UserRepository');
       const cooUsers = await UserRepository.findByRole('COO');
       for (const cUser of cooUsers) {
-        await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval');
+        if (cUser.id !== request.employee_id) {
+          await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval');
+        }
       }
     } else if (newStatus === 'Approved_GM_HR') {
       const UserRepository = require('../repositories/UserRepository');
       const garageUsers = await UserRepository.findByRole('Garage');
       for (const gUser of garageUsers) {
-        await NotificationService.notifyUser(gUser.id, 'New Approved Request', `Request #${requestId} to ${request.destination} was approved and needs a vehicle.`, 'Request');
+        if (gUser.id !== request.employee_id) {
+          await NotificationService.notifyUser(gUser.id, 'New Approved Request', `Request #${requestId} to ${request.destination} was approved and needs a vehicle.`, 'Request');
+        }
       }
     }
 
@@ -148,7 +154,9 @@ class ApprovalService {
       const UserRepository = require('../repositories/UserRepository');
       const garageUsers = await UserRepository.findByRole('Garage');
       for (const gUser of garageUsers) {
-        await NotificationService.notifyUser(gUser.id, 'New Approved Request', `Request #${requestId} to ${request.destination} was approved and needs a vehicle.`, 'Request');
+        if (gUser.id !== request.employee_id) {
+          await NotificationService.notifyUser(gUser.id, 'New Approved Request', `Request #${requestId} to ${request.destination} was approved and needs a vehicle.`, 'Request');
+        }
       }
     }
 
