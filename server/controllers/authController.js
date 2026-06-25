@@ -66,6 +66,17 @@ exports.login = catchAsync(async (req, res) => {
 
   setCookies(res, accessToken, refreshToken);
 
+  try {
+    const delegationUtil = require('../utils/delegationUtil');
+    const { roles, departmentIds } = await delegationUtil.getEffectivePermissions(user.id);
+    user.effectiveRoles = roles;
+    user.effectiveDepartments = departmentIds;
+  } catch (err) {
+    console.error('Failed to resolve effective permissions during login:', err);
+    user.effectiveRoles = [user.role];
+    user.effectiveDepartments = user.department_id ? [user.department_id] : [];
+  }
+
   res.json({ status: 'success', user });
 });
 

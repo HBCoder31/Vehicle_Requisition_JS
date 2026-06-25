@@ -18,7 +18,12 @@ class UserRepository {
 
   async findByRoleAndDepartment(role, departmentId) {
     const [rows] = await pool.execute(`
-      SELECT * FROM employees WHERE role = ? AND department_id = ?
+      SELECT * FROM employees 
+      WHERE role = ? AND department_id = ? 
+        AND id NOT IN (
+          SELECT delegator_id FROM delegations 
+          WHERE is_active = 1 AND CURDATE() BETWEEN start_date AND end_date
+        )
       UNION
       SELECT e2.* 
       FROM delegations d 
@@ -33,7 +38,12 @@ class UserRepository {
 
   async findByRole(role) {
     const [rows] = await pool.execute(`
-      SELECT * FROM employees WHERE role = ?
+      SELECT * FROM employees 
+      WHERE role = ?
+        AND id NOT IN (
+          SELECT delegator_id FROM delegations 
+          WHERE is_active = 1 AND CURDATE() BETWEEN start_date AND end_date
+        )
       UNION
       SELECT e2.* 
       FROM delegations d 
