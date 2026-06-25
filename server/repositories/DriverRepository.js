@@ -15,7 +15,7 @@ class DriverRepository {
     const [result] = await pool.execute(
       `INSERT INTO drivers (full_name, employee_number, email, phone, license_number, license_expiry, campus_id, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [data.full_name, data.employee_number, data.email, data.phone, data.license_number, data.license_expiry, data.campus_id || null, data.is_active ?? 1]
+      [data.full_name, data.employee_number, data.email, data.phone, data.license_number, data.license_expiry || null, data.campus_id || null, data.is_active ?? 1]
     );
     return result.insertId;
   }
@@ -24,7 +24,7 @@ class DriverRepository {
     await pool.execute(
       `UPDATE drivers SET full_name = ?, employee_number = ?, email = ?, phone = ?, license_number = ?, license_expiry = ?, is_active = ?
        WHERE id = ?`,
-      [data.full_name, data.employee_number, data.email, data.phone, data.license_number, data.license_expiry, data.is_active ?? 1, id]
+      [data.full_name, data.employee_number, data.email, data.phone, data.license_number, data.license_expiry || null, data.is_active ?? 1, id]
     );
   }
 
