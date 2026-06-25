@@ -5,8 +5,10 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import { UserCheck, UserX, Plus, Pencil, AlertTriangle, Shield, Users } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function DriverManagement() {
+  const { user } = useAuth();
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const loadStart = useRef(Date.now());
@@ -132,9 +134,11 @@ export default function DriverManagement() {
           <h1 className="text-2xl font-bold text-slate-800">Driver Management</h1>
           <p className="text-sm text-muted mt-1">Manage drivers, licenses, and availability status</p>
         </div>
-        <Button onClick={openAddModal}>
-          <Plus className="w-4 h-4" /> Add Driver
-        </Button>
+        {user?.role === 'Admin' && (
+          <Button onClick={openAddModal}>
+            <Plus className="w-4 h-4" /> Add Driver
+          </Button>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -259,27 +263,33 @@ export default function DriverManagement() {
                       </td>
                       <td className="px-6 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => openEditModal(driver)}
-                          >
-                            <Pencil className="w-3 h-3" /> Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={isActive ? 'danger' : 'success'}
-                            loading={isUpdating}
-                            disabled={isActive && !driver.is_available}
-                            title={isActive && !driver.is_available ? 'Driver is currently on a trip and cannot be set on leave.' : ''}
-                            onClick={() => handleStatusToggle(driver)}
-                          >
-                            {isActive ? (
-                              <><UserX className="w-3 h-3" /> Set On Leave</>
-                            ) : (
-                              <><UserCheck className="w-3 h-3" /> Set Active</>
-                            )}
-                          </Button>
+                          {user?.role === 'Admin' ? (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => openEditModal(driver)}
+                              >
+                                <Pencil className="w-3 h-3" /> Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={isActive ? 'danger' : 'success'}
+                                loading={isUpdating}
+                                disabled={isActive && !driver.is_available}
+                                title={isActive && !driver.is_available ? 'Driver is currently on a trip and cannot be set on leave.' : ''}
+                                onClick={() => handleStatusToggle(driver)}
+                              >
+                                {isActive ? (
+                                  <><UserX className="w-3 h-3" /> Set On Leave</>
+                                ) : (
+                                  <><UserCheck className="w-3 h-3" /> Set Active</>
+                                )}
+                              </Button>
+                            </>
+                          ) : (
+                            <span className="text-xs text-slate-400 italic">Read-Only</span>
+                          )}
                         </div>
                       </td>
                     </tr>

@@ -51,6 +51,6 @@ router.get('/history', authorize('Garage', 'Admin'), getHistory);
 router.get('/drivers', authorize('Garage', 'Admin'), getDrivers);
 
 // Garage: update driver leave/active status
-router.patch('/drivers/:id/status', authorize('Garage', 'Admin'), updateDriverStatus);
+router.patch('/drivers/:id/status', authorize('Admin'), updateDriverStatus);
 
 module.exports = router;
