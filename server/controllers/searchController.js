@@ -21,7 +21,7 @@ exports.globalSearch = catchAsync(async (req, res) => {
 
   const [drivers] = await pool.execute(
     `SELECT id, full_name, employee_number FROM drivers 
-     WHERE full_name LIKE ? OR employee_number LIKE ? LIMIT 5`,
+     WHERE is_deleted = 0 AND (full_name LIKE ? OR employee_number LIKE ?) LIMIT 5`,
     [searchParam, searchParam]
   );
 

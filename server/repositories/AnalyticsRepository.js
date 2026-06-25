@@ -11,7 +11,7 @@ class AnalyticsRepository {
     `);
 
     const [vehicles] = await pool.execute(`SELECT COUNT(*) as active_vehicles FROM vehicles WHERE is_available = 1`);
-    const [drivers] = await pool.execute(`SELECT COUNT(*) as active_drivers FROM drivers WHERE is_active = 1`);
+    const [drivers] = await pool.execute(`SELECT COUNT(*) as active_drivers FROM drivers WHERE is_active = 1 AND is_deleted = 0`);
 
     return {
       requests: requests[0],

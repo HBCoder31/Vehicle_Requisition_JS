@@ -6,7 +6,8 @@ const {
   getDriver,
   createDriver,
   updateDriver,
-  getExpiringLicenses
+  getExpiringLicenses,
+  deleteDriver
 } = require('../controllers/driverController');
 
 const router = express.Router();
@@ -21,5 +22,6 @@ router.get('/', authorize('Admin', 'Garage', 'COO', 'HOD', 'GM-HR'), getAllDrive
 router.post('/', authorize('Admin'), createDriver);
 router.get('/:id', authorize('Admin', 'Garage', 'COO', 'HOD', 'GM-HR'), getDriver);
 router.put('/:id', authorize('Admin'), updateDriver);
+router.delete('/:id', authorize('Admin'), deleteDriver);
 
 module.exports = router;

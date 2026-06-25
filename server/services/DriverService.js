@@ -29,6 +29,14 @@ class DriverService {
   async getExpiringLicenses() {
     return await DriverRepository.findExpiringLicenses(30);
   }
+
+  async deleteDriver(id) {
+    const driver = await this.getDriver(id);
+    if (driver.is_available === 0) {
+      throw new AppError('Cannot delete driver who is on an active trip.', 400);
+    }
+    await DriverRepository.softDelete(id);
+  }
 }
 
 module.exports = new DriverService();

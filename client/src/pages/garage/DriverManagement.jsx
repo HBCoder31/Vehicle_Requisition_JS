@@ -10,6 +10,10 @@ import { parseDate } from '../../utils/date';
 
 export default function DriverManagement() {
   const { user } = useAuth();
+  // Use effectiveRoles for consistency with the rest of the app
+  const effectiveRoles = user?.effectiveRoles || (user?.role ? [user.role] : []);
+  const isAdmin = effectiveRoles.includes('Admin');
+  const isGarage = effectiveRoles.includes('Garage');
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const loadStart = useRef(Date.now());
@@ -119,6 +123,21 @@ export default function DriverManagement() {
     }
   }
 
+  async function handleDeleteDriver(driver) {
+    if (driver.is_available === 0) {
+      alert('Cannot delete driver who is on an active trip.');
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete driver ${driver.full_name}?`)) return;
+
+    try {
+      await api.delete(`/drivers/${driver.id}`);
+      fetchDrivers();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delete driver.');
+    }
+  }
+
   // Stats
   const activeCount = drivers.filter(d => d.is_active).length;
   const onLeaveCount = drivers.filter(d => !d.is_active).length;
@@ -133,9 +152,11 @@ export default function DriverManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Driver Management</h1>
-          <p className="text-sm text-muted mt-1">Manage drivers, licenses, and availability status</p>
+          <p className="text-sm text-muted mt-1">
+            {isAdmin ? 'Manage drivers, licenses, and availability status' : 'View drivers and manage availability status'}
+          </p>
         </div>
-        {user?.role === 'Admin' && (
+        {isAdmin && (
           <Button onClick={openAddModal}>
             <Plus className="w-4 h-4" /> Add Driver
           </Button>
@@ -264,7 +285,8 @@ export default function DriverManagement() {
                       </td>
                       <td className="px-6 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {user?.role === 'Admin' ? (
+                          {/* Admin only: Edit & Soft-Delete */}
+                          {isAdmin && (
                             <>
                               <Button
                                 size="sm"
@@ -275,19 +297,29 @@ export default function DriverManagement() {
                               </Button>
                               <Button
                                 size="sm"
-                                variant={isActive ? 'danger' : 'success'}
-                                loading={isUpdating}
-                                disabled={isActive && !driver.is_available}
-                                title={isActive && !driver.is_available ? 'Driver is currently on a trip and cannot be set on leave.' : ''}
-                                onClick={() => handleStatusToggle(driver)}
+                                variant="danger"
+                                onClick={() => handleDeleteDriver(driver)}
                               >
-                                {isActive ? (
-                                  <><UserX className="w-3 h-3" /> Set On Leave</>
-                                ) : (
-                                  <><UserCheck className="w-3 h-3" /> Set Active</>
-                                )}
+                                Delete
                               </Button>
                             </>
+                          )}
+                          {/* Admin & Garage: Set On Leave / Set Active */}
+                          {(isAdmin || isGarage) ? (
+                            <Button
+                              size="sm"
+                              variant={isActive ? 'warning' : 'success'}
+                              loading={isUpdating}
+                              disabled={isActive && !driver.is_available}
+                              title={isActive && !driver.is_available ? 'Driver is currently on a trip and cannot be set on leave.' : ''}
+                              onClick={() => handleStatusToggle(driver)}
+                            >
+                              {isActive ? (
+                                <><UserX className="w-3 h-3" /> Set On Leave</>
+                              ) : (
+                                <><UserCheck className="w-3 h-3" /> Set Active</>
+                              )}
+                            </Button>
                           ) : (
                             <span className="text-xs text-slate-400 italic">Read-Only</span>
                           )}

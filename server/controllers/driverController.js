@@ -44,3 +44,8 @@ exports.getExpiringLicenses = catchAsync(async (req, res) => {
   const alerts = await DriverService.getExpiringLicenses();
   res.json({ status: 'success', data: alerts });
 });
+
+exports.deleteDriver = catchAsync(async (req, res) => {
+  await DriverService.deleteDriver(req.params.id);
+  res.json({ status: 'success', message: 'Driver deleted successfully.' });
+});

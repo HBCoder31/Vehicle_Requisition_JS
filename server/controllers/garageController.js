@@ -107,7 +107,7 @@ async function assignVehicle(req, res) {
 
     // Verify driver exists and is available
     const [driverRows] = await conn.execute(
-      'SELECT * FROM drivers WHERE id = ? AND is_active = 1 AND is_available = 1 FOR UPDATE',
+      'SELECT * FROM drivers WHERE id = ? AND is_active = 1 AND is_available = 1 AND is_deleted = 0 FOR UPDATE',
       [driver_id]
     );
 
@@ -404,7 +404,7 @@ async function getHistory(req, res) {
 async function getDrivers(req, res) {
   try {
     const [rows] = await pool.execute(
-      'SELECT * FROM drivers WHERE is_active = 1 ORDER BY full_name ASC'
+      'SELECT * FROM drivers WHERE is_active = 1 AND is_deleted = 0 ORDER BY full_name ASC'
     );
     res.json({ drivers: rows });
   } catch (err) {
@@ -431,7 +431,7 @@ async function updateDriverStatus(req, res) {
     const is_active = status === 'Active' ? 1 : 0;
 
     // Get driver details for audit log
-    const [[driver]] = await pool.execute('SELECT * FROM drivers WHERE id = ?', [id]);
+    const [[driver]] = await pool.execute('SELECT * FROM drivers WHERE id = ? AND is_deleted = 0', [id]);
     if (!driver) return res.status(404).json({ error: 'Driver not found.' });
 
     // Validate: if driver is on trip (is_available = 0) and setting status to 'On Leave' (is_active = 0)
