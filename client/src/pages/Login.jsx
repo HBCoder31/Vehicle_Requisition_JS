@@ -19,6 +19,19 @@ export default function Login() {
     password: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfused, setIsConfused] = useState(false);
+  const [greeting, setGreeting] = useState('');
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      setGreeting('Good Morning');
+    } else if (hour >= 12 && hour < 17) {
+      setGreeting('Good Afternoon');
+    } else {
+      setGreeting('Good Evening');
+    }
+  }, []);
 
   // Mascot and text tracking state
   const [focusedInput, setFocusedInput] = useState(null); // 'identifier' | 'password' | 'email' | 'employee_number' | null
@@ -94,6 +107,8 @@ export default function Login() {
     } catch (e) {
       const err = e.response?.data?.error;
       setErrorMsg(typeof err === 'string' ? err : (err?.message || 'Login failed. Please check your credentials.'));
+      setIsConfused(true);
+      setTimeout(() => setIsConfused(false), 4000);
     } finally {
       setIsSubmitting(false);
     }
@@ -119,6 +134,8 @@ export default function Login() {
     } catch (e) {
       const err = e.response?.data?.error;
       setErrorMsg(typeof err === 'string' ? err : (err?.message || 'Failed to request password reset.'));
+      setIsConfused(true);
+      setTimeout(() => setIsConfused(false), 4000);
     } finally {
       setIsSubmitting(false);
     }
@@ -151,11 +168,19 @@ export default function Login() {
         {/* Login Card */}
         <div className="relative bg-white rounded-2xl p-8 shadow-2xl border border-slate-100 transition-all duration-300 login-card mt-12">
           {/* Interactive Mascot in Card Flow */}
-          <div className="w-24 h-28 mx-auto mb-6 pointer-events-none select-none">
+          <div className="relative w-24 h-28 mx-auto mb-6 pointer-events-none select-none">
+            {/* Speech Bubble */}
+            {greeting && (
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800/90 text-white text-[11px] font-semibold px-2.5 py-1.5 rounded-xl shadow-md whitespace-nowrap z-30 animate-fade-in">
+                {greeting}!
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800/90 rotate-45" />
+              </div>
+            )}
             <PaperMascot 
               targetPos={targetPos}
               isPasswordFocused={focusedInput === 'password'}
               isInputFocused={!!focusedInput && focusedInput !== 'password'}
+              isConfused={isConfused}
             />
           </div>
 
@@ -305,7 +330,7 @@ export default function Login() {
 }
 
 // Interactive SVG Paper Mascot resembling Orient Paper Mills sheets
-function PaperMascot({ targetPos, isPasswordFocused, isInputFocused }) {
+function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused }) {
   const mascotRef = useRef(null);
   const [pupilOffset, setPupilOffset] = useState({ x: 0, y: 0 });
 
@@ -376,6 +401,15 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused }) {
             <path d="M 27 42 Q 35 48 43 42" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
             <path d="M 57 42 Q 65 48 73 42" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
           </>
+        ) : isConfused ? (
+          <>
+            {/* White Sclera background */}
+            <circle cx="35" cy="40" r="10" fill="white" stroke="#cbd5e1" strokeWidth="1.5" />
+            <circle cx="65" cy="40" r="10" fill="white" stroke="#cbd5e1" strokeWidth="1.5" />
+            {/* Dizzy X-pupils inside the white circles */}
+            <path d="M 31 36 L 39 44 M 39 36 L 31 44" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+            <path d="M 61 36 L 69 44 M 69 36 L 61 44" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+          </>
         ) : (
           <>
             {/* White Sclera */}
@@ -395,6 +429,8 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused }) {
         {/* Mouth */}
         {isPasswordFocused ? (
           <line x1="46" y1="55" x2="54" y2="55" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+        ) : isConfused ? (
+          <path d="M 44 54 Q 47 50 50 54 T 56 54" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
         ) : isInputFocused ? (
           <circle cx="50" cy="54" r="3.5" fill="none" stroke="#475569" strokeWidth="2" />
         ) : (
@@ -405,7 +441,11 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused }) {
         <g 
           style={{ 
             transformOrigin: '5px 70px', 
-            transform: isPasswordFocused ? 'rotate(-135deg)' : 'rotate(0deg)',
+            transform: isPasswordFocused 
+              ? 'rotate(-135deg)' 
+              : isConfused 
+                ? 'rotate(-45deg)' 
+                : 'rotate(0deg)',
             transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)' 
           }}
         >
@@ -416,7 +456,11 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused }) {
         <g 
           style={{ 
             transformOrigin: '95px 70px', 
-            transform: isPasswordFocused ? 'rotate(135deg)' : 'rotate(0deg)',
+            transform: isPasswordFocused 
+              ? 'rotate(135deg)' 
+              : isConfused 
+                ? 'rotate(45deg)' 
+                : 'rotate(0deg)',
             transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)' 
           }}
         >
