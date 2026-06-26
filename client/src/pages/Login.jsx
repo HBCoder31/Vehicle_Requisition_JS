@@ -150,8 +150,8 @@ export default function Login() {
 
         {/* Login Card */}
         <div className="relative bg-white rounded-2xl p-8 shadow-2xl border border-slate-100 transition-all duration-300 login-card mt-12">
-          {/* Interactive Mascot */}
-          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-24 h-28 pointer-events-none select-none z-20">
+          {/* Interactive Mascot in Card Flow */}
+          <div className="w-24 h-28 mx-auto mb-6 pointer-events-none select-none">
             <PaperMascot 
               targetPos={targetPos}
               isPasswordFocused={focusedInput === 'password'}
