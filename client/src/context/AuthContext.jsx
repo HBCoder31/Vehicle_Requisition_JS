@@ -3,9 +3,19 @@ import api from '../services/api';
 
 const AuthContext = createContext(null);
 
+// Synchronously check if session flag is set in localStorage on initial evaluation
+let initialLoadingState = true;
+try {
+  if (localStorage.getItem('isLoggedIn') !== 'true') {
+    initialLoadingState = false;
+  }
+} catch (e) {
+  // If localStorage is blocked, default to true to be safe
+}
+
 const initialState = {
   user: null,
-  loading: true,
+  loading: initialLoadingState,
   error: null,
 };
 
@@ -14,10 +24,19 @@ function authReducer(state, action) {
     case 'AUTH_LOADING':
       return { ...state, loading: true, error: null };
     case 'AUTH_SUCCESS':
+      try {
+        localStorage.setItem('isLoggedIn', 'true');
+      } catch (e) {}
       return { user: action.payload, loading: false, error: null };
     case 'AUTH_ERROR':
+      try {
+        localStorage.removeItem('isLoggedIn');
+      } catch (e) {}
       return { user: null, loading: false, error: action.payload };
     case 'LOGOUT':
+      try {
+        localStorage.removeItem('isLoggedIn');
+      } catch (e) {}
       return { user: null, loading: false, error: null };
     default:
       return state;
@@ -51,6 +70,20 @@ export function AuthProvider({ children }) {
     }
 
     async function checkAuth() {
+      // Check if we have an active login session flagged in localStorage
+      let hasSessionFlag = false;
+      try {
+        hasSessionFlag = localStorage.getItem('isLoggedIn') === 'true';
+      } catch (e) {
+        console.warn('localStorage is not accessible:', e);
+      }
+
+      // If no session flag exists, skip backend call and immediately render login
+      if (!hasSessionFlag) {
+        dispatch({ type: 'AUTH_ERROR', payload: null });
+        return;
+      }
+
       let shouldForceLogout = false;
       try {
         if (sessionStorage.getItem('forceLogout') === 'true') {
