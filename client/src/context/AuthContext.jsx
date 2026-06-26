@@ -30,20 +30,38 @@ export function AuthProvider({ children }) {
   // Restore session from JWT cookie on mount
   useEffect(() => {
     // Detect reload on startup
-    const navigationEntries = performance.getEntriesByType('navigation');
-    const isReload = (navigationEntries.length > 0 && navigationEntries[0].type === 'reload') || performance.navigation.type === 1;
+    let isReload = false;
+    try {
+      const navigationEntries = performance.getEntriesByType('navigation');
+      isReload = (navigationEntries.length > 0 && navigationEntries[0].type === 'reload') || performance.navigation.type === 1;
+    } catch (e) {
+      // Fallback if performance API is not available
+    }
 
-    if (isReload) {
-      if (sessionStorage.getItem('inAppRefresh') === 'true') {
-        sessionStorage.removeItem('inAppRefresh');
-      } else {
-        sessionStorage.setItem('forceLogout', 'true');
+    try {
+      if (isReload) {
+        if (sessionStorage.getItem('inAppRefresh') === 'true') {
+          sessionStorage.removeItem('inAppRefresh');
+        } else {
+          sessionStorage.setItem('forceLogout', 'true');
+        }
       }
+    } catch (e) {
+      console.warn('sessionStorage is not accessible:', e);
     }
 
     async function checkAuth() {
-      if (sessionStorage.getItem('forceLogout') === 'true') {
-        sessionStorage.removeItem('forceLogout');
+      let shouldForceLogout = false;
+      try {
+        if (sessionStorage.getItem('forceLogout') === 'true') {
+          sessionStorage.removeItem('forceLogout');
+          shouldForceLogout = true;
+        }
+      } catch (e) {
+        console.warn('sessionStorage is not accessible:', e);
+      }
+
+      if (shouldForceLogout) {
         try {
           await api.post('/auth/logout');
         } catch (err) {}
