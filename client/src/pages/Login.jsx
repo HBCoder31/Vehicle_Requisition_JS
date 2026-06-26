@@ -223,7 +223,7 @@ export default function Login() {
         {/* Logo & Title */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/15 rounded-2xl backdrop-blur-sm mb-4 ring-2 ring-white/20">
-            <img src="/logo-icon.png" alt="VRTP Logo" className="w-16 h-16 object-contain rounded-xl" />
+            <img src="/logo-icon.png?v=2" alt="VRTP Logo" className="w-16 h-16 object-contain rounded-xl" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             Vehicle Requisitional and Travel Portal

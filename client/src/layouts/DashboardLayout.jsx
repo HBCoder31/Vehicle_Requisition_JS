@@ -282,7 +282,7 @@ export default function DashboardLayout() {
         <div className={`flex items-center h-16 border-b border-primary-800 shrink-0 ${sidebarOpen ? 'justify-between px-6' : 'justify-center px-0'}`}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
-              <img src="/logo-icon.png" alt="VRTP" className="w-full h-full object-cover" />
+              <img src="/logo-icon.png?v=2" alt="VRTP" className="w-full h-full object-cover" />
             </div>
             {sidebarOpen && <span className="text-sm font-bold tracking-wide">VRTP</span>}
           </div>
