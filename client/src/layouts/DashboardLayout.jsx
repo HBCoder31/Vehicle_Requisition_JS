@@ -15,6 +15,7 @@ const roleNavConfig = {
     { to: '/employee', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/employee/new-request', icon: FileText, label: 'New Request' },
     { to: '/requests/history', icon: History, label: 'Request History' },
+    { to: '/employee/travel-ledger', icon: ScrollText, label: 'Travel Ledger' },
   ],
   HOD: [
     { to: '/hod', icon: LayoutDashboard, label: 'Dashboard' },
@@ -22,6 +23,8 @@ const roleNavConfig = {
     { to: '/hod/history', icon: History, label: 'Approval History' },
     { to: '/requests/history', icon: History, label: 'Request History' },
     { to: '/delegations', icon: Users, label: 'Delegations' },
+    { to: '/fleet-analytics', icon: TrendingUp, label: 'Fleet Analytics' },
+    { to: '/employee/travel-ledger', icon: ScrollText, label: 'My Travel Ledger' },
   ],
   'GM-HR': [
     { to: '/gmhr', icon: LayoutDashboard, label: 'Dashboard' },
@@ -29,6 +32,8 @@ const roleNavConfig = {
     { to: '/gmhr/history', icon: History, label: 'Approval History' },
     { to: '/requests/history', icon: History, label: 'Request History' },
     { to: '/delegations', icon: Users, label: 'Delegations' },
+    { to: '/fleet-analytics', icon: TrendingUp, label: 'Fleet Analytics' },
+    { to: '/employee/travel-ledger', icon: ScrollText, label: 'My Travel Ledger' },
   ],
   COO: [
     { to: '/coo', icon: LayoutDashboard, label: 'Dashboard' },
@@ -36,27 +41,39 @@ const roleNavConfig = {
     { to: '/coo/history', icon: History, label: 'Approval History' },
     { to: '/requests/history', icon: History, label: 'Request History' },
     { to: '/delegations', icon: Users, label: 'Delegations' },
+    { to: '/fleet-analytics', icon: TrendingUp, label: 'Fleet Analytics' },
+    { to: '/employee/travel-ledger', icon: ScrollText, label: 'My Travel Ledger' },
   ],
   Garage: [
     { to: '/garage', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/garage/fleet-operations', icon: Truck, label: 'Fleet Operations' },
     { to: '/garage/history', icon: ScrollText, label: 'Vehicle History' },
     { to: '/garage/drivers', icon: Users, label: 'Driver Management' },
     { to: '/garage/maintenance', icon: CheckSquare, label: 'Maintenance' },
     { to: '/garage/fuel', icon: FileText, label: 'Fuel Logs' },
     { to: '/delegations', icon: Users, label: 'Delegations' },
+    { to: '/employee/travel-ledger', icon: ScrollText, label: 'My Travel Ledger' },
   ],
   Admin: [
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/admin/analytics', icon: TrendingUp, label: 'Analytics & Reports' },
+    { to: '/fleet-analytics', icon: TrendingUp, label: 'Fleet Analytics' },
+    { to: '/admin/billing', icon: ScrollText, label: 'Billing Management' },
+    { to: '/admin/payments', icon: ScrollText, label: 'Payment Tracking' },
     { to: '/admin/employees', icon: Users, label: 'Manage Employees' },
     { to: '/admin/drivers', icon: Users, label: 'Driver Management' },
     { to: '/admin/vehicles', icon: Truck, label: 'Vehicle Management' },
     { to: '/garage', icon: LayoutDashboard, label: 'Garage Dispatch' },
+    { to: '/garage/fleet-operations', icon: Truck, label: 'Fleet Operations' },
     { to: '/garage/maintenance', icon: CheckSquare, label: 'Maintenance' },
     { to: '/garage/fuel', icon: FileText, label: 'Fuel Logs' },
     { to: '/requests/history', icon: History, label: 'All Request History' },
     { to: '/admin/audit-logs', icon: ScrollText, label: 'Audit Logs' },
     { to: '/delegations', icon: Users, label: 'Delegations' },
+    { to: '/employee/travel-ledger', icon: ScrollText, label: 'My Travel Ledger' },
+  ],
+  'Security Guard': [
+    { to: '/security/gate', icon: Shield, label: 'Gate Operations' },
   ],
 };
 
@@ -67,6 +84,7 @@ const roleBadgeColors = {
   COO:      'bg-success-50 text-success-700',
   Garage:   'bg-info-50 text-primary-700',
   Admin:    'bg-danger-50 text-danger-700',
+  'Security Guard': 'bg-slate-100 text-slate-700',
 };
 
 const getPopupStyles = (notif) => {

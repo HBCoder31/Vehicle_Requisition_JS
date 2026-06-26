@@ -14,6 +14,8 @@ const statusConfig = {
   'Completed':        { label: 'Completed',         bg: 'bg-success-50',  text: 'text-success-700', dot: 'bg-success-500' },
   'Cancelled':        { label: 'Cancelled',         bg: 'bg-slate-100',   text: 'text-slate-500',   dot: 'bg-slate-400' },
   'Deleted':          { label: 'Deleted',           bg: 'bg-danger-50',   text: 'text-danger-700',  dot: 'bg-danger-500' },
+  'Vehicle Out':      { label: 'Vehicle Out',       bg: 'bg-amber-50',    text: 'text-amber-700',   dot: 'bg-amber-500' },
+  'Vehicle Returned': { label: 'Vehicle Returned',  bg: 'bg-teal-50',     text: 'text-teal-700',    dot: 'bg-teal-500' },
 };
 
 export default function StatusBadge({ status }) {

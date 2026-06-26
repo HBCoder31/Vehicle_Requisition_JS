@@ -31,6 +31,14 @@ import Delegations from './pages/shared/Delegations';
 import VehicleManagement from './pages/admin/VehicleManagement';
 import DestinationManagement from './pages/admin/DestinationManagement';
 
+// Phase 2 Page Imports
+import SecurityDashboard from './pages/phase2/SecurityDashboard';
+import FleetOperations from './pages/phase2/FleetOperations';
+import TravelHistory from './pages/phase2/TravelHistory';
+import FleetAnalytics from './pages/phase2/FleetAnalytics';
+import BillingManagement from './pages/phase2/BillingManagement';
+import PaymentManagement from './pages/phase2/PaymentManagement';
+
 /**
  * Redirect /dashboard to the appropriate role-based page.
  */
@@ -43,6 +51,7 @@ function DashboardRedirect() {
     COO: '/coo',
     Garage: '/garage',
     Admin: '/admin',
+    'Security Guard': '/security/gate',
   };
   return <Navigate to={roleRoutes[user?.role] || '/login'} replace />;
 }
@@ -70,6 +79,7 @@ export default function App() {
         <Route path="/reports" element={<Navigate to="/admin/analytics" replace />} />
         <Route path="/audit-logs" element={<Navigate to="/admin/audit-logs" replace />} />
         <Route path="/notifications" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/employee/travel-ledger" element={<TravelHistory />} />
       </Route>
 
       {/* Restricted Delegations Route */}
@@ -125,6 +135,27 @@ export default function App() {
         <Route path="/admin/destinations" element={<DestinationManagement />} />
         <Route path="/admin/audit-logs" element={<AuditLogs />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
+      </Route>
+
+      {/* Security Guard routes */}
+      <Route element={<ProtectedRoute allowedRoles={['Security Guard', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+        <Route path="/security/gate" element={<SecurityDashboard />} />
+      </Route>
+
+      {/* Fleet Operations */}
+      <Route element={<ProtectedRoute allowedRoles={['Garage', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+        <Route path="/garage/fleet-operations" element={<FleetOperations />} />
+      </Route>
+
+      {/* Fleet Analytics */}
+      <Route element={<ProtectedRoute allowedRoles={['HOD', 'GM-HR', 'COO', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+        <Route path="/fleet-analytics" element={<FleetAnalytics />} />
+      </Route>
+
+      {/* Admin Billing and Payments */}
+      <Route element={<ProtectedRoute allowedRoles={['Admin']}><DashboardLayout /></ProtectedRoute>}>
+        <Route path="/admin/billing" element={<BillingManagement />} />
+        <Route path="/admin/payments" element={<PaymentManagement />} />
       </Route>
 
       {/* Catch-all redirect */}
