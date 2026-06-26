@@ -226,7 +226,7 @@ export default function Login() {
             <Truck className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Vehicle Requisition Portal
+            Vehicle Requisitional and Travel Portal
           </h1>
 
         </div>
@@ -400,7 +400,7 @@ export default function Login() {
 
         {/* Footer */}
         <p className="text-center text-primary-300/60 text-xs mt-6">
-          © {new Date().getFullYear()} Vehicle Requisition Portal.
+          © {new Date().getFullYear()} Vehicle Requisitional and Travel Portal.
         </p>
       </div>
     </div>

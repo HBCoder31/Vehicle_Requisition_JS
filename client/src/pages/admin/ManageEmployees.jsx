@@ -127,7 +127,7 @@ export default function ManageEmployees() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>CSV Format Guidelines - Vehicle Requisition Portal</title>
+          <title>CSV Format Guidelines - Vehicle Requisitional and Travel Portal</title>
           <style>
             body {
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
