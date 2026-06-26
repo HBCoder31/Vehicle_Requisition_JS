@@ -302,29 +302,85 @@ select:focus {
     margin: 8mm;
   }
 
+  /* ── Kill animations – elements start at opacity:0 and never animate in print ── */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    animation-duration: 0s !important;
+    transition: none !important;
+    opacity: 1 !important;
+  }
+
+  /* ── Completely remove sidebar, topbar and non-print UI ── */
   aside,
   header,
   .no-print,
-  button,
   .global-refresh,
-  iframe {
+  iframe,
+  nav,
+  button {
     display: none !important;
+    visibility: hidden !important;
+    position: static !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
   }
-  
-  body, 
-  main,
-  .flex-1 {
+
+  /* ── Flatten layout so page content fills full width ── */
+  html,
+  body,
+  #root {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
     background: white !important;
     color: black !important;
     padding: 0 !important;
     margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: visible !important;
-    height: auto !important;
   }
 
-  /* Make tables take full width and wrap properly */
+  /* The outermost flex wrapper (min-h-screen flex) */
+  div.min-h-screen {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* The right-side column (flex-1 h-screen) */
+  div.flex-1,
+  div.h-screen {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: static !important;
+  }
+
+  /* Main content area */
+  main {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* ── Table styles ── */
   table {
     width: 100% !important;
     border-collapse: collapse !important;
@@ -337,22 +393,14 @@ select:focus {
     font-size: 8pt !important;
     line-height: 1.25 !important;
     word-break: break-word !important;
+    color: black !important;
   }
 
   tr {
     page-break-inside: avoid !important;
   }
 
-  /* Ensure cards are transparent or visible */
-  .card, 
-  div[class*="bg-white"], 
-  div[class*="shadow"] {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-  }
-
+  /* ── Reveal print-only content ── */
   .print-header {
     display: block !important;
     margin-bottom: 20px !important;
@@ -362,6 +410,17 @@ select:focus {
 
   .print-only {
     display: block !important;
+    width: 100% !important;
+  }
+
+  /* Transparent cards */
+  .card,
+  div[class*="bg-white"],
+  div[class*="shadow"] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
   }
 }
 
