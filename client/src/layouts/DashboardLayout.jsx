@@ -288,15 +288,17 @@ export default function DashboardLayout() {
             <span className="text-sm font-bold tracking-wide">VRP</span>
           </div>
           <button
-            className="lg:hidden p-1 rounded hover:bg-primary-800"
+            className="lg:hidden p-2 rounded hover:bg-primary-800 transition-colors"
             onClick={() => setSidebarOpen(false)}
           >
-            <X className="w-5 h-5" />
+            <div className="animated-hamburger open text-white">
+              <span></span><span></span><span></span>
+            </div>
           </button>
         </div>
 
         {/* Nav Items */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto sidebar-scrollbar">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
@@ -341,9 +343,11 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-4 flex-1">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 -ml-2 rounded-lg hover:bg-slate-100 lg:hidden text-slate-600 transition-colors"
+              className="p-3 -ml-2 rounded-lg hover:bg-slate-100 lg:hidden text-slate-600 transition-colors"
             >
-              <Menu className="w-6 h-6" />
+              <div className="animated-hamburger">
+                <span></span><span></span><span></span>
+              </div>
             </button>
 
             {/* Global Search */}

@@ -55,6 +55,68 @@ body {
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
+/* ─── Sidebar Scrollbar (Admin) ─────────────────────────── */
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* ─── Animated Hamburger ────────────────────────────────── */
+.animated-hamburger {
+  width: 24px;
+  height: 18px;
+  position: relative;
+  transform: rotate(0deg);
+  transition: .5s ease-in-out;
+  cursor: pointer;
+}
+
+.animated-hamburger span {
+  display: block;
+  position: absolute;
+  height: 2px;
+  width: 100%;
+  background: currentColor;
+  border-radius: 2px;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: .25s ease-in-out;
+}
+
+.animated-hamburger span:nth-child(1) {
+  top: 0px;
+}
+.animated-hamburger span:nth-child(2) {
+  top: 8px;
+}
+.animated-hamburger span:nth-child(3) {
+  top: 16px;
+}
+
+.animated-hamburger.open span:nth-child(1) {
+  top: 8px;
+  transform: rotate(135deg);
+}
+.animated-hamburger.open span:nth-child(2) {
+  opacity: 0;
+  left: -10px;
+}
+.animated-hamburger.open span:nth-child(3) {
+  top: 8px;
+  transform: rotate(-135deg);
+}
+
+
 /* ─── Animations ────────────────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }

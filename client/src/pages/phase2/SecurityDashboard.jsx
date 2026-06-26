@@ -17,6 +17,7 @@ export default function SecurityDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [entryCost, setEntryCost] = useState(null);
 
   // Modal States
   const [activeModal, setActiveModal] = useState(null); // 'exit' or 'entry'
@@ -130,7 +131,7 @@ export default function SecurityDashboard() {
     try {
       setSubmitting(true);
       setError('');
-      await api.post('/phase2/gate/entry', {
+      const response = await api.post('/phase2/gate/entry', {
         request_id: selectedItem.request_id,
         odometer_in: parseFloat(odometer),
         fuel_level_in: fuelLevel,
@@ -139,7 +140,9 @@ export default function SecurityDashboard() {
         remarks_in: remarks,
         photo_url_in: photoUrl
       });
-      setSuccess('Entry logged successfully! Travel costs calculated.');
+      const cost = response.data?.cost || 0;
+      setEntryCost(cost);
+      setSuccess(`Entry logged successfully! Travel cost: $${cost}`);
       setTimeout(() => setSuccess(''), 4000);
       closeModals();
       fetchData();
