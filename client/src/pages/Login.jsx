@@ -222,8 +222,8 @@ export default function Login() {
       <div className="relative w-full max-w-md animate-fade-in">
         {/* Logo & Title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/15 rounded-2xl backdrop-blur-sm mb-4">
-            <Truck className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/15 rounded-2xl backdrop-blur-sm mb-4 ring-2 ring-white/20">
+            <img src="/logo-icon.png" alt="VRTP Logo" className="w-16 h-16 object-contain rounded-xl" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
             Vehicle Requisitional and Travel Portal
