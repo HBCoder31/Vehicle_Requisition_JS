@@ -171,9 +171,9 @@ export default function Login() {
           <div className="relative w-24 h-28 mx-auto mb-6 pointer-events-none select-none">
             {/* Speech Bubble */}
             {greeting && (
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800/90 text-white text-[11px] font-semibold px-2.5 py-1.5 rounded-xl shadow-md whitespace-nowrap z-30 animate-fade-in">
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-blue-50 text-blue-700 border border-blue-200/80 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl shadow-md whitespace-nowrap z-30 animate-fade-in">
                 {greeting}!
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-800/90 rotate-45" />
+                <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-blue-50 border-r border-b border-blue-200/80 rotate-45" />
               </div>
             )}
             <PaperMascot 
