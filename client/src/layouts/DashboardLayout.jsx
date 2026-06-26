@@ -272,15 +272,14 @@ export default function DashboardLayout() {
         />
       )}
 
-      {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 bg-primary-900 text-white
         transform transition-all duration-300 ease-in-out
-        lg:static lg:flex lg:flex-col
+        flex flex-col h-screen lg:static
         ${sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 lg:translate-x-0 lg:w-20'}
       `}>
         {/* Logo */}
-        <div className={`flex items-center h-16 border-b border-primary-800 ${sidebarOpen ? 'justify-between px-6' : 'justify-center px-0'}`}>
+        <div className={`flex items-center h-16 border-b border-primary-800 shrink-0 ${sidebarOpen ? 'justify-between px-6' : 'justify-center px-0'}`}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
               <Truck className="w-5 h-5" />
@@ -321,7 +320,7 @@ export default function DashboardLayout() {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className={`p-4 border-t border-primary-800 ${sidebarOpen ? '' : 'flex justify-center'}`}>
+        <div className={`p-4 border-t border-primary-800 shrink-0 ${sidebarOpen ? '' : 'flex justify-center'}`}>
           <div className={`flex items-center ${sidebarOpen ? 'gap-3' : 'justify-center'}`}>
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt="" className="w-8 h-8 rounded-full ring-2 ring-primary-700 shrink-0" />
