@@ -37,21 +37,87 @@ export default function Login() {
   const [focusedInput, setFocusedInput] = useState(null); // 'identifier' | 'password' | 'email' | 'employee_number' | null
   const [targetPos, setTargetPos] = useState({ x: 0, y: 0 });
 
+  // Playable Drag States
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
   const identifierRef = useRef(null);
   const passwordRef = useRef(null);
   const emailRef = useRef(null);
   const empNumRef = useRef(null);
 
-  // Follow the mouse when no input is focused
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return; // Only left click
+    e.preventDefault(); // Prevent text selection and default browser dragging
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y });
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length !== 1) return;
+    e.preventDefault(); // Prevent page scroll / selection on mobile while dragging
+    setIsDragging(true);
+    const touch = e.touches[0];
+    setDragStart({ x: touch.clientX - dragOffset.x, y: touch.clientY - dragOffset.y });
+  };
+
+  // Follow the mouse when no input is focused and not dragging
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (!focusedInput) {
+      if (!focusedInput && !isDragging) {
         setTargetPos({ x: e.clientX, y: e.clientY });
       }
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [focusedInput]);
+  }, [focusedInput, isDragging]);
+
+  // Window listeners to handle global dragging & mouse/touch release
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e) => {
+      setDragOffset({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setDragOffset({ x: 0, y: 0 });
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault(); // Prevent screen scrolling during drag
+      const touch = e.touches[0];
+      setDragOffset({
+        x: touch.clientX - dragStart.x,
+        y: touch.clientY - dragStart.y
+      });
+    };
+
+    const handleTouchEnd = () => {
+      setIsDragging(false);
+      setDragOffset({ x: 0, y: 0 });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchcancel', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [isDragging, dragStart]);
 
   // Recalculate target coordinates for caret tracking on focus/input changes
   useEffect(() => {
@@ -168,12 +234,21 @@ export default function Login() {
         {/* Login Card */}
         <div className="relative bg-white rounded-2xl p-8 shadow-2xl border border-slate-100 transition-all duration-300 login-card mt-12">
           {/* Interactive Mascot in Card Flow */}
-          <div className="relative w-24 h-28 mx-auto mb-6 pointer-events-none select-none">
+          <div 
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            style={{
+              transform: `translate(${dragOffset.x}px, ${dragOffset.y}px) scale(${isDragging ? 1.15 : 1})`,
+              transition: isDragging ? 'none' : 'transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              filter: isDragging ? 'drop-shadow(0 25px 15px rgba(0, 0, 0, 0.15))' : 'none'
+            }}
+            className="relative w-24 h-28 mx-auto mb-6 select-none cursor-grab active:cursor-grabbing z-30"
+          >
             {/* Speech Bubble */}
             {greeting && (
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-blue-50 text-blue-700 border border-blue-200/80 text-[11px] font-semibold px-2.5 py-1.5 rounded-xl shadow-md whitespace-nowrap z-30 animate-fade-in">
-                {greeting}!
-                <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-blue-50 border-r border-b border-blue-200/80 rotate-45" />
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border border-blue-400/20 text-[11px] font-semibold px-3 py-1.5 rounded-xl shadow-lg whitespace-nowrap z-30 animate-fade-in">
+                {isDragging ? 'Wheee! 😄' : `${greeting}!`}
+                <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-indigo-600 border-r border-b border-blue-400/20 rotate-45" />
               </div>
             )}
             <PaperMascot 
@@ -181,6 +256,7 @@ export default function Login() {
               isPasswordFocused={focusedInput === 'password'}
               isInputFocused={!!focusedInput && focusedInput !== 'password'}
               isConfused={isConfused}
+              isDragging={isDragging}
             />
           </div>
 
@@ -330,7 +406,7 @@ export default function Login() {
 }
 
 // Interactive SVG Paper Mascot resembling Orient Paper Mills sheets
-function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused }) {
+function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused, isDragging }) {
   const mascotRef = useRef(null);
   const [pupilOffset, setPupilOffset] = useState({ x: 0, y: 0 });
 
@@ -395,7 +471,13 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused 
         />
 
         {/* Eyes */}
-        {isPasswordFocused ? (
+        {isDragging ? (
+          <>
+            {/* Joyful Squinty Eyes (happy arcs) */}
+            <path d="M 25 43 Q 35 33 45 43" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M 55 43 Q 65 33 75 43" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+          </>
+        ) : isPasswordFocused ? (
           <>
             {/* Cute Closed Eyes (smiling curve) */}
             <path d="M 27 42 Q 35 48 43 42" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
@@ -427,7 +509,9 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused 
         )}
 
         {/* Mouth */}
-        {isPasswordFocused ? (
+        {isDragging ? (
+          <path d="M 42 53 Q 50 63 58 53 Z" fill="#475569" stroke="#475569" strokeWidth="1" strokeLinecap="round" />
+        ) : isPasswordFocused ? (
           <line x1="46" y1="55" x2="54" y2="55" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
         ) : isConfused ? (
           <path d="M 44 54 Q 47 50 50 54 T 56 54" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
@@ -441,11 +525,13 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused 
         <g 
           style={{ 
             transformOrigin: '5px 70px', 
-            transform: isPasswordFocused 
-              ? 'rotate(-135deg)' 
-              : isConfused 
-                ? 'rotate(-45deg)' 
-                : 'rotate(0deg)',
+            transform: isDragging
+              ? 'rotate(-150deg)'
+              : isPasswordFocused 
+                ? 'rotate(-135deg)' 
+                : isConfused 
+                  ? 'rotate(-45deg)' 
+                  : 'rotate(0deg)',
             transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)' 
           }}
         >
@@ -456,11 +542,13 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused 
         <g 
           style={{ 
             transformOrigin: '95px 70px', 
-            transform: isPasswordFocused 
-              ? 'rotate(135deg)' 
-              : isConfused 
-                ? 'rotate(45deg)' 
-                : 'rotate(0deg)',
+            transform: isDragging
+              ? 'rotate(150deg)'
+              : isPasswordFocused 
+                ? 'rotate(135deg)' 
+                : isConfused 
+                  ? 'rotate(45deg)' 
+                  : 'rotate(0deg)',
             transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)' 
           }}
         >
