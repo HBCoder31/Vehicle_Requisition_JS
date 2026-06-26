@@ -302,6 +302,7 @@ export default function Login() {
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="block text-sm font-medium text-slate-700">Password</label>
+                  {/* Forgot Password temporarily disabled
                   <button 
                     type="button"
                     onClick={() => { setView('forgot-password'); setErrorMsg(''); setSuccessMsg(''); }}
@@ -309,6 +310,7 @@ export default function Login() {
                   >
                     Forgot Password?
                   </button>
+                  */}
                 </div>
                 <input
                   ref={passwordRef}
