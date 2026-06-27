@@ -178,7 +178,7 @@ export default function SecurityDashboard() {
       });
       const cost = response.data?.cost || 0;
       setEntryCost(cost);
-      setSuccess(`Entry logged successfully! Travel cost: $${cost}`);
+      setSuccess(`Entry logged successfully! Travel cost: ₹${cost}`);
       setTimeout(() => setSuccess(''), 4000);
       closeModals();
       fetchData();
@@ -225,7 +225,7 @@ export default function SecurityDashboard() {
         'Damage Report': item.damage_report || '',
         'Entry Remarks': item.remarks_in || '',
         'Distance (km)': item.distance_travelled || 0,
-        'Travel Cost ($)': item.travel_cost || 0.00
+        'Travel Cost (₹)': item.travel_cost || 0.00
       }));
 
       const ws = XLSX.utils.json_to_sheet(dataToExport);
@@ -271,7 +271,7 @@ export default function SecurityDashboard() {
 
       // Define columns
       const headers = [
-        ['ID', 'Requester', 'Vehicle', 'Driver', 'Exit Details', 'Return Details', 'Distance', 'Cost ($)']
+        ['ID', 'Requester', 'Vehicle', 'Driver', 'Exit Details', 'Return Details', 'Distance', 'Cost (Rs.)']
       ];
 
       const rows = historyLogs.map(item => [
@@ -282,7 +282,7 @@ export default function SecurityDashboard() {
         `Time: ${item.exit_time ? new Date(item.exit_time).toLocaleString() : '-'}\nOdo: ${item.odometer_out || 0} km\nGate: ${item.gate_no_out || '-'}`,
         `Time: ${item.entry_time ? new Date(item.entry_time).toLocaleString() : '-'}\nOdo: ${item.odometer_in || '-'} km\nCond: ${item.vehicle_condition || 'Ok'}`,
         `${item.distance_travelled || 0} km`,
-        item.travel_cost || '0.00'
+        item.travel_cost ? `Rs. ${item.travel_cost}` : '0.00'
       ]);
 
       doc.autoTable({
@@ -617,8 +617,8 @@ export default function SecurityDashboard() {
                         </td>
                         <td className="px-5 py-4 text-right">
                           <div className="font-bold text-slate-800">{item.distance_travelled || 0} km</div>
-                          <div className="text-xs text-slate-400 mt-0.5">at ${item.cost_per_km || '0.00'}/km</div>
-                          <div className="text-base font-extrabold text-indigo-700 mt-1.5">${item.travel_cost || '0.00'}</div>
+                          <div className="text-xs text-slate-400 mt-0.5">at ₹{item.cost_per_km || '0.00'}/km</div>
+                          <div className="text-base font-extrabold text-indigo-700 mt-1.5">₹{item.travel_cost || '0.00'}</div>
                         </td>
                       </tr>
                     ))}
