@@ -136,6 +136,16 @@ class EmailApprovalService {
       const approveUrl = `${base}/api/email/approve/${approveToken}`;
       const rejectUrl = `${base}/api/email/reject/${rejectToken}`;
 
+      console.log(`[DEBUG TRACE] Email Sent Metadata:
+Request ID: ${requestId}
+Approval Stage: ${stage}
+Approver ID: ${approverId}
+Approve Token: ${approveToken}
+Reject Token: ${rejectToken}
+Approve URL: ${approveUrl}
+Reject URL: ${rejectUrl}
+Recipient Email: ${approver.email}`);
+
       const html = this._buildApprovalEmailHtml(request, approver.full_name, stage, approveUrl, rejectUrl);
 
       await EmailService.sendEmail(
