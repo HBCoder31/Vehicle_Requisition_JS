@@ -7,13 +7,12 @@ class Phase2Repository {
     const [rows] = await pool.execute(`
       SELECT vr.*, e.full_name AS requester_name, e.employee_number, d.name AS department_name, 
              v.registration_no, v.make, v.model, v.vehicle_type,
-             dr_u.full_name AS driver_name
+             dr.full_name AS driver_name
       FROM vehicle_requests vr
       JOIN employees e ON vr.employee_id = e.id
       JOIN departments d ON vr.department_id = d.id
       LEFT JOIN vehicles v ON vr.assigned_vehicle_id = v.id
       LEFT JOIN drivers dr ON vr.assigned_driver_id = dr.id
-      LEFT JOIN employees dr_u ON dr.user_id = dr_u.id
       WHERE vr.status = 'Vehicle_Assigned'
         AND vr.id NOT IN (SELECT request_id FROM vehicle_trip_logs)
       ORDER BY vr.travel_date ASC, vr.travel_time ASC
@@ -26,14 +25,13 @@ class Phase2Repository {
       SELECT tl.*, vr.destination, vr.pickup_location, vr.travel_date, vr.travel_time,
              e.full_name AS requester_name, e.employee_number, d.name AS department_name,
              v.registration_no, v.make, v.model, v.vehicle_type,
-             dr_u.full_name AS driver_name
+             dr.full_name AS driver_name
       FROM vehicle_trip_logs tl
       JOIN vehicle_requests vr ON tl.request_id = vr.id
       JOIN employees e ON tl.employee_id = e.id
       JOIN departments d ON vr.department_id = d.id
       JOIN vehicles v ON tl.vehicle_id = v.id
       JOIN drivers dr ON tl.driver_id = dr.id
-      LEFT JOIN employees dr_u ON dr.user_id = dr_u.id
       WHERE tl.status = 'Vehicle Out'
       ORDER BY tl.exit_time ASC
     `);
@@ -86,7 +84,7 @@ class Phase2Repository {
 
       // 4. Update vehicle status to 'In_Use' and set odometer
       await connection.execute(
-        `UPDATE vehicles SET status = 'In_Use', current_odometer = ? WHERE id = ?`,
+        `UPDATE vehicles SET is_available = 0, current_odometer = ? WHERE id = ?`,
         [exitData.odometer_out, exitData.vehicle_id]
       );
 
@@ -178,7 +176,7 @@ class Phase2Repository {
 
       // 6. Update vehicle status to 'Available' and set odometer
       await connection.execute(
-        `UPDATE vehicles SET status = 'Available', current_odometer = ? WHERE id = ?`,
+        `UPDATE vehicles SET is_available = 1, current_odometer = ? WHERE id = ?`,
         [entryData.odometer_in, tripLog.vehicle_id]
       );
 
@@ -224,12 +222,11 @@ class Phase2Repository {
     const [rows] = await pool.execute(`
       SELECT tl.*, vr.destination, vr.pickup_location, vr.travel_date, vr.travel_time,
              v.registration_no, v.make, v.model, v.vehicle_type,
-             dr_u.full_name AS driver_name
+             dr.full_name AS driver_name
       FROM vehicle_trip_logs tl
       JOIN vehicle_requests vr ON tl.request_id = vr.id
       JOIN vehicles v ON tl.vehicle_id = v.id
       JOIN drivers dr ON tl.driver_id = dr.id
-      LEFT JOIN employees dr_u ON dr.user_id = dr_u.id
       WHERE tl.employee_id = ?
       ORDER BY tl.exit_time DESC
     `, [employeeId]);
@@ -361,14 +358,13 @@ class Phase2Repository {
              e.full_name AS requester_name, e.email AS requester_email, e.employee_number, 
              dept.name AS department_name, dept.code AS department_code,
              v.registration_no, v.make, v.model, v.vehicle_type,
-             dr_u.full_name AS driver_name,
+             dr.full_name AS driver_name,
              ets.total_paid, ets.outstanding_balance
       FROM vehicle_trip_logs tl
       JOIN employees e ON tl.employee_id = e.id
       JOIN departments dept ON e.department_id = dept.id
       JOIN vehicles v ON tl.vehicle_id = v.id
       JOIN drivers dr ON tl.driver_id = dr.id
-      LEFT JOIN employees dr_u ON dr.user_id = dr_u.id
       LEFT JOIN employee_travel_summary ets ON e.id = ets.employee_id
       WHERE tl.id = ?
     `, [tripLogId]);
@@ -388,7 +384,7 @@ class Phase2Repository {
   async getGarageFleetStatus() {
     // Current odometer, total KM, daily/monthly running KM, utilization, availability, driver assignment
     const [vehicles] = await pool.execute(`
-      SELECT v.id, v.registration_no, v.make, v.model, v.vehicle_type, v.status, v.current_odometer,
+      SELECT v.id, v.registration_no, v.make, v.model, v.vehicle_type, IF(v.is_available = 1, 'Available', 'In_Use') AS status, v.current_odometer,
              COALESCE(SUM(tl.distance_travelled), 0) AS total_km,
              COALESCE(SUM(CASE WHEN DATE(tl.entry_time) = CURDATE() THEN tl.distance_travelled ELSE 0 END), 0) AS daily_km,
              COALESCE(SUM(CASE WHEN MONTH(tl.entry_time) = MONTH(CURDATE()) AND YEAR(tl.entry_time) = YEAR(CURDATE()) THEN tl.distance_travelled ELSE 0 END), 0) AS monthly_km,
@@ -400,11 +396,10 @@ class Phase2Repository {
     `);
     
     const [outsideVehicles] = await pool.execute(`
-      SELECT v.registration_no, v.make, v.model, dr_u.full_name AS driver_name, e.full_name AS requester_name, tl.exit_time
+      SELECT v.registration_no, v.make, v.model, dr.full_name AS driver_name, e.full_name AS requester_name, tl.exit_time
       FROM vehicle_trip_logs tl
       JOIN vehicles v ON tl.vehicle_id = v.id
       JOIN drivers dr ON tl.driver_id = dr.id
-      LEFT JOIN employees dr_u ON dr.user_id = dr_u.id
       JOIN employees e ON tl.employee_id = e.id
       WHERE tl.status = 'Vehicle Out'
     `);
