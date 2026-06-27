@@ -71,7 +71,10 @@ exports.createRequest = catchAsync(async (req, res) => {
     throw new AppError(error.details[0].message, 400);
   }
 
-  const requestId = await RequestService.createRequest(req.user, value, req.ip);
+  const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+  const baseUrl = `${protocol}://${req.get('host')}`;
+
+  const requestId = await RequestService.createRequest(req.user, value, req.ip, baseUrl);
 
   res.status(201).json({
     status: 'success',

@@ -11,7 +11,7 @@ class ApprovalService {
     return await ApprovalRepository.getHodPendingRequests(departmentIds);
   }
 
-  async hodAction(requestId, departmentIds, action, remarks, userId, ipAddress) {
+  async hodAction(requestId, departmentIds, action, remarks, userId, ipAddress, baseUrl = null) {
     if (!departmentIds || departmentIds.length === 0) {
       throw new AppError('Access denied. No associated departments.', 403);
     }
@@ -22,7 +22,10 @@ class ApprovalService {
 
     let newStatus = action === 'reject' ? 'Rejected_HOD' : 'Pending_GM_HR';
 
-    await ApprovalRepository.updateHodAction(requestId, newStatus, remarks, userId);
+    const success = await ApprovalRepository.updateHodAction(requestId, newStatus, remarks, userId);
+    if (!success) {
+      throw new AppError('Action failed. The request status has already been changed by another action.', 400);
+    }
     
     // History & Audit
     await HistoryRepository.addEvent(requestId, userId, action === 'approve' ? 'HOD_Approved' : 'HOD_Rejected', 'Pending_HOD', newStatus, remarks);
@@ -43,7 +46,7 @@ class ApprovalService {
       for (const gUser of gmhrUsers) {
         if (gUser.id !== request.employee_id) {
           await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval', null, true);
-          await EmailApprovalService.sendApprovalEmail(requestId, gUser.id, 'GM-HR');
+          await EmailApprovalService.sendApprovalEmail(requestId, gUser.id, 'GM-HR', baseUrl);
         }
       }
     }
@@ -55,7 +58,7 @@ class ApprovalService {
     return await ApprovalRepository.getGmHrPendingRequests();
   }
 
-  async gmHrAction(requestId, action, remarks, userId, ipAddress) {
+  async gmHrAction(requestId, action, remarks, userId, ipAddress, baseUrl = null) {
     const request = await RequestRepository.getRequestById(requestId);
     if (!request || request.status !== 'Pending_GM_HR') {
       throw new AppError('Request not found or not pending GM-HR approval.', 404);
@@ -64,7 +67,10 @@ class ApprovalService {
     let newStatus = action === 'reject' ? 'Rejected_GM_HR' : 
                    (request.travel_type === 'Beyond Anuppur/Shahdol' ? 'Pending_COO' : 'Approved_GM_HR');
 
-    await ApprovalRepository.updateGmHrAction(requestId, newStatus, remarks, userId);
+    const success = await ApprovalRepository.updateGmHrAction(requestId, newStatus, remarks, userId);
+    if (!success) {
+      throw new AppError('Action failed. The request status has already been changed by another action.', 400);
+    }
 
     // History & Audit
     await HistoryRepository.addEvent(requestId, userId, action === 'approve' ? 'GMHR_Approved' : 'GMHR_Rejected', 'Pending_GM_HR', newStatus, remarks);
@@ -85,7 +91,7 @@ class ApprovalService {
       for (const cUser of cooUsers) {
         if (cUser.id !== request.employee_id) {
           await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval', null, true);
-          await EmailApprovalService.sendApprovalEmail(requestId, cUser.id, 'COO');
+          await EmailApprovalService.sendApprovalEmail(requestId, cUser.id, 'COO', baseUrl);
         }
       }
     } else if (newStatus === 'Approved_GM_HR') {
@@ -132,7 +138,7 @@ class ApprovalService {
     return await ApprovalRepository.getCooPendingRequests();
   }
 
-  async cooAction(requestId, action, remarks, userId, ipAddress) {
+  async cooAction(requestId, action, remarks, userId, ipAddress, baseUrl = null) {
     const request = await RequestRepository.getRequestById(requestId);
     if (!request || request.status !== 'Pending_COO') {
       throw new AppError('Request not found or not pending COO approval.', 404);
@@ -140,7 +146,10 @@ class ApprovalService {
 
     const newStatus = action === 'approve' ? 'Approved_COO' : 'Rejected_COO';
 
-    await ApprovalRepository.updateCooAction(requestId, newStatus, remarks, userId);
+    const success = await ApprovalRepository.updateCooAction(requestId, newStatus, remarks, userId);
+    if (!success) {
+      throw new AppError('Action failed. The request status has already been changed by another action.', 400);
+    }
 
     // History & Audit
     await HistoryRepository.addEvent(requestId, userId, action === 'approve' ? 'COO_Approved' : 'COO_Rejected', 'Pending_COO', newStatus, remarks);

@@ -114,7 +114,7 @@ class EmailApprovalService {
   /**
    * Send a rich HTML approval email with Approve/Reject buttons to an approver.
    */
-  async sendApprovalEmail(requestId, approverId, stage) {
+  async sendApprovalEmail(requestId, approverId, stage, baseUrl = null) {
     try {
       const request = await RequestRepository.getRequestById(requestId);
       if (!request) {
@@ -132,9 +132,9 @@ class EmailApprovalService {
       const approveToken = await this.generateToken(requestId, approverId, stage);
       const rejectToken = await this.generateToken(requestId, approverId, stage);
 
-      const baseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
-      const approveUrl = `${baseUrl}/api/email/approve/${approveToken}`;
-      const rejectUrl = `${baseUrl}/api/email/reject/${rejectToken}`;
+      const base = baseUrl || process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+      const approveUrl = `${base}/api/email/approve/${approveToken}`;
+      const rejectUrl = `${base}/api/email/reject/${rejectToken}`;
 
       const html = this._buildApprovalEmailHtml(request, approver.full_name, stage, approveUrl, rejectUrl);
 

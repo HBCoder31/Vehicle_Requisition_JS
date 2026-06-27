@@ -26,13 +26,17 @@ exports.hodAction = catchAsync(async (req, res) => {
   const { roles, departmentIds } = await delegationUtil.getEffectivePermissions(req.user.id);
   if (!roles.includes('HOD')) throw new AppError('Access denied.', 403);
 
+  const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+  const baseUrl = `${protocol}://${req.get('host')}`;
+
   const newStatus = await ApprovalService.hodAction(
     req.params.id, 
     departmentIds, 
     value.action, 
     value.remarks, 
     req.user.id, 
-    req.ip
+    req.ip,
+    baseUrl
   );
 
   res.json({ status: 'success', message: `Request ${value.action}d by HOD.`, newStatus });
@@ -63,12 +67,16 @@ exports.gmHrAction = catchAsync(async (req, res) => {
   const { roles } = await delegationUtil.getEffectivePermissions(req.user.id);
   if (!roles.includes('GM-HR')) throw new AppError('Access denied.', 403);
 
+  const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+  const baseUrl = `${protocol}://${req.get('host')}`;
+
   const newStatus = await ApprovalService.gmHrAction(
     req.params.id, 
     value.action, 
     value.remarks, 
     req.user.id, 
-    req.ip
+    req.ip,
+    baseUrl
   );
 
   res.json({ status: 'success', message: `Request ${value.action}d by GM-HR.`, newStatus });
@@ -99,12 +107,16 @@ exports.cooAction = catchAsync(async (req, res) => {
   const { roles } = await delegationUtil.getEffectivePermissions(req.user.id);
   if (!roles.includes('COO')) throw new AppError('Access denied.', 403);
 
+  const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+  const baseUrl = `${protocol}://${req.get('host')}`;
+
   const newStatus = await ApprovalService.cooAction(
     req.params.id, 
     value.action, 
     value.remarks, 
     req.user.id, 
-    req.ip
+    req.ip,
+    baseUrl
   );
 
   res.json({ status: 'success', message: `Request ${value.action}d by COO.`, newStatus });

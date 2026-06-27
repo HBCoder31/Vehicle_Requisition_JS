@@ -83,12 +83,7 @@ exports.handleApprove = async (req, res) => {
       ipAddress
     );
 
-    // Send approval email to next approver in chain
-    try {
-      await _sendNextStageEmail(request_id, request, approval_stage);
-    } catch (emailErr) {
-      console.error('Failed to send next-stage email:', emailErr);
-    }
+
 
     // Return success page
     const approverName = tokenRecord.approver_name || 'Approver';
@@ -227,30 +222,3 @@ exports.handleRejectSubmit = async (req, res) => {
 };
 
 
-// ─── HELPER: Send approval email to the next stage approver ──────
-
-async function _sendNextStageEmail(requestId, request, completedStage) {
-  const UserRepository = require('../repositories/UserRepository');
-
-  if (completedStage === 'HOD') {
-    // HOD approved → next is GM-HR
-    const gmhrUsers = await UserRepository.findByRole('GM-HR');
-    for (const gUser of gmhrUsers) {
-      if (gUser.id !== request.employee_id) {
-        await EmailApprovalService.sendApprovalEmail(requestId, gUser.id, 'GM-HR');
-      }
-    }
-  } else if (completedStage === 'GM-HR') {
-    // GM-HR approved → next is COO (only for Beyond Anuppur/Shahdol)
-    if (request.travel_type === 'Beyond Anuppur/Shahdol') {
-      const cooUsers = await UserRepository.findByRole('COO');
-      for (const cUser of cooUsers) {
-        if (cUser.id !== request.employee_id) {
-          await EmailApprovalService.sendApprovalEmail(requestId, cUser.id, 'COO');
-        }
-      }
-    }
-    // If within, no further email-approval needed (goes to Garage)
-  }
-  // COO approved → goes to Garage (no approval email needed)
-}

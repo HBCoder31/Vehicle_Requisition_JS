@@ -53,30 +53,33 @@ class ApprovalRepository {
   }
 
   async updateHodAction(id, newStatus, remarks, actionBy) {
-    await pool.execute(
+    const [result] = await pool.execute(
       `UPDATE vehicle_requests
        SET status = ?, hod_remarks = ?, hod_action_by = ?, hod_action_at = NOW()
-       WHERE id = ?`,
+       WHERE id = ? AND status = 'Pending_HOD'`,
       [newStatus, remarks || null, actionBy, id]
     );
+    return result.affectedRows > 0;
   }
 
   async updateCooAction(id, newStatus, remarks, actionBy) {
-    await pool.execute(
+    const [result] = await pool.execute(
       `UPDATE vehicle_requests
        SET status = ?, coo_remarks = ?, coo_action_by = ?, coo_action_at = NOW()
-       WHERE id = ?`,
+       WHERE id = ? AND status = 'Pending_COO'`,
       [newStatus, remarks || null, actionBy, id]
     );
+    return result.affectedRows > 0;
   }
 
   async updateGmHrAction(id, newStatus, remarks, actionBy) {
-    await pool.execute(
+    const [result] = await pool.execute(
       `UPDATE vehicle_requests
        SET status = ?, gmhr_remarks = ?, gmhr_action_by = ?, gmhr_action_at = NOW()
-       WHERE id = ?`,
+       WHERE id = ? AND status = 'Pending_GM_HR'`,
       [newStatus, remarks || null, actionBy, id]
     );
+    return result.affectedRows > 0;
   }
 
   async getHodStats(departmentIds) {

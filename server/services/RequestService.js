@@ -6,7 +6,7 @@ const AppError = require('../utils/AppError');
 const socketUtil = require('../utils/socket');
 
 class RequestService {
-  async createRequest(user, data, ipAddress) {
+  async createRequest(user, data, ipAddress, baseUrl = null) {
     // Validate travel type
     const validTravelTypes = ['Within Anuppur/Shahdol', 'Beyond Anuppur/Shahdol'];
     if (!validTravelTypes.includes(data.travel_type)) {
@@ -87,7 +87,7 @@ class RequestService {
         for (const cUser of cooUsers) {
           if (cUser.id !== user.id) {
             await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval', null, true);
-            await EmailApprovalService.sendApprovalEmail(requestId, cUser.id, 'COO');
+            await EmailApprovalService.sendApprovalEmail(requestId, cUser.id, 'COO', baseUrl);
           }
         }
       } else if (initialStatus === 'Pending_GM_HR') {
@@ -96,7 +96,7 @@ class RequestService {
         for (const gUser of gmhrUsers) {
           if (gUser.id !== user.id) {
             await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval', null, true);
-            await EmailApprovalService.sendApprovalEmail(requestId, gUser.id, 'GM-HR');
+            await EmailApprovalService.sendApprovalEmail(requestId, gUser.id, 'GM-HR', baseUrl);
           }
         }
       } else {
@@ -105,7 +105,7 @@ class RequestService {
         for (const hUser of hodUsers) {
           if (hUser.id !== user.id) {
             await NotificationService.notifyUser(hUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} from your department requires approval.`, 'Approval', null, true);
-            await EmailApprovalService.sendApprovalEmail(requestId, hUser.id, 'HOD');
+            await EmailApprovalService.sendApprovalEmail(requestId, hUser.id, 'HOD', baseUrl);
           }
         }
       }
