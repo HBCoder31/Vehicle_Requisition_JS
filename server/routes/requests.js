@@ -10,6 +10,8 @@ const {
   getAllRequests,
   getRequestHistory,
   updateRequest,
+  searchAirports,
+  searchRailwayStations
 } = require('../controllers/requestController');
 
 const router = express.Router();
@@ -28,6 +30,10 @@ router.get('/my/export', exportMyRequests);
 
 // Admin: view all requests with pagination
 router.get('/all', authorize('Admin'), getAllRequests);
+
+// Lookups for ticket booking
+router.get('/lookup/airports', searchAirports);
+router.get('/lookup/railways', searchRailwayStations);
 
 // Any authenticated user (with access check in controller)
 router.get('/:id', getRequestById);

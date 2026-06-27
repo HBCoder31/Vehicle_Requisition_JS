@@ -14,7 +14,11 @@ const createRequestSchema = Joi.object({
   travel_time: Joi.string().required(),
   return_date: Joi.date().iso().allow(null, ''),
   return_time: Joi.string().allow(null, ''),
-  work_type: Joi.string().valid('Personal', 'Company').default('Company')
+  work_type: Joi.string().valid('Personal', 'Company').default('Company'),
+  want_ticket: Joi.boolean().allow(null, 0, 1),
+  mode_of_transport: Joi.string().valid('Bus', 'Train', 'Flight').allow(null, ''),
+  ticket_from: Joi.string().allow(null, ''),
+  ticket_to: Joi.string().allow(null, '')
 });
 
 // ─── CREATE REQUEST ────────────────────────────────────────
@@ -277,5 +281,25 @@ exports.getRequestHistory = catchAsync(async (req, res) => {
   res.json({
     status: 'success',
     data: history
+  });
+});
+
+exports.searchAirports = catchAsync(async (req, res) => {
+  const RequestRepository = require('../repositories/RequestRepository');
+  const { q } = req.query;
+  const results = await RequestRepository.searchAirports(q || '');
+  res.json({
+    status: 'success',
+    data: results
+  });
+});
+
+exports.searchRailwayStations = catchAsync(async (req, res) => {
+  const RequestRepository = require('../repositories/RequestRepository');
+  const { q } = req.query;
+  const results = await RequestRepository.searchRailwayStations(q || '');
+  res.json({
+    status: 'success',
+    data: results
   });
 });

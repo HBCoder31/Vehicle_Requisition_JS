@@ -41,7 +41,38 @@ export default function EditRequest() {
     return_date: '',
     return_time: '',
     work_type: 'Company',
+    want_ticket: 0,
+    mode_of_transport: '',
+    ticket_from: '',
+    ticket_to: ''
   });
+
+  const [fromSuggestions, setFromSuggestions] = useState([]);
+  const [toSuggestions, setToSuggestions] = useState([]);
+
+  const handleLocationSearch = async (query, field) => {
+    if (query.length < 2) {
+      if (field === 'from') setFromSuggestions([]);
+      else setToSuggestions([]);
+      return;
+    }
+
+    try {
+      const endpoint = form.mode_of_transport === 'Flight' ? '/requests/lookup/airports' : '/requests/lookup/railways';
+      const { data } = await api.get(endpoint, { params: { q: query } });
+      const formatted = (data.data || []).map(item => {
+        if (form.mode_of_transport === 'Flight') {
+          return `${item.city} - ${item.name} (${item.iata_code})`;
+        } else {
+          return `${item.name} (${item.code}) - ${item.state || ''}`;
+        }
+      });
+      if (field === 'from') setFromSuggestions(formatted);
+      else setToSuggestions(formatted);
+    } catch (err) {
+      console.error('Search failed:', err);
+    }
+  };
 
   useEffect(() => {
     async function fetchRequest() {
@@ -73,6 +104,10 @@ export default function EditRequest() {
           return_date: getLocalDateString(reqData.return_date),
           return_time: reqData.return_time ? reqData.return_time.substring(0, 5) : '',
           work_type: reqData.work_type || 'Company',
+          want_ticket: reqData.want_ticket || 0,
+          mode_of_transport: reqData.mode_of_transport || '',
+          ticket_from: reqData.ticket_from || '',
+          ticket_to: reqData.ticket_to || ''
         });
       } catch (err) {
         setError('Failed to load request details.');
@@ -249,6 +284,137 @@ export default function EditRequest() {
                 </p>
               )}
             </div>
+
+            {form.travel_type === 'Beyond Anuppur/Shahdol' && (
+              <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-4 shadow-inner">
+                <div>
+                  <label className={labelClass}>Want to book ticket?</label>
+                  <div className="flex gap-4">
+                    {['No', 'Yes'].map(opt => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setForm(prev => ({ 
+                          ...prev, 
+                          want_ticket: opt === 'Yes' ? 1 : 0,
+                          mode_of_transport: opt === 'No' ? '' : (prev.mode_of_transport || 'Bus'),
+                          ticket_from: opt === 'No' ? '' : prev.ticket_from,
+                          ticket_to: opt === 'No' ? '' : prev.ticket_to
+                        }))}
+                        className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-all ${
+                          (opt === 'Yes' ? form.want_ticket === 1 : form.want_ticket === 0)
+                            ? 'bg-primary-900 border-primary-900 text-white shadow-sm'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {(form.want_ticket === 1 || form.want_ticket === 0) && (
+                  <p className="text-xs text-primary-700 bg-primary-50 px-3 py-2 rounded-md font-medium border border-primary-100/50">
+                    ℹ After approval from higher authorities your form will be sent to Travel admin.
+                  </p>
+                )}
+
+                {form.want_ticket === 1 && (
+                  <div className="space-y-4 pt-2 border-t border-slate-200/50">
+                    <div>
+                      <label className={labelClass}>Mode of transport needed</label>
+                      <div className="flex gap-3">
+                        {['Bus', 'Train', 'Flight'].map(mode => (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setForm(prev => ({ 
+                              ...prev, 
+                              mode_of_transport: mode,
+                              ticket_from: '',
+                              ticket_to: ''
+                            }))}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-all ${
+                              form.mode_of_transport === mode
+                                ? 'bg-indigo-900 border-indigo-900 text-white shadow-sm'
+                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                            }`}
+                          >
+                            {mode}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="ticket_from" className={labelClass}>From</label>
+                        <input
+                          id="ticket_from"
+                          name="ticket_from"
+                          type="text"
+                          required={form.want_ticket === 1}
+                          value={form.ticket_from}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setForm(prev => ({ ...prev, ticket_from: val }));
+                            if (form.mode_of_transport !== 'Bus') {
+                              handleLocationSearch(val, 'from');
+                            }
+                          }}
+                          className={inputClass}
+                          placeholder={
+                            form.mode_of_transport === 'Bus' ? 'Enter starting location' :
+                            form.mode_of_transport === 'Train' ? 'Search railway station...' : 'Search airport...'
+                          }
+                          list="edit-from-suggestions-list"
+                          autoComplete="off"
+                        />
+                        {form.mode_of_transport !== 'Bus' && (
+                          <datalist id="edit-from-suggestions-list">
+                            {fromSuggestions.map((s, idx) => (
+                              <option key={`edit-from-sug-${idx}`} value={s} />
+                            ))}
+                          </datalist>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="ticket_to" className={labelClass}>To</label>
+                        <input
+                          id="ticket_to"
+                          name="ticket_to"
+                          type="text"
+                          required={form.want_ticket === 1}
+                          value={form.ticket_to}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setForm(prev => ({ ...prev, ticket_to: val }));
+                            if (form.mode_of_transport !== 'Bus') {
+                              handleLocationSearch(val, 'to');
+                            }
+                          }}
+                          className={inputClass}
+                          placeholder={
+                            form.mode_of_transport === 'Bus' ? 'Enter destination location' :
+                            form.mode_of_transport === 'Train' ? 'Search railway station...' : 'Search airport...'
+                          }
+                          list="edit-to-suggestions-list"
+                          autoComplete="off"
+                        />
+                        {form.mode_of_transport !== 'Bus' && (
+                          <datalist id="edit-to-suggestions-list">
+                            {toSuggestions.map((s, idx) => (
+                              <option key={`edit-to-sug-${idx}`} value={s} />
+                            ))}
+                          </datalist>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Date & Time */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

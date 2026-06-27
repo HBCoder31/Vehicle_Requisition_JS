@@ -196,6 +196,28 @@ export default function RequestDetails() {
                 </a>
               </div>
             )}
+
+            {request.want_ticket === 1 && (
+              <div className="mt-6 pt-6 border-t border-border">
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-2">Ticket Booking Requisition</p>
+                <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl space-y-2">
+                  <p className="text-sm font-medium text-slate-800">
+                    <span className="font-semibold text-indigo-900">Mode of Transport:</span> {request.mode_of_transport}
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                    <div>
+                      <span className="font-semibold text-slate-700">From:</span> {request.ticket_from}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-slate-700">To:</span> {request.ticket_to}
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-indigo-700 mt-2 font-medium">
+                    * After approval from higher authorities your form will be sent to Travel admin.
+                  </p>
+                </div>
+              </div>
+            )}
           </Card>
 
           {request.assigned_vehicle_id && (

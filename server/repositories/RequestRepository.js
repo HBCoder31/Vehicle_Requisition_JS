@@ -12,8 +12,10 @@ class RequestRepository {
   async createRequest(data, initialStatus = 'Pending_HOD') {
     const [result] = await pool.execute(
       `INSERT INTO vehicle_requests 
-        (employee_id, department_id, purpose, pickup_location, destination, travel_type, passengers, travel_date, travel_time, return_date, return_time, status, work_type)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (employee_id, department_id, purpose, pickup_location, destination, travel_type, passengers, 
+         travel_date, travel_time, return_date, return_time, status, work_type,
+         want_ticket, mode_of_transport, ticket_from, ticket_to)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         data.employee_id,
         data.department_id,
@@ -27,7 +29,11 @@ class RequestRepository {
         data.return_date || null,
         data.return_time || null,
         initialStatus,
-        data.work_type || 'Company'
+        data.work_type || 'Company',
+        data.want_ticket ? 1 : 0,
+        data.mode_of_transport || null,
+        data.ticket_from || null,
+        data.ticket_to || null
       ]
     );
     return result.insertId;
@@ -38,7 +44,7 @@ class RequestRepository {
       `UPDATE vehicle_requests 
        SET purpose = ?, pickup_location = ?, destination = ?, travel_type = ?, 
            passengers = ?, travel_date = ?, travel_time = ?, return_date = ?, return_time = ?,
-           work_type = ?
+           work_type = ?, want_ticket = ?, mode_of_transport = ?, ticket_from = ?, ticket_to = ?
        WHERE id = ?`,
       [
         data.purpose,
@@ -51,6 +57,10 @@ class RequestRepository {
         data.return_date || null,
         data.return_time || null,
         data.work_type || 'Company',
+        data.want_ticket ? 1 : 0,
+        data.mode_of_transport || null,
+        data.ticket_from || null,
+        data.ticket_to || null,
         id
       ]
     );
@@ -157,6 +167,29 @@ class RequestRepository {
       rows,
       total: countRows[0].total
     };
+  }
+
+  async searchAirports(queryStr) {
+    const q = `%${queryStr.toUpperCase()}%`;
+    const qLower = `%${queryStr}%`;
+    const [rows] = await pool.execute(
+      `SELECT name, city, iata_code FROM indian_airports 
+       WHERE UPPER(name) LIKE ? OR UPPER(city) LIKE ? OR UPPER(iata_code) LIKE ?
+       LIMIT 15`,
+      [q, q, q]
+    );
+    return rows;
+  }
+
+  async searchRailwayStations(queryStr) {
+    const q = `%${queryStr.toUpperCase()}%`;
+    const [rows] = await pool.execute(
+      `SELECT name, code, state FROM indian_railway_stations 
+       WHERE UPPER(name) LIKE ? OR UPPER(code) LIKE ?
+       LIMIT 15`,
+      [q, q]
+    );
+    return rows;
   }
 }
 
