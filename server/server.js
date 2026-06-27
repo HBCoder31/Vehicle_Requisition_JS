@@ -105,6 +105,7 @@ app.use('/api/search',        require('./routes/search'));
 app.use('/api/delegations',   require('./routes/delegations'));
 app.use('/api/destinations',  require('./routes/destinations'));
 app.use('/api/phase2',        require('./routes/phase2'));
+app.use('/api/email',         require('./routes/emailApproval'));
 
 // ─── 404 Handler ───────────────────────────────────────────
 app.all('*', (req, res, next) => {

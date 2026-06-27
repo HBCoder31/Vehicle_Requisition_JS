@@ -83,23 +83,29 @@ class RequestService {
         }
       } else if (initialStatus === 'Pending_COO') {
         const cooUsers = await UserRepository.findByRole('COO');
+        const EmailApprovalService = require('./EmailApprovalService');
         for (const cUser of cooUsers) {
           if (cUser.id !== user.id) {
-            await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval');
+            await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval', null, true);
+            await EmailApprovalService.sendApprovalEmail(requestId, cUser.id, 'COO');
           }
         }
       } else if (initialStatus === 'Pending_GM_HR') {
         const gmhrUsers = await UserRepository.findByRole('GM-HR');
+        const EmailApprovalService = require('./EmailApprovalService');
         for (const gUser of gmhrUsers) {
           if (gUser.id !== user.id) {
-            await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval');
+            await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} requires your approval.`, 'Approval', null, true);
+            await EmailApprovalService.sendApprovalEmail(requestId, gUser.id, 'GM-HR');
           }
         }
       } else {
         const hodUsers = await UserRepository.findByRoleAndDepartment('HOD', departmentId);
+        const EmailApprovalService = require('./EmailApprovalService');
         for (const hUser of hodUsers) {
           if (hUser.id !== user.id) {
-            await NotificationService.notifyUser(hUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} from your department requires approval.`, 'Approval');
+            await NotificationService.notifyUser(hUser.id, 'New Request for Approval', `Request #${requestId} to ${data.destination} from your department requires approval.`, 'Approval', null, true);
+            await EmailApprovalService.sendApprovalEmail(requestId, hUser.id, 'HOD');
           }
         }
       }

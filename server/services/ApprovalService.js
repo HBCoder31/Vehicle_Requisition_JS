@@ -38,10 +38,12 @@ class ApprovalService {
 
     if (newStatus === 'Pending_GM_HR') {
       const UserRepository = require('../repositories/UserRepository');
+      const EmailApprovalService = require('./EmailApprovalService');
       const gmhrUsers = await UserRepository.findByRole('GM-HR');
       for (const gUser of gmhrUsers) {
         if (gUser.id !== request.employee_id) {
-          await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval');
+          await NotificationService.notifyUser(gUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval', null, true);
+          await EmailApprovalService.sendApprovalEmail(requestId, gUser.id, 'GM-HR');
         }
       }
     }
@@ -78,10 +80,12 @@ class ApprovalService {
 
     if (newStatus === 'Pending_COO') {
       const UserRepository = require('../repositories/UserRepository');
+      const EmailApprovalService = require('./EmailApprovalService');
       const cooUsers = await UserRepository.findByRole('COO');
       for (const cUser of cooUsers) {
         if (cUser.id !== request.employee_id) {
-          await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval');
+          await NotificationService.notifyUser(cUser.id, 'New Request for Approval', `Request #${requestId} to ${request.destination} requires your approval.`, 'Approval', null, true);
+          await EmailApprovalService.sendApprovalEmail(requestId, cUser.id, 'COO');
         }
       }
     } else if (newStatus === 'Approved_GM_HR') {

@@ -15,7 +15,7 @@ class EmailService {
         'https://api.brevo.com/v3/smtp/email',
         {
           sender: {
-            name: 'Vehicle Requisition Portal',
+            name: 'Vehicle Requisition Travel Portal',
             email: process.env.SMTP_FROM || 'guest@opil.in'
           },
 

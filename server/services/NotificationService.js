@@ -19,7 +19,7 @@ class NotificationService {
   /**
    * Unified notification sender: Creates DB entry, emits socket event, and sends email.
    */
-  async notifyUser(userId, title, message, type = 'System') {
+  async notifyUser(userId, title, message, type = 'System', htmlOverride = null, skipEmail = false) {
     try {
       // 1. Save to DB
       const id = await NotificationRepository.createNotification(userId, title, message, type);
@@ -32,13 +32,15 @@ class NotificationService {
       }
 
       // 3. Send Email
-      const user = await UserRepository.findById(userId);
-      if (user && user.email) {
-        await EmailService.sendEmail(
-          user.email,
-          title,
-          `<p>${message}</p>`
-        );
+      if (!skipEmail) {
+        const user = await UserRepository.findById(userId);
+        if (user && user.email) {
+          await EmailService.sendEmail(
+            user.email,
+            title,
+            htmlOverride || `<p>${message}</p>`
+          );
+        }
       }
     } catch (err) {
       logger.error('Failed to notify user', err);
