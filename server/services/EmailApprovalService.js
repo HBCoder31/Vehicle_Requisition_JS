@@ -560,6 +560,86 @@ class EmailApprovalService {
   }
 
   /**
+   * Build HTML for the approval confirmation form
+   */
+  buildApprovalFormPage(request, approverName, stage, token) {
+    const actionUrl = `${process.env.API_BASE_URL || 'http://localhost:' + (process.env.PORT || 5000)}/api/email/approve/${token}`;
+    const now = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approve Request — VRTP</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 540px; width: 100%; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #1a365d, #2b6cb0); padding: 20px 28px; color: #fff; }
+    .header h1 { font-size: 18px; font-weight: 700; } .header p { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+    .body { padding: 28px; }
+    .alert { background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; }
+    .alert-title { font-size: 14px; font-weight: 700; color: #38a169; margin-bottom: 4px; }
+    .alert-text { font-size: 13px; color: #22543d; line-height: 1.5; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .info-item { background: #f7fafc; border-radius: 6px; padding: 10px 14px; }
+    .info-label { font-size: 10px; text-transform: uppercase; font-weight: 700; color: #718096; letter-spacing: 0.5px; }
+    .info-value { font-size: 14px; font-weight: 600; color: #1a202c; margin-top: 2px; }
+    .actions { display: flex; gap: 12px; margin-top: 20px; }
+    .btn { padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 700; border: none; cursor: pointer; text-decoration: none; text-align: center; flex: 1; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.9; }
+    .btn-approve { background: #38a169; color: #fff; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .footer { padding: 16px 28px; background: #f7fafc; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #a0aec0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>🚗 VRTP — Approve Vehicle Request</h1>
+      <p>CK Birla Group &bull; Orient Paper & Industries</p>
+    </div>
+    <div class="body">
+      <div class="alert">
+        <div class="alert-title">✅ You are about to approve this request</div>
+        <div class="alert-text">Click the button below to confirm and finalize your approval.</div>
+      </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Request #</div>
+          <div class="info-value">${request.id}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Employee</div>
+          <div class="info-value">${request.requester_name || 'N/A'}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Destination</div>
+          <div class="info-value">${request.destination || 'N/A'}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Approving As</div>
+          <div class="info-value">${stage}</div>
+        </div>
+      </div>
+      <form method="POST" action="${actionUrl}" id="approveForm">
+        <div class="actions">
+          <button type="submit" class="btn btn-approve" id="submitBtn" onclick="this.disabled=true;this.textContent='Processing...';document.getElementById('approveForm').submit();">
+            ✅ Confirm Approval
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="footer">
+      VRTP &bull; Vehicle Requisition Travel Portal &bull; ${now}
+    </div>
+  </div>
+</body>
+</html>`;
+  }
+
+  /**
    * Build error/warning page for invalid, expired, or already-used tokens
    */
   buildErrorPage(errorMessage, code) {

@@ -12,9 +12,42 @@ const AuditRepository = require('../repositories/AuditRepository');
  * GET /api/email/approve/:token
  * 
  * Called when approver clicks the green "APPROVE" button in email.
- * Validates token, executes approval via existing ApprovalService, returns success page.
+ * Validates token, displays approval confirmation form.
  */
-exports.handleApprove = async (req, res) => {
+exports.handleApproveForm = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Validate token (DO NOT consume yet — wait for form confirm click)
+    const result = await EmailApprovalService.validateToken(token);
+
+    if (!result.valid) {
+      return res.status(400).send(EmailApprovalService.buildErrorPage(result.error, result.code));
+    }
+
+    const { tokenRecord, request } = result;
+    const approverName = tokenRecord.approver_name || 'Approver';
+
+    // Show approval confirmation form page
+    return res.status(200).send(
+      EmailApprovalService.buildApprovalFormPage(request, approverName, tokenRecord.approval_stage, token)
+    );
+
+  } catch (err) {
+    console.error('Email approve form handler error:', err);
+    return res.status(500).send(
+      EmailApprovalService.buildErrorPage('An unexpected error occurred. Please use the VRTP website.', 'SERVER_ERROR')
+    );
+  }
+};
+
+/**
+ * POST /api/email/approve/:token
+ * 
+ * Called when approver clicks the confirmation button on the page.
+ * Validates and consumes token, executes approval via ApprovalService, returns success page.
+ */
+exports.handleApproveSubmit = async (req, res) => {
   try {
     const { token } = req.params;
     const ipAddress = req.ip || req.connection?.remoteAddress;
@@ -30,6 +63,9 @@ exports.handleApprove = async (req, res) => {
     const { tokenRecord, request } = result;
     const { approval_stage, approver_id, request_id } = tokenRecord;
 
+    const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+    const baseUrl = `${protocol}://${req.get('host')}`;
+
     // Execute approval using EXISTING ApprovalService logic
     try {
       if (approval_stage === 'HOD') {
@@ -44,7 +80,8 @@ exports.handleApprove = async (req, res) => {
           'approve',
           'Approved via email',
           approver_id,
-          ipAddress
+          ipAddress,
+          baseUrl
         );
       } else if (approval_stage === 'GM-HR') {
         await ApprovalService.gmHrAction(
@@ -52,7 +89,8 @@ exports.handleApprove = async (req, res) => {
           'approve',
           'Approved via email',
           approver_id,
-          ipAddress
+          ipAddress,
+          baseUrl
         );
       } else if (approval_stage === 'COO') {
         await ApprovalService.cooAction(
@@ -60,7 +98,8 @@ exports.handleApprove = async (req, res) => {
           'approve',
           'Approved via email',
           approver_id,
-          ipAddress
+          ipAddress,
+          baseUrl
         );
       }
     } catch (approvalErr) {
@@ -83,8 +122,6 @@ exports.handleApprove = async (req, res) => {
       ipAddress
     );
 
-
-
     // Return success page
     const approverName = tokenRecord.approver_name || 'Approver';
     return res.status(200).send(
@@ -92,7 +129,7 @@ exports.handleApprove = async (req, res) => {
     );
 
   } catch (err) {
-    console.error('Email approve handler error:', err);
+    console.error('Email approve submit handler error:', err);
     return res.status(500).send(
       EmailApprovalService.buildErrorPage('An unexpected error occurred. Please use the VRTP website.', 'SERVER_ERROR')
     );
