@@ -38,6 +38,43 @@ class Phase2Repository {
     return rows;
   }
 
+  async getGateHistory(filters = {}) {
+    let query = `
+      SELECT tl.*, vr.destination, vr.pickup_location, vr.travel_date, vr.travel_time,
+             e.full_name AS requester_name, e.employee_number, d.name AS department_name,
+             v.registration_no, v.make, v.model, v.vehicle_type,
+             dr.full_name AS driver_name
+      FROM vehicle_trip_logs tl
+      JOIN vehicle_requests vr ON tl.request_id = vr.id
+      JOIN employees e ON tl.employee_id = e.id
+      JOIN departments d ON vr.department_id = d.id
+      JOIN vehicles v ON tl.vehicle_id = v.id
+      JOIN drivers dr ON tl.driver_id = dr.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (filters.employeeNumber) {
+      query += ` AND e.employee_number LIKE ?`;
+      params.push(`%${filters.employeeNumber}%`);
+    }
+
+    if (filters.startDate) {
+      query += ` AND DATE(tl.exit_time) >= ?`;
+      params.push(filters.startDate);
+    }
+
+    if (filters.endDate) {
+      query += ` AND DATE(tl.exit_time) <= ?`;
+      params.push(filters.endDate);
+    }
+
+    query += ` ORDER BY tl.exit_time DESC`;
+
+    const [rows] = await pool.execute(query, params);
+    return rows;
+  }
+
   async recordExit(exitData, guardId) {
     const connection = await pool.getConnection();
     try {

@@ -6,6 +6,7 @@ const {
   getPendingEntries,
   recordExit,
   recordEntry,
+  getGateHistory,
   getEmployeeTravelHistory,
   getTravelCosts,
   updateTravelCost,
@@ -28,6 +29,7 @@ router.get('/gate/exits', authorize('Security Guard', 'Admin'), getPendingExits)
 router.get('/gate/entries', authorize('Security Guard', 'Admin'), getPendingEntries);
 router.post('/gate/exit', authorize('Security Guard', 'Admin'), recordExit);
 router.post('/gate/entry', authorize('Security Guard', 'Admin'), recordEntry);
+router.get('/gate/history', authorize('Security Guard', 'Admin'), getGateHistory);
 
 // Travel History route (Any authenticated user can view history, query filtering handled in controller)
 router.get('/travel-history', getEmployeeTravelHistory);

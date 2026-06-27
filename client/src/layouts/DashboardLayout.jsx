@@ -67,6 +67,7 @@ const roleNavConfig = {
     { to: '/garage/fleet-operations', icon: Truck, label: 'Fleet Operations' },
     { to: '/garage/maintenance', icon: CheckSquare, label: 'Maintenance' },
     { to: '/garage/fuel', icon: FileText, label: 'Fuel Logs' },
+    { to: '/security/gate', icon: Shield, label: 'Gate Operations' },
     { to: '/requests/history', icon: History, label: 'All Request History' },
     { to: '/admin/audit-logs', icon: ScrollText, label: 'Audit Logs' },
     { to: '/delegations', icon: Users, label: 'Delegations' },

@@ -90,6 +90,17 @@ async function recordEntry(req, res) {
   }
 }
 
+async function getGateHistory(req, res) {
+  try {
+    const { startDate, endDate, employeeNumber } = req.query;
+    const history = await Phase2Repository.getGateHistory({ startDate, endDate, employeeNumber });
+    res.json({ status: 'success', data: history });
+  } catch (err) {
+    console.error('getGateHistory error:', err);
+    res.status(500).json({ error: 'Failed to fetch gate history.' });
+  }
+}
+
 // --- 2. Travel History & Ledgers ---
 
 async function getEmployeeTravelHistory(req, res) {
@@ -267,6 +278,7 @@ module.exports = {
   getPendingEntries,
   recordExit,
   recordEntry,
+  getGateHistory,
   getEmployeeTravelHistory,
   getTravelCosts,
   updateTravelCost,
