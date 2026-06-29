@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
-import { Plus, Edit2, Trash2, Search, CheckCircle, Upload, Download, Printer, Info } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, CheckCircle, Upload, Download, Printer, Info, X } from 'lucide-react';
 
 export default function ManageEmployees() {
   const [employees, setEmployees] = useState([]);
@@ -15,6 +15,9 @@ export default function ManageEmployees() {
   const [form, setForm] = useState({ employee_number: '', email: '', password: '', full_name: '', role: 'Employee', department_id: '', phone: '' });
   const [processing, setProcessing] = useState(false);
   const [formatModalOpen, setFormatModalOpen] = useState(false);
+  // Popover: only used for editing (not creating)
+  const [popover, setPopover] = useState({ open: false, x: 0, y: 0 });
+  const popoverRef = useRef(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -35,17 +38,39 @@ export default function ManageEmployees() {
     setEditModal({ open: true, employee: null });
   }
 
-  function openEdit(emp) {
+  function openEdit(emp, btnEl) {
     setForm({
       employee_number: emp.employee_number || '',
       email: emp.email,
-      password: '', // Leave blank when editing unless changing
+      password: '',
       full_name: emp.full_name,
       role: emp.role,
       department_id: emp.department_id || '',
       phone: emp.phone || '',
     });
-    setEditModal({ open: true, employee: emp });
+    setEditModal({ open: false, employee: emp });
+    // Position the popover near the pencil button
+    if (btnEl) {
+      const rect = btnEl.getBoundingClientRect();
+      const popoverWidth = 420;
+      const gap = 8;
+      // Place to the left of the button; flip right if near left edge
+      let x = rect.left - popoverWidth - gap;
+      if (x < 12) x = rect.right + gap;
+      let y = rect.top - 8;
+      // Prevent going below viewport
+      const estimatedHeight = 480;
+      if (y + estimatedHeight > window.innerHeight - 12) {
+        y = window.innerHeight - estimatedHeight - 12;
+      }
+      if (y < 12) y = 12;
+      setPopover({ open: true, x, y });
+    }
+  }
+
+  function closePopover() {
+    setPopover({ open: false, x: 0, y: 0 });
+    setEditModal({ open: false, employee: null });
   }
 
   async function handleSave() {
@@ -57,6 +82,7 @@ export default function ManageEmployees() {
         await api.post('/admin/employees', form);
       }
       setEditModal({ open: false, employee: null });
+      setPopover({ open: false, x: 0, y: 0 });
       fetchData();
     } catch (err) { alert(err.response?.data?.error || 'Failed.'); }
     finally { setProcessing(false); }
@@ -407,7 +433,7 @@ export default function ManageEmployees() {
                   </td>
                   <td className="px-6 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => openEdit(emp)} className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50" title="Edit">
+                      <button onClick={(e) => openEdit(emp, e.currentTarget)} className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50" title="Edit">
                         <Edit2 className="w-4 h-4" />
                       </button>
                       {emp.is_active ? (
@@ -428,11 +454,11 @@ export default function ManageEmployees() {
         </div>
       </Card>
 
-      {/* Create / Edit Modal */}
+      {/* Add Employee Modal (centered, for creating new) */}
       <Modal
-        isOpen={editModal.open}
+        isOpen={editModal.open && !editModal.employee}
         onClose={() => setEditModal({ open: false, employee: null })}
-        title={editModal.employee ? 'Edit Employee' : 'Add Employee'}
+        title="Add Employee"
       >
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -454,11 +480,9 @@ export default function ManageEmployees() {
                 className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
             </div>
             <div>
-              <label htmlFor="emp-pass" className="block text-sm font-medium text-slate-700 mb-1">
-                {editModal.employee ? 'Password (Leave blank to keep current)' : 'Password'}
-              </label>
+              <label htmlFor="emp-pass" className="block text-sm font-medium text-slate-700 mb-1">Password</label>
               <input id="emp-pass" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" placeholder={editModal.employee ? '••••••••' : ''} />
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -485,12 +509,94 @@ export default function ManageEmployees() {
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="secondary" onClick={() => setEditModal({ open: false, employee: null })}>Cancel</Button>
-            <Button loading={processing} onClick={handleSave}>
-              {editModal.employee ? 'Update' : 'Create'}
-            </Button>
+            <Button loading={processing} onClick={handleSave}>Create</Button>
           </div>
         </div>
       </Modal>
+
+      {/* Edit Employee Popover — appears near the pencil button */}
+      {popover.open && (
+        <>
+          {/* Invisible backdrop to close on outside click */}
+          <div className="fixed inset-0 z-40" onClick={closePopover} />
+          {/* Popover card */}
+          <div
+            ref={popoverRef}
+            className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-slate-200 w-[420px] animate-modal-spring"
+            style={{ top: popover.y, left: popover.x }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold">
+                  {editModal.employee?.full_name?.charAt(0) || '?'}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-800 leading-tight">{editModal.employee?.full_name}</p>
+                  <p className="text-[10px] text-slate-400">{editModal.employee?.employee_number}</p>
+                </div>
+              </div>
+              <button onClick={closePopover} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {/* Form body */}
+            <div className="px-5 py-4 space-y-3 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Full Name</label>
+                  <input type="text" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
+                    className="w-full px-3 py-1.5 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Employee No.</label>
+                  <input type="text" value={form.employee_number} onChange={e => setForm(f => ({ ...f, employee_number: e.target.value }))}
+                    className="w-full px-3 py-1.5 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Email</label>
+                  <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    className="w-full px-3 py-1.5 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">New Password</label>
+                  <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                    className="w-full px-3 py-1.5 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" placeholder="Leave blank to keep" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Role</label>
+                  <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
+                    className="w-full px-3 py-1.5 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none">
+                    {['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security', 'Travel Admin'].map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Department</label>
+                  <select value={form.department_id} onChange={e => setForm(f => ({ ...f, department_id: e.target.value }))}
+                    className="w-full px-3 py-1.5 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none">
+                    <option value="">— None —</option>
+                    {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Phone</label>
+                <input type="text" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                  className="w-full px-3 py-1.5 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
+              </div>
+            </div>
+            {/* Footer */}
+            <div className="px-5 py-3 border-t border-slate-100 flex justify-end gap-2">
+              <Button variant="secondary" onClick={closePopover}>Cancel</Button>
+              <Button loading={processing} onClick={handleSave}>Update</Button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* CSV Format Guidelines Modal */}
       <Modal
