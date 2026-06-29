@@ -42,12 +42,16 @@ export default function Login() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isFlipping, setIsFlipping] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const identifierRef = useRef(null);
   const passwordRef = useRef(null);
   const emailRef = useRef(null);
   const empNumRef = useRef(null);
   const bubbleRef = useRef(null);
+  const cardRef = useRef(null);
+  const mascotContainerRef = useRef(null);
 
   const handleMouseDown = (e) => {
     if (e.button !== 0) return; // Only left click
@@ -169,6 +173,56 @@ export default function Login() {
     }
   }, [greeting, isDragging]);
 
+  // Page load landing animations (blobs scale, card slide-up, mascot drop-bounce)
+  useEffect(() => {
+    // 1. Scale up background blobs
+    gsap.fromTo(".bg-blob",
+      { scale: 0, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 1.5, stagger: 0.15, ease: "power3.out" }
+    );
+
+    // 2. Slide up and fade in login card
+    if (cardRef.current) {
+      gsap.fromTo(cardRef.current,
+        { y: 80, opacity: 0, scale: 0.96 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.9, ease: "back.out(1.15)", delay: 0.15 }
+      );
+    }
+
+    // 3. Drop down paper mascot and landing bounce
+    if (mascotContainerRef.current) {
+      gsap.fromTo(mascotContainerRef.current,
+        { y: -350, scaleY: 1.5, scaleX: 0.6, opacity: 0 },
+        { y: 0, scaleY: 1, scaleX: 1, opacity: 1, duration: 1.1, ease: "bounce.out", delay: 0.5 }
+      );
+    }
+  }, []);
+
+  const handleDoubleClick = () => {
+    if (isFlipping || isDragging) return;
+    setIsFlipping(true);
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setIsFlipping(false);
+        gsap.set(mascotContainerRef.current, { rotate: 0 });
+      }
+    });
+
+    // Backflip animation sequence
+    tl.to(mascotContainerRef.current, { scaleY: 0.6, scaleX: 1.3, duration: 0.15, ease: "power1.out" })
+      .to(mascotContainerRef.current, { 
+        y: -120, 
+        rotate: -360, 
+        scaleY: 1.25, 
+        scaleX: 0.8, 
+        duration: 0.55, 
+        ease: "power2.out" 
+      })
+      .to(mascotContainerRef.current, { y: 0, scaleY: 0.7, scaleX: 1.2, duration: 0.25, ease: "power2.in" })
+      .to(mascotContainerRef.current, { scaleY: 1, scaleX: 1, duration: 0.2, ease: "elastic.out(1.2, 0.5)" });
+  };
+
   // Recalculate target coordinates for caret tracking on focus/input changes
   useEffect(() => {
     if (!focusedInput) return;
@@ -257,12 +311,21 @@ export default function Login() {
     }
   };
 
+  const getSpeechBubbleText = () => {
+    if (isFlipping) return 'Wheee! Backflip! 🤸‍♂️';
+    if (isDragging) return 'Hold on tight! 🎈';
+    if (isConfused) return 'Oops! Check it again... 🥺';
+    if (focusedInput === 'password') return "Shh! I'm not looking! 🙈";
+    if (isHovered) return 'Double click me! 💖';
+    return `${greeting}!`;
+  };
+
   return (
     <div className="login-bg flex items-center justify-center p-4 relative overflow-hidden">
       {/* Floating decorative elements */}
-      <div className="absolute top-10 left-10 w-80 h-80 bg-blue-500/25 rounded-full blur-3xl animate-float-1 mix-blend-screen" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-sky-500/20 rounded-full blur-3xl animate-float-2 mix-blend-screen" />
-      <div className="absolute top-1/2 left-1/3 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl animate-blob mix-blend-screen" />
+      <div className="bg-blob absolute top-10 left-10 w-80 h-80 bg-blue-500/25 rounded-full blur-3xl animate-float-1 mix-blend-screen" />
+      <div className="bg-blob absolute bottom-10 right-10 w-96 h-96 bg-sky-500/20 rounded-full blur-3xl animate-float-2 mix-blend-screen" />
+      <div className="bg-blob absolute top-1/2 left-1/3 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl animate-blob mix-blend-screen" />
 
       {/* Top Right Logo */}
       <div className="absolute top-6 right-6 lg:top-8 lg:right-8 bg-white rounded-xl shadow-xl p-2.5 z-10 animate-fade-in">
@@ -281,11 +344,15 @@ export default function Login() {
         </div>
 
         {/* Login Card */}
-        <div className="relative bg-white rounded-2xl p-6 shadow-2xl border border-slate-100 transition-all duration-300 login-card mt-3">
+        <div ref={cardRef} className="relative bg-white rounded-2xl p-6 shadow-2xl border border-slate-100 transition-all duration-300 login-card mt-3">
           {/* Interactive Mascot in Card Flow */}
           <div 
+            ref={mascotContainerRef}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
+            onDoubleClick={handleDoubleClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             style={{
               transform: `translate(${dragOffset.x}px, ${dragOffset.y}px) scale(${isDragging ? 1.15 : 1})`,
               transition: isDragging ? 'none' : 'transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -296,7 +363,7 @@ export default function Login() {
             {/* Speech Bubble */}
             {greeting && (
               <div ref={bubbleRef} className="absolute -top-9 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border border-blue-400/20 text-[10px] font-semibold px-2.5 py-1 rounded-xl shadow-lg whitespace-nowrap z-30">
-                {isDragging ? 'Wheee! 😄' : `${greeting}!`}
+                {getSpeechBubbleText()}
                 <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2 h-2 bg-indigo-600 border-r border-b border-blue-400/20 rotate-45" />
               </div>
             )}
@@ -306,6 +373,8 @@ export default function Login() {
               isInputFocused={!!focusedInput && focusedInput !== 'password'}
               isConfused={isConfused}
               isDragging={isDragging}
+              isFlipping={isFlipping}
+              isHovered={isHovered}
             />
           </div>
 
@@ -448,9 +517,11 @@ export default function Login() {
 }
 
 // Interactive SVG Paper Mascot resembling Orient Paper Mills sheets
-function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused, isDragging }) {
+function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused, isDragging, isFlipping, isHovered }) {
   const mascotRef = useRef(null);
   const mouthRef = useRef(null);
+  const leftArmRef = useRef(null);
+  const rightArmRef = useRef(null);
   const [pupilOffset, setPupilOffset] = useState({ x: 0, y: 0 });
 
   // Idea 5: Wind Flutter / Idle Wave
@@ -476,7 +547,7 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
     let fillVal = "none";
     let strokeW = "2";
     
-    if (isDragging) {
+    if (isFlipping || isDragging) {
       targetPath = "M 42 53 Q 50 65 58 53 Z"; // open smile
       fillVal = "#475569";
       strokeW = "1";
@@ -495,7 +566,52 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
       duration: 0.35,
       ease: "power2.out"
     });
-  }, [isDragging, isPasswordFocused, isConfused, isInputFocused]);
+  }, [isDragging, isPasswordFocused, isConfused, isInputFocused, isFlipping]);
+
+  // Arm Waving Hover and State Animation (GSAP)
+  useEffect(() => {
+    if (!leftArmRef.current || !rightArmRef.current) return;
+    
+    let leftAnim, rightAnim;
+    
+    if (isHovered && !isDragging && !isPasswordFocused && !isConfused && !isFlipping) {
+      leftAnim = gsap.to(leftArmRef.current, {
+        rotate: "-60deg",
+        duration: 0.12,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut"
+      });
+      rightAnim = gsap.to(rightArmRef.current, {
+        rotate: "60deg",
+        duration: 0.12,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut"
+      });
+    } else {
+      let leftRot = "0deg";
+      let rightRot = "0deg";
+      if (isDragging || isFlipping) {
+        leftRot = "-150deg";
+        rightRot = "150deg";
+      } else if (isPasswordFocused) {
+        leftRot = "-135deg";
+        rightRot = "135deg";
+      } else if (isConfused) {
+        leftRot = "-45deg";
+        rightRot = "45deg";
+      }
+      
+      gsap.to(leftArmRef.current, { rotate: leftRot, duration: 0.35, ease: "back.out(1.5)" });
+      gsap.to(rightArmRef.current, { rotate: rightRot, duration: 0.35, ease: "back.out(1.5)" });
+    }
+    
+    return () => {
+      if (leftAnim) leftAnim.kill();
+      if (rightAnim) rightAnim.kill();
+    };
+  }, [isHovered, isDragging, isPasswordFocused, isConfused, isFlipping]);
 
   useEffect(() => {
     if (!mascotRef.current) return;
@@ -558,7 +674,7 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
         />
 
         {/* Eyes */}
-        {isDragging ? (
+        {isDragging || isFlipping ? (
           <>
             {/* Joyful Squinty Eyes (happy arcs) */}
             <path d="M 25 43 Q 35 33 45 43" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
@@ -602,40 +718,15 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
           fill="none" 
           stroke="#475569" 
           strokeWidth="2" 
-          strokeLinecap="round" 
-        />
+          strokeLinecap="round" />
 
         {/* Left Arm */}
-        <g 
-          style={{ 
-            transformOrigin: '5px 70px', 
-            transform: isDragging
-              ? 'rotate(-150deg)'
-              : isPasswordFocused 
-                ? 'rotate(-135deg)' 
-                : isConfused 
-                  ? 'rotate(-45deg)' 
-                  : 'rotate(0deg)',
-            transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)' 
-          }}
-        >
+        <g ref={leftArmRef} style={{ transformOrigin: '5px 70px' }}>
           <path d="M 5 70 L 5 110 A 5 5 0 0 1 -5 110 L -5 70 Z" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
         </g>
         
         {/* Right Arm */}
-        <g 
-          style={{ 
-            transformOrigin: '95px 70px', 
-            transform: isDragging
-              ? 'rotate(150deg)'
-              : isPasswordFocused 
-                ? 'rotate(135deg)' 
-                : isConfused 
-                  ? 'rotate(45deg)' 
-                  : 'rotate(0deg)',
-            transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)' 
-          }}
-        >
+        <g ref={rightArmRef} style={{ transformOrigin: '95px 70px' }}>
           <path d="M 95 70 L 95 110 A 5 5 0 0 0 105 110 L 105 70 Z" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
         </g>
       </svg>
