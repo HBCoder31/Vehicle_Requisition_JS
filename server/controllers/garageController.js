@@ -232,12 +232,12 @@ async function assignVehicle(req, res) {
 async function recordPickup(req, res) {
   try {
     const [rows] = await pool.execute(
-      `SELECT * FROM vehicle_requests WHERE id = ? AND status = 'Vehicle_Assigned'`,
+      `SELECT * FROM vehicle_requests WHERE id = ? AND status = 'Vehicle Out'`,
       [req.params.id]
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Request not found or vehicle not yet assigned.' });
+      return res.status(400).json({ error: 'Request must be in "Vehicle Out" status to log pickup.' });
     }
 
     await pool.execute(
@@ -247,7 +247,7 @@ async function recordPickup(req, res) {
 
     await logAudit(req.user.id, 'RECORD_PICKUP', 'vehicle_request', parseInt(req.params.id), {}, req.ip);
 
-    await HistoryRepository.addEvent(req.params.id, req.user.id, 'In_Transit', 'Vehicle_Assigned', 'In_Transit', 'Passenger picked up');
+    await HistoryRepository.addEvent(req.params.id, req.user.id, 'In_Transit', 'Vehicle Out', 'In_Transit', 'Passenger picked up');
     await NotificationService.notifyUser(rows[0].employee_id, 'Trip Started', `Your trip is now in transit.`, 'System');
 
     res.json({ message: 'Pickup recorded. Trip is now in transit.' });
@@ -267,13 +267,13 @@ async function recordDropoff(req, res) {
   const conn = await pool.getConnection();
   try {
     const [rows] = await conn.execute(
-      `SELECT * FROM vehicle_requests WHERE id = ? AND status = 'In_Transit'`,
+      `SELECT * FROM vehicle_requests WHERE id = ? AND status = 'Vehicle Returned'`,
       [req.params.id]
     );
 
     if (rows.length === 0) {
       conn.release();
-      return res.status(404).json({ error: 'Request not found or not in transit.' });
+      return res.status(400).json({ error: 'Request must be in "Vehicle Returned" status to log dropoff.' });
     }
 
     await conn.beginTransaction();
@@ -302,7 +302,7 @@ async function recordDropoff(req, res) {
 
     await logAudit(req.user.id, 'RECORD_DROPOFF', 'vehicle_request', parseInt(req.params.id), {}, req.ip);
 
-    await HistoryRepository.addEvent(req.params.id, req.user.id, 'Completed', 'In_Transit', 'Completed', 'Trip completed successfully');
+    await HistoryRepository.addEvent(req.params.id, req.user.id, 'Completed', 'Vehicle Returned', 'Completed', 'Trip completed successfully');
     await NotificationService.notifyUser(rows[0].employee_id, 'Trip Completed', `Your trip has been completed.`, 'System');
 
     res.json({ message: 'Drop-off recorded. Trip completed.' });
@@ -357,7 +357,7 @@ async function getActiveTrips(req, res) {
        JOIN employees e ON vr.employee_id = e.id
        JOIN departments d ON vr.department_id = d.id
        LEFT JOIN vehicles v ON vr.assigned_vehicle_id = v.id
-       WHERE vr.status IN ('Vehicle_Assigned', 'In_Transit')
+       WHERE vr.status IN ('Vehicle_Assigned', 'Vehicle Out', 'In_Transit', 'Vehicle Returned')
        ORDER BY vr.travel_date ASC`
     );
     res.json({ trips: rows });

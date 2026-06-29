@@ -568,7 +568,7 @@ export default function SecurityDashboard() {
                       <th className="px-5 py-4">Vehicle / Driver</th>
                       <th className="px-5 py-4">Exit Details</th>
                       <th className="px-5 py-4">Return Details</th>
-                      <th className="px-5 py-4 text-right">Distance & Cost</th>
+                      <th className="px-5 py-4 text-right">Distance</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-600 text-sm">
@@ -615,10 +615,8 @@ export default function SecurityDashboard() {
                             </span>
                           )}
                         </td>
-                        <td className="px-5 py-4 text-right">
-                          <div className="font-bold text-slate-800">{item.distance_travelled || 0} km</div>
-                          <div className="text-xs text-slate-400 mt-0.5">at ₹{item.cost_per_km || '0.00'}/km</div>
-                          <div className="text-base font-extrabold text-indigo-700 mt-1.5">₹{item.travel_cost || '0.00'}</div>
+                        <td className="px-5 py-4 text-right font-bold text-slate-800">
+                          {item.distance_travelled !== null ? `${item.distance_travelled} km` : '—'}
                         </td>
                       </tr>
                     ))}

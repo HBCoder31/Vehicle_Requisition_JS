@@ -350,7 +350,7 @@ export default function GarageDashboard() {
                       <td className="px-6 py-3.5 text-slate-600 font-medium">{trip.assigned_driver}</td>
                       <td className="px-6 py-3.5"><StatusBadge status={trip.status} /></td>
                       <td className="px-6 py-3.5 text-right">
-                        {trip.status === 'Vehicle_Assigned' && (
+                        {(trip.status === 'Vehicle_Assigned' || trip.status === 'Vehicle Out') && (
                           <div className="flex items-center justify-end gap-2">
                             <Button
                               size="sm"
@@ -366,13 +366,25 @@ export default function GarageDashboard() {
                             >
                               Edit
                             </Button>
-                            <Button size="sm" variant="success" onClick={() => handlePickup(trip.id)}>
+                            <Button 
+                              size="sm" 
+                              variant="success" 
+                              onClick={() => handlePickup(trip.id)}
+                              disabled={trip.status === 'Vehicle_Assigned'}
+                              title={trip.status === 'Vehicle_Assigned' ? 'Waiting for Security Gate Exit Log' : 'Start Trip'}
+                            >
                               <PlayCircle className="w-3.5 h-3.5" /> Pickup
                             </Button>
                           </div>
                         )}
-                        {trip.status === 'In_Transit' && (
-                          <Button size="sm" variant="danger" onClick={() => handleDropoff(trip.id)}>
+                        {(trip.status === 'In_Transit' || trip.status === 'Vehicle Returned') && (
+                          <Button 
+                            size="sm" 
+                            variant="danger" 
+                            onClick={() => handleDropoff(trip.id)}
+                            disabled={trip.status === 'In_Transit'}
+                            title={trip.status === 'In_Transit' ? 'Waiting for Security Gate Return Log' : 'Complete Trip'}
+                          >
                             <StopCircle className="w-3.5 h-3.5" /> Drop-off
                           </Button>
                         )}
