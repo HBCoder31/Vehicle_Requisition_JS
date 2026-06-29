@@ -23,21 +23,33 @@ export default function ManageEmployees() {
 
   const updatePopoverPosition = useCallback(() => {
     if (!anchorRef.current) return;
-    const rect = anchorRef.current.getBoundingClientRect();
-    const popoverWidth = 420;
-    const gap = 8;
-    
-    // Place to the left of the button; flip right if near left edge
-    let x = rect.left - popoverWidth - gap;
-    if (x < 12) x = rect.right + gap;
-    let y = rect.top - 8;
-    
-    // Prevent going below viewport
-    const estimatedHeight = 480;
-    if (y + estimatedHeight > window.innerHeight - 12) {
-      y = window.innerHeight - estimatedHeight - 12;
+    const isMobile = window.innerWidth < 640;
+    let x = 0;
+    let y = 0;
+
+    if (isMobile) {
+      // Center on screen on mobile layout
+      const popoverWidth = Math.min(420, window.innerWidth * 0.92);
+      x = (window.innerWidth - popoverWidth) / 2;
+      y = (window.innerHeight - 450) / 2;
+      if (y < 12) y = 12;
+    } else {
+      const rect = anchorRef.current.getBoundingClientRect();
+      const popoverWidth = 420;
+      const gap = 8;
+      
+      // Place to the left of the button; flip right if near left edge
+      x = rect.left - popoverWidth - gap;
+      if (x < 12) x = rect.right + gap;
+      y = rect.top - 8;
+      
+      // Prevent going below viewport
+      const estimatedHeight = 480;
+      if (y + estimatedHeight > window.innerHeight - 12) {
+        y = window.innerHeight - estimatedHeight - 12;
+      }
+      if (y < 12) y = 12;
     }
-    if (y < 12) y = 12;
     
     setPopover(prev => {
       if (prev.x === x && prev.y === y) return prev;
@@ -99,19 +111,30 @@ export default function ManageEmployees() {
     
     if (btnEl) {
       anchorRef.current = btnEl;
-      const rect = btnEl.getBoundingClientRect();
-      const popoverWidth = 420;
-      const gap = 8;
+      const isMobile = window.innerWidth < 640;
+      let x = 0;
+      let y = 0;
       
-      let x = rect.left - popoverWidth - gap;
-      if (x < 12) x = rect.right + gap;
-      let y = rect.top - 8;
-      
-      const estimatedHeight = 480;
-      if (y + estimatedHeight > window.innerHeight - 12) {
-        y = window.innerHeight - estimatedHeight - 12;
+      if (isMobile) {
+        const popoverWidth = Math.min(420, window.innerWidth * 0.92);
+        x = (window.innerWidth - popoverWidth) / 2;
+        y = (window.innerHeight - 450) / 2;
+        if (y < 12) y = 12;
+      } else {
+        const rect = btnEl.getBoundingClientRect();
+        const popoverWidth = 420;
+        const gap = 8;
+        
+        x = rect.left - popoverWidth - gap;
+        if (x < 12) x = rect.right + gap;
+        y = rect.top - 8;
+        
+        const estimatedHeight = 480;
+        if (y + estimatedHeight > window.innerHeight - 12) {
+          y = window.innerHeight - estimatedHeight - 12;
+        }
+        if (y < 12) y = 12;
       }
-      if (y < 12) y = 12;
       setPopover({ open: true, x, y });
     }
   }
@@ -571,7 +594,7 @@ export default function ManageEmployees() {
           {/* Popover card */}
           <div
             ref={popoverRef}
-            className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-slate-200 w-[420px] animate-modal-spring"
+            className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-slate-200 w-[92vw] sm:w-[420px] animate-modal-spring"
             style={{ top: popover.y, left: popover.x }}
           >
             {/* Header */}
