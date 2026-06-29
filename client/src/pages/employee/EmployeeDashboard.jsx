@@ -4,13 +4,15 @@ import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import StatusBadge from '../../components/ui/StatusBadge';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { FileText, Plus, Clock, CheckCircle, XCircle, ExternalLink, Trash2 } from 'lucide-react';
+import { FileText, Plus, Clock, CheckCircle, XCircle, ExternalLink, Trash2, Ticket } from 'lucide-react';
 import { parseDate } from '../../utils/date';
+import TravelTicketsTab from '../phase2/TravelTicketsTab';
 
 export default function EmployeeDashboard() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [requestToDelete, setRequestToDelete] = useState(null);
+  const [activeTab, setActiveTab] = useState('requests'); // 'requests', 'tickets'
   const loadStart = useRef(Date.now());
 
   useEffect(() => {
@@ -83,9 +85,31 @@ export default function EmployeeDashboard() {
         })}
       </div>
 
-      {/* Recent Requests Table */}
-      <Card header="Recent Requests" noPadding>
-        {requests.length === 0 ? (
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-border pb-1">
+        <button
+          onClick={() => setActiveTab('requests')}
+          className={`pb-2.5 px-4 text-sm font-semibold transition-all border-b-2 ${
+            activeTab === 'requests' ? 'border-primary-600 text-primary-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          My Vehicle Requests
+        </button>
+        <button
+          onClick={() => setActiveTab('tickets')}
+          className={`pb-2.5 px-4 text-sm font-semibold transition-all border-b-2 flex items-center gap-1.5 ${
+            activeTab === 'tickets' ? 'border-primary-600 text-primary-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Ticket className="w-4 h-4" />
+          My Travel Tickets ({requests.filter(r => r.want_ticket === 1).length})
+        </button>
+      </div>
+
+      {activeTab === 'requests' ? (
+        /* Recent Requests Table */
+        <Card header="Recent Requests" noPadding>
+          {requests.length === 0 ? (
           <div className="p-10 text-center">
             <FileText className="w-12 h-12 text-slate-200 mx-auto mb-3" />
             <p className="text-sm text-muted">No requests yet. Create your first vehicle request!</p>
@@ -151,6 +175,9 @@ export default function EmployeeDashboard() {
           </div>
         )}
       </Card>
+      ) : (
+        <TravelTicketsTab requests={requests} />
+      )}
 
       {requestToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">

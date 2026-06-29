@@ -5,9 +5,10 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, Trash2, Ticket } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { parseDate } from '../../utils/date';
+import TravelTicketsTab from '../phase2/TravelTicketsTab';
 
 export default function GmHrDashboard() {
   const [requests, setRequests] = useState([]);
@@ -18,6 +19,7 @@ export default function GmHrDashboard() {
   const [actionModal, setActionModal] = useState({ open: false, request: null, action: '' });
   const [remarks, setRemarks] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState('requests'); // 'requests', 'tickets'
 
   useEffect(() => {
     fetchData();
@@ -177,12 +179,34 @@ export default function GmHrDashboard() {
       </Card>
 
       {/* My Recent Requests Table */}
-      <Card header="My Recent Requests" noPadding>
-        {myRequests.length === 0 ? (
-          <div className="p-10 text-center">
-            <FileText className="w-12 h-12 text-slate-200 mx-auto mb-3" />
-            <p className="text-sm text-muted">You haven't made any requests yet.</p>
-          </div>
+      {/* My Recent Requests / Tickets Tabs */}
+      <div className="flex gap-2 border-b border-border pb-1">
+        <button
+          onClick={() => setActiveTab('requests')}
+          className={`pb-2.5 px-4 text-sm font-semibold transition-all border-b-2 ${
+            activeTab === 'requests' ? 'border-primary-600 text-primary-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          My Vehicle Requests
+        </button>
+        <button
+          onClick={() => setActiveTab('tickets')}
+          className={`pb-2.5 px-4 text-sm font-semibold transition-all border-b-2 flex items-center gap-1.5 ${
+            activeTab === 'tickets' ? 'border-primary-600 text-primary-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Ticket className="w-4 h-4" />
+          My Travel Tickets ({myRequests.filter(r => r.want_ticket === 1).length})
+        </button>
+      </div>
+
+      {activeTab === 'requests' ? (
+        <Card header="My Recent Requests" noPadding>
+          {myRequests.length === 0 ? (
+            <div className="p-10 text-center">
+              <FileText className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+              <p className="text-sm text-muted">You haven't made any requests yet.</p>
+            </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -216,6 +240,9 @@ export default function GmHrDashboard() {
           </div>
         )}
       </Card>
+      ) : (
+        <TravelTicketsTab requests={myRequests} />
+      )}
 
       {/* Action Modal */}
       <Modal
