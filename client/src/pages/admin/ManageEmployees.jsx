@@ -49,22 +49,28 @@ export default function ManageEmployees() {
       phone: emp.phone || '',
     });
     setEditModal({ open: false, employee: emp });
-    // Position the popover near the pencil button
+    // Position the popover anchored to the pencil button
     if (btnEl) {
       const rect = btnEl.getBoundingClientRect();
-      const popoverWidth = 420;
-      const gap = 8;
-      // Place to the left of the button; flip right if near left edge
-      let x = rect.left - popoverWidth - gap;
-      if (x < 12) x = rect.right + gap;
-      let y = rect.top - 8;
-      // Prevent going below viewport
-      const estimatedHeight = 480;
-      if (y + estimatedHeight > window.innerHeight - 12) {
-        y = window.innerHeight - estimatedHeight - 12;
+      const POPOVER_W = 420;
+      const MARGIN = 12;
+      const vh = window.innerHeight;
+
+      // Horizontal: right-align the popover with the button's right edge
+      // Since actions column is always on the right, this keeps it fully on-screen
+      let x = rect.right - POPOVER_W;
+      if (x < MARGIN) x = MARGIN;
+
+      // Vertical: start at button row, clamp so it doesn't go off bottom
+      let y = rect.top;
+      const maxH = vh - y - MARGIN;  // available height from y to bottom of screen
+      // If the popover would be tiny (e.g. button near the very bottom), flip upward
+      if (maxH < 300) {
+        y = Math.max(MARGIN, rect.bottom - Math.min(500, vh - MARGIN * 2));
       }
-      if (y < 12) y = 12;
-      setPopover({ open: true, x, y });
+      const finalMaxH = Math.min(500, vh - y - MARGIN);
+
+      setPopover({ open: true, x, y, maxH: finalMaxH });
     }
   }
 
@@ -522,8 +528,8 @@ export default function ManageEmployees() {
           {/* Popover card */}
           <div
             ref={popoverRef}
-            className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-slate-200 w-[420px] animate-modal-spring"
-            style={{ top: popover.y, left: popover.x }}
+            className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col"
+            style={{ top: popover.y, left: popover.x, width: 420, maxHeight: popover.maxH }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
@@ -540,8 +546,8 @@ export default function ManageEmployees() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            {/* Form body */}
-            <div className="px-5 py-4 space-y-3 max-h-[70vh] overflow-y-auto">
+            {/* Form body — scrolls internally if content is tall */}
+            <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">Full Name</label>
