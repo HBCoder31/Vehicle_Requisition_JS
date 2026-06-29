@@ -28,7 +28,52 @@ async function getPendingAssignments(req, res) {
        WHERE vr.status IN ('Approved_HOD', 'Approved_GM_HR', 'Approved_COO')
        ORDER BY vr.travel_date ASC, vr.travel_time ASC`
     );
-    res.json({ requests: rows });
+
+    const [expiredRows] = await pool.execute(
+      `SELECT vr.*,
+              e.full_name AS requester_name, e.phone AS requester_phone,
+              d.name AS department_name
+       FROM vehicle_requests vr
+       JOIN employees e ON vr.employee_id = e.id
+       JOIN departments d ON vr.department_id = d.id
+       WHERE vr.status = 'Expired'
+       ORDER BY vr.travel_date DESC, vr.travel_time DESC`
+    );
+
+    // Fetch stats for cards
+    const [counts] = await pool.execute(
+      `SELECT status, COUNT(*) AS count FROM vehicle_requests GROUP BY status`
+    );
+
+    let pendingCount = 0;
+    let activeCount = 0;
+    let completedCount = 0;
+    let expiredCount = 0;
+
+    counts.forEach(row => {
+      if (['Approved_HOD', 'Approved_GM_HR', 'Approved_COO'].includes(row.status)) {
+        pendingCount += row.count;
+      } else if (['Vehicle_Assigned', 'Vehicle Out', 'In_Transit', 'Vehicle Returned'].includes(row.status)) {
+        activeCount += row.count;
+      } else if (row.status === 'Completed') {
+        completedCount += row.count;
+      } else if (row.status === 'Expired') {
+        expiredCount += row.count;
+      }
+    });
+
+    const totalAssignments = pendingCount + activeCount + completedCount + expiredCount;
+    const totalAssigned = activeCount + completedCount;
+
+    res.json({ 
+      requests: rows, 
+      expired: expiredRows,
+      stats: {
+        totalAssignments,
+        totalAssigned,
+        totalExpired: expiredCount
+      }
+    });
   } catch (err) {
     console.error('getPendingAssignments error:', err);
     res.status(500).json({ error: 'Failed to fetch pending assignments.' });

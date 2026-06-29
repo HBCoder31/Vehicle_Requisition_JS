@@ -5,19 +5,21 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import StatusBadge from '../../components/ui/StatusBadge';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { Truck, PlayCircle, StopCircle, ClipboardList, Car, ExternalLink, Star } from 'lucide-react';
+import { Truck, PlayCircle, StopCircle, ClipboardList, Car, ExternalLink, Star, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { parseDate } from '../../utils/date';
 
 export default function GarageDashboard() {
   const [pending, setPending] = useState([]);
+  const [expired, setExpired] = useState([]);
+  const [stats, setStats] = useState({ totalAssignments: 0, totalAssigned: 0, totalExpired: 0 });
   const [active, setActive] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [licenseAlerts, setLicenseAlerts] = useState([]);
   const [certAlerts, setCertAlerts] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
-  const [activeTab, setActiveTab] = useState('assignments'); // 'assignments', 'trips', 'fleet', 'feedbacks'
+  const [activeTab, setActiveTab] = useState('assignments'); // 'assignments', 'expired', 'trips', 'fleet', 'feedbacks'
   const [loading, setLoading] = useState(true);
   const loadStart = useRef(Date.now());
   const [assignModal, setAssignModal] = useState({ open: false, request: null });
@@ -39,6 +41,8 @@ export default function GarageDashboard() {
         api.get('/feedback/all/garage')
       ]);
       setPending(pendRes.data.requests);
+      setExpired(pendRes.data.expired || []);
+      setStats(pendRes.data.stats || { totalAssignments: 0, totalAssigned: 0, totalExpired: 0 });
       setActive(activeRes.data.trips);
       setVehicles(vehRes.data.vehicles);
       setDrivers(driverRes.data.drivers);
@@ -110,7 +114,7 @@ export default function GarageDashboard() {
     return { label: 'In Use', className: 'bg-rose-100 text-rose-800 border-rose-200' };
   }
 
-  if (loading) return <DashboardSkeleton cards={3} rows={4} cols={5} />;
+  if (loading) return <DashboardSkeleton cards={6} rows={4} cols={5} />;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -120,28 +124,55 @@ export default function GarageDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         <Card className="hover-card animate-fade-in-up delay-1">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-warning-50"><ClipboardList className="w-5 h-5 text-warning-600" /></div>
+            <div className="p-3 rounded-xl bg-primary-50"><ClipboardList className="w-5 h-5 text-primary-600" /></div>
+            <div>
+              <p className="text-xl font-bold">{stats.totalAssignments}</p>
+              <p className="text-xs text-muted">Total Assignments</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="hover-card animate-fade-in-up delay-2">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-success-50"><CheckCircle className="w-5 h-5 text-success-600" /></div>
+            <div>
+              <p className="text-xl font-bold">{stats.totalAssigned}</p>
+              <p className="text-xs text-muted">Total Assigned</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="hover-card animate-fade-in-up delay-3">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-warning-50"><Clock className="w-5 h-5 text-warning-600" /></div>
             <div>
               <p className="text-xl font-bold">{pending.length}</p>
               <p className="text-xs text-muted">Pending Assignment</p>
             </div>
           </div>
         </Card>
-        <Card className="hover-card animate-fade-in-up delay-2">
+        <Card className="hover-card animate-fade-in-up delay-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-primary-50"><Car className="w-5 h-5 text-primary-600" /></div>
+            <div className="p-3 rounded-xl bg-rose-50"><AlertCircle className="w-5 h-5 text-rose-600" /></div>
+            <div>
+              <p className="text-xl font-bold">{expired.length}</p>
+              <p className="text-xs text-muted">Expired Assignments</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="hover-card animate-fade-in-up delay-5">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-indigo-50"><Car className="w-5 h-5 text-indigo-600" /></div>
             <div>
               <p className="text-xl font-bold">{active.length}</p>
               <p className="text-xs text-muted">Active Trips</p>
             </div>
           </div>
         </Card>
-        <Card className="hover-card animate-fade-in-up delay-3">
+        <Card className="hover-card animate-fade-in-up delay-6">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-success-50"><Truck className="w-5 h-5 text-success-600" /></div>
+            <div className="p-3 rounded-xl bg-emerald-50"><Truck className="w-5 h-5 text-emerald-600" /></div>
             <div>
               <p className="text-xl font-bold">{availableVehicles.length}/{vehicles.length}</p>
               <p className="text-xs text-muted">Vehicles Available</p>
@@ -184,7 +215,7 @@ export default function GarageDashboard() {
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-border space-x-2 mb-6">
+      <div className="flex border-b border-border space-x-2 mb-6 flex-wrap gap-y-2">
         <button
           onClick={() => setActiveTab('assignments')}
           className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 outline-none ${
@@ -198,6 +229,23 @@ export default function GarageDashboard() {
           {pending.length > 0 && (
             <span className="ml-1 px-2 py-0.5 text-xs font-bold bg-primary-100 text-primary-800 rounded-full">
               {pending.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveTab('expired')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all duration-200 outline-none ${
+            activeTab === 'expired'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+          }`}
+        >
+          <AlertCircle className="w-4 h-4" />
+          Expired Assignments
+          {expired.length > 0 && (
+            <span className="ml-1 px-2 py-0.5 text-xs font-bold bg-rose-100 text-rose-800 rounded-full">
+              {expired.length}
             </span>
           )}
         </button>
@@ -248,6 +296,54 @@ export default function GarageDashboard() {
           )}
         </button>
       </div>
+
+      {/* Expired Assignments Tab */}
+      {activeTab === 'expired' && (
+        <Card header="Expired Assignments" noPadding>
+          {expired.length === 0 ? (
+            <div className="p-10 text-center">
+              <AlertCircle className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+              <p className="text-sm text-muted">No expired assignments.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requester</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Destination</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Requested On</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Travel Date</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Passengers</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {expired.map(req => (
+                    <tr key={req.id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-3.5">
+                        <p className="font-medium text-slate-800">{req.requester_name}</p>
+                        <p className="text-xs text-muted">{req.department_name}</p>
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-700">{req.destination}</td>
+                      <td className="px-6 py-3.5 text-slate-600">{parseDate(req.created_at)?.toLocaleDateString() || '—'}</td>
+                      <td className="px-6 py-3.5 text-slate-600">{req.travel_date} {req.travel_time}</td>
+                      <td className="px-6 py-3.5 text-slate-600">{req.passengers}</td>
+                      <td className="px-6 py-3.5"><StatusBadge status={req.status} /></td>
+                      <td className="px-6 py-3.5 text-right">
+                        <Link to={`/requests/${req.id}`} className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 hover:bg-primary-50 p-1.5 rounded-md transition-colors" title="View Details">
+                          View Details <ExternalLink className="w-4 h-4" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Pending Assignments Tab */}
       {activeTab === 'assignments' && (

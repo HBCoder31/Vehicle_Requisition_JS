@@ -7,7 +7,29 @@ const { pool } = require('../config/db');
 async function getPending(req, res) {
   try {
     const requests = await TravelAdminRepository.getPendingBookings();
-    res.json({ success: true, requests });
+    const expired = await TravelAdminRepository.getExpiredBookings();
+    const rawStats = await TravelAdminRepository.getBookingStats();
+
+    // Organize stats per transport type: Flight, Train, Bus
+    const stats = {
+      Flight: { expired: 0, booked: 0, total: 0 },
+      Train: { expired: 0, booked: 0, total: 0 },
+      Bus: { expired: 0, booked: 0, total: 0 }
+    };
+
+    rawStats.forEach(row => {
+      const mode = row.mode_of_transport;
+      if (stats[mode]) {
+        stats[mode].total += row.count;
+        if (row.ticket_status === 'Booked') {
+          stats[mode].booked += row.count;
+        } else if (row.status === 'Expired') {
+          stats[mode].expired += row.count;
+        }
+      }
+    });
+
+    res.json({ success: true, requests, expired, stats });
   } catch (err) {
     console.error('getPending error:', err);
     res.status(500).json({ error: 'Failed to fetch pending bookings.' });

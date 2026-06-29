@@ -59,6 +59,9 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
+// Auto-expire requests middleware
+app.use(require('./middleware/autoExpire'));
+
 // ─── Logging ───────────────────────────────────────────────
 // if (process.env.NODE_ENV !== 'production') {
 //   app.use(morgan('dev'));

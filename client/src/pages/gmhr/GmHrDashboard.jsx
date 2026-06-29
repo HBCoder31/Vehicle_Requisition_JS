@@ -5,7 +5,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, Trash2, Ticket } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, Trash2, Ticket, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { parseDate } from '../../utils/date';
 import TravelTicketsTab from '../phase2/TravelTicketsTab';
@@ -14,6 +14,7 @@ export default function GmHrDashboard() {
   const [requests, setRequests] = useState([]);
   const [myRequests, setMyRequests] = useState([]);
   const [stats, setStats] = useState(null);
+  const [approvalHistory, setApprovalHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const loadStart = useRef(Date.now());
   const [actionModal, setActionModal] = useState({ open: false, request: null, action: '' });
@@ -28,14 +29,16 @@ export default function GmHrDashboard() {
   async function fetchData() {
     loadStart.current = Date.now();
     try {
-      const [reqRes, statsRes, myReqRes] = await Promise.all([
+      const [reqRes, statsRes, myReqRes, histRes] = await Promise.all([
         api.get('/approvals/gmhr'),
         api.get('/approvals/gmhr/stats'),
         api.get('/requests/my'),
+        api.get('/approvals/gmhr/history'),
       ]);
       setRequests(reqRes.data.requests);
       setStats(statsRes.data.stats);
       setMyRequests(myReqRes.data.requests);
+      setApprovalHistory(histRes.data.requests || []);
     } catch (err) {
       console.error('Failed to fetch data:', err);
     } finally {
@@ -64,7 +67,7 @@ export default function GmHrDashboard() {
     }
   }
 
-  if (loading) return <DashboardSkeleton cards={5} rows={4} cols={5} />;
+  if (loading) return <DashboardSkeleton cards={6} rows={4} cols={5} />;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -84,13 +87,14 @@ export default function GmHrDashboard() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
           {[
             { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-warning-600', bg: 'bg-warning-50', delay: 'delay-1' },
             { label: 'Approved', value: stats.approved, icon: CheckCircle, color: 'text-success-600', bg: 'bg-success-50', delay: 'delay-2' },
             { label: 'Rejected', value: stats.rejected, icon: XCircle, color: 'text-danger-600', bg: 'bg-danger-50', delay: 'delay-3' },
             { label: 'Deleted', value: stats.deleted, icon: Trash2, color: 'text-slate-600', bg: 'bg-slate-50', delay: 'delay-4' },
-            { label: 'Total', value: stats.total, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50', delay: 'delay-5' },
+            { label: 'Expired', value: stats.expired || 0, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50', delay: 'delay-5' },
+            { label: 'Total', value: stats.total, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50', delay: 'delay-6' },
           ].map(({ label, value, icon: Icon, color, bg, delay }) => {
             const isPendingGlow = label === 'Pending' && value > 0;
             return (

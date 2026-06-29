@@ -5,7 +5,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, History, Trash2, Ticket } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, TrendingUp, ExternalLink, History, Trash2, Ticket, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { parseDate } from '../../utils/date';
 import TravelTicketsTab from '../phase2/TravelTicketsTab';
@@ -87,13 +87,14 @@ export default function HodDashboard() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
           {[
             { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-warning-600', bg: 'bg-warning-50', delay: 'delay-1' },
             { label: 'Approved', value: stats.approved, icon: CheckCircle, color: 'text-success-600', bg: 'bg-success-50', delay: 'delay-2' },
             { label: 'Rejected', value: stats.rejected, icon: XCircle, color: 'text-danger-600', bg: 'bg-danger-50', delay: 'delay-3' },
             { label: 'Deleted', value: stats.deleted, icon: Trash2, color: 'text-slate-600', bg: 'bg-slate-50', delay: 'delay-4' },
-            { label: 'Total', value: stats.total, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50', delay: 'delay-5' },
+            { label: 'Expired', value: stats.expired || 0, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50', delay: 'delay-5' },
+            { label: 'Total', value: stats.total, icon: TrendingUp, color: 'text-primary-600', bg: 'bg-primary-50', delay: 'delay-6' },
           ].map(({ label, value, icon: Icon, color, bg, delay }) => {
             const isPendingGlow = label === 'Pending' && value > 0;
             return (

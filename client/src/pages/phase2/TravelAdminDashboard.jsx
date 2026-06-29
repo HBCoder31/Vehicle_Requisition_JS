@@ -14,9 +14,15 @@ import { Link } from 'react-router-dom';
 
 export default function TravelAdminDashboard() {
   const [pending, setPending] = useState([]);
+  const [expired, setExpired] = useState([]);
+  const [stats, setStats] = useState({
+    Flight: { expired: 0, booked: 0, total: 0 },
+    Train: { expired: 0, booked: 0, total: 0 },
+    Bus: { expired: 0, booked: 0, total: 0 }
+  });
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('pending'); // 'pending', 'history'
+  const [activeTab, setActiveTab] = useState('pending'); // 'pending', 'expired', 'history'
   const [filterMode, setFilterMode] = useState('All'); // 'All', 'Flight', 'Train', 'Bus'
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -47,6 +53,12 @@ export default function TravelAdminDashboard() {
         api.get('/travel-admin/history')
       ]);
       setPending(pendingRes.data.requests || []);
+      setExpired(pendingRes.data.expired || []);
+      setStats(pendingRes.data.stats || {
+        Flight: { expired: 0, booked: 0, total: 0 },
+        Train: { expired: 0, booked: 0, total: 0 },
+        Bus: { expired: 0, booked: 0, total: 0 }
+      });
       setHistory(historyRes.data.history || []);
     } catch (err) {
       console.error('Failed to fetch travel admin data:', err);
@@ -114,16 +126,9 @@ export default function TravelAdminDashboard() {
 
   const filteredPending = getFilteredList(pending);
   const filteredHistory = getFilteredList(history);
+  const filteredExpired = getFilteredList(expired);
 
-  // Summary Metrics
-  const metrics = {
-    pending: pending.length,
-    flight: pending.filter(r => r.mode_of_transport === 'Flight').length,
-    train: pending.filter(r => r.mode_of_transport === 'Train').length,
-    bus: pending.filter(r => r.mode_of_transport === 'Bus').length,
-  };
-
-  if (loading) return <DashboardSkeleton cards={4} rows={5} cols={6} />;
+  if (loading) return <DashboardSkeleton cards={3} rows={5} cols={6} />;
 
   const inputClass = 'w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none transition-all';
   const labelClass = 'block text-xs font-semibold text-slate-600 mb-1.5';
@@ -142,40 +147,69 @@ export default function TravelAdminDashboard() {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover-card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-indigo-50"><Ticket className="w-6 h-6 text-indigo-600" /></div>
-            <div>
-              <p className="text-2xl font-bold">{metrics.pending}</p>
-              <p className="text-xs text-muted">Total Pending Bookings</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Flight Bookings Card */}
+        <Card className="hover-card border-l-4 border-sky-500">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-lg bg-sky-50"><Plane className="w-5 h-5 text-sky-600" /></div>
+            <h3 className="font-bold text-slate-800 text-lg">Flight Bookings</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-slate-50 p-2 rounded-lg">
+              <p className="text-lg font-bold text-slate-800">{stats.Flight.total}</p>
+              <p className="text-[10px] text-slate-500 font-medium">Total Bookings</p>
+            </div>
+            <div className="bg-success-50 p-2 rounded-lg">
+              <p className="text-lg font-bold text-success-700">{stats.Flight.booked}</p>
+              <p className="text-[10px] text-success-600 font-medium">Booking Done</p>
+            </div>
+            <div className="bg-rose-50 p-2 rounded-lg">
+              <p className="text-lg font-bold text-rose-700">{stats.Flight.expired}</p>
+              <p className="text-[10px] text-rose-600 font-medium">Expired Booking</p>
             </div>
           </div>
         </Card>
-        <Card className="hover-card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-sky-50"><Plane className="w-6 h-6 text-sky-600" /></div>
-            <div>
-              <p className="text-2xl font-bold">{metrics.flight}</p>
-              <p className="text-xs text-muted">Flight Bookings Queue</p>
+
+        {/* Train Bookings Card */}
+        <Card className="hover-card border-l-4 border-emerald-500">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-lg bg-emerald-50"><Train className="w-5 h-5 text-emerald-600" /></div>
+            <h3 className="font-bold text-slate-800 text-lg">Train Bookings</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-slate-50 p-2 rounded-lg">
+              <p className="text-lg font-bold text-slate-800">{stats.Train.total}</p>
+              <p className="text-[10px] text-slate-500 font-medium">Total Bookings</p>
+            </div>
+            <div className="bg-success-50 p-2 rounded-lg">
+              <p className="text-lg font-bold text-success-700">{stats.Train.booked}</p>
+              <p className="text-[10px] text-success-600 font-medium">Booking Done</p>
+            </div>
+            <div className="bg-rose-50 p-2 rounded-lg">
+              <p className="text-lg font-bold text-rose-700">{stats.Train.expired}</p>
+              <p className="text-[10px] text-rose-600 font-medium">Expired Booking</p>
             </div>
           </div>
         </Card>
-        <Card className="hover-card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-emerald-50"><Train className="w-6 h-6 text-emerald-600" /></div>
-            <div>
-              <p className="text-2xl font-bold">{metrics.train}</p>
-              <p className="text-xs text-muted">Train Bookings Queue</p>
-            </div>
+
+        {/* Bus Bookings Card */}
+        <Card className="hover-card border-l-4 border-amber-500">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-lg bg-amber-50"><Bus className="w-5 h-5 text-amber-600" /></div>
+            <h3 className="font-bold text-slate-800 text-lg">Bus Bookings</h3>
           </div>
-        </Card>
-        <Card className="hover-card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-amber-50"><Bus className="w-6 h-6 text-amber-600" /></div>
-            <div>
-              <p className="text-2xl font-bold">{metrics.bus}</p>
-              <p className="text-xs text-muted">Bus Bookings Queue</p>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-slate-50 p-2 rounded-lg">
+              <p className="text-lg font-bold text-slate-800">{stats.Bus.total}</p>
+              <p className="text-[10px] text-slate-500 font-medium">Total Bookings</p>
+            </div>
+            <div className="bg-success-50 p-2 rounded-lg">
+              <p className="text-lg font-bold text-success-700">{stats.Bus.booked}</p>
+              <p className="text-[10px] text-success-600 font-medium">Booking Done</p>
+            </div>
+            <div className="bg-rose-50 p-2 rounded-lg">
+              <p className="text-lg font-bold text-rose-700">{stats.Bus.expired}</p>
+              <p className="text-[10px] text-rose-600 font-medium">Expired Booking</p>
             </div>
           </div>
         </Card>
@@ -184,7 +218,7 @@ export default function TravelAdminDashboard() {
       {/* Filters & Tabs */}
       <div className="flex flex-col lg:flex-row gap-4 justify-between lg:items-center border-b border-border pb-4">
         {/* Tabs */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setActiveTab('pending')}
             className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-all ${
@@ -195,6 +229,17 @@ export default function TravelAdminDashboard() {
           >
             <ClipboardList className="w-4 h-4" />
             Pending Tickets ({filteredPending.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('expired')}
+            className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+              activeTab === 'expired'
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <AlertCircle className="w-4 h-4" />
+            Expired Bookings ({filteredExpired.length})
           </button>
           <button
             onClick={() => setActiveTab('history')}
@@ -241,7 +286,7 @@ export default function TravelAdminDashboard() {
       </div>
 
       {/* Main Table views */}
-      {activeTab === 'pending' ? (
+      {activeTab === 'pending' && (
         <Card noPadding header="Pending Ticket Bookings">
           {filteredPending.length === 0 ? (
             <div className="p-12 text-center text-slate-400">
@@ -318,7 +363,72 @@ export default function TravelAdminDashboard() {
             </div>
           )}
         </Card>
-      ) : (
+      )}
+
+      {/* Expired Bookings Tab */}
+      {activeTab === 'expired' && (
+        <Card noPadding header="Expired Ticket Requests">
+          {filteredExpired.length === 0 ? (
+            <div className="p-12 text-center text-slate-400">
+              <AlertCircle className="w-12 h-12 mx-auto text-slate-200 mb-3" />
+              <p className="text-sm font-semibold">No expired ticket bookings match filters.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-slate-50/50">
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase">Request</th>
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase">Requester</th>
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase">Travel Details</th>
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase">Transport Mode</th>
+                    <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase">Status</th>
+                    <th className="text-right px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredExpired.map(req => (
+                    <tr key={req.id} className="hover:bg-slate-50/25">
+                      <td className="px-6 py-4">
+                        <Link to={`/requests/${req.id}`} className="font-bold text-primary-600 hover:underline">
+                          #{req.id}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-slate-800">{req.requester_name}</div>
+                        <div className="text-xs text-slate-400 font-bold">{req.employee_number}</div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-700">
+                        <p className="font-semibold">Dest: {req.destination}</p>
+                        <p className="text-xs text-slate-500">Date: {req.travel_date} | {req.travel_time}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+                          {getModeIcon(req.mode_of_transport)}
+                          {req.mode_of_transport}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          From: <span className="font-semibold">{req.ticket_from || '—'}</span> To: <span className="font-semibold">{req.ticket_to || '—'}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <StatusBadge status={req.status} />
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link to={`/requests/${req.id}`} className="text-slate-600 hover:text-slate-800 p-1.5 rounded-md hover:bg-slate-100 inline-flex items-center gap-1 font-semibold" title="View details">
+                          View <ExternalLink className="w-4 h-4" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {activeTab === 'history' && (
         <Card noPadding header="Completed Booking Logs">
           {filteredHistory.length === 0 ? (
             <div className="p-12 text-center text-slate-400">

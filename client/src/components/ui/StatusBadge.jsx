@@ -16,6 +16,7 @@ const statusConfig = {
   'Deleted':          { label: 'Deleted',           bg: 'bg-danger-50',   text: 'text-danger-700',  dot: 'bg-danger-500' },
   'Vehicle Out':      { label: 'Vehicle Out',       bg: 'bg-amber-50',    text: 'text-amber-700',   dot: 'bg-amber-500' },
   'Vehicle Returned': { label: 'Vehicle Returned',  bg: 'bg-teal-50',     text: 'text-teal-700',    dot: 'bg-teal-500' },
+  'Expired':          { label: 'Expired',           bg: 'bg-rose-50',     text: 'text-rose-700',    dot: 'bg-rose-500' },
 };
 
 export default function StatusBadge({ status }) {

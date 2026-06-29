@@ -67,6 +67,31 @@ class TravelAdminRepository {
     );
     return result.affectedRows > 0;
   }
+  async getExpiredBookings() {
+    const [rows] = await pool.execute(
+      `SELECT vr.*,
+              e.full_name AS requester_name, e.phone AS requester_phone, e.employee_number,
+              d.name AS department_name
+       FROM vehicle_requests vr
+       JOIN employees e ON vr.employee_id = e.id
+       JOIN departments d ON vr.department_id = d.id
+       WHERE vr.want_ticket = 1 
+         AND vr.status = 'Expired'
+         AND vr.ticket_status != 'Booked'
+       ORDER BY vr.travel_date DESC, vr.travel_time DESC`
+    );
+    return rows;
+  }
+
+  async getBookingStats() {
+    const [rows] = await pool.execute(
+      `SELECT mode_of_transport, status, ticket_status, COUNT(*) AS count
+       FROM vehicle_requests
+       WHERE want_ticket = 1
+       GROUP BY mode_of_transport, status, ticket_status`
+    );
+    return rows;
+  }
 }
 
 module.exports = new TravelAdminRepository();

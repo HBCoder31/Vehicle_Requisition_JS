@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { CheckCircle, XCircle, MapPin, Building2, ExternalLink, History, Ticket } from 'lucide-react';
+import { CheckCircle, XCircle, MapPin, Building2, ExternalLink, History, Ticket, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { parseDate } from '../../utils/date';
 import TravelTicketsTab from '../phase2/TravelTicketsTab';
@@ -80,17 +80,30 @@ export default function CooDashboard() {
       </div>
 
       {/* Summary */}
-      <Card className="hover-card animate-fade-in-up delay-1">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-primary-50">
-            <MapPin className="w-6 h-6 text-primary-600" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card className="hover-card animate-fade-in-up delay-1">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-primary-50">
+              <MapPin className="w-6 h-6 text-primary-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-slate-800">{requests.length}</p>
+              <p className="text-xs text-muted">Pending Beyond-Travel Approvals</p>
+            </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-800">{requests.length}</p>
-            <p className="text-xs text-muted">Pending Beyond-Travel Approvals</p>
+        </Card>
+        <Card className="hover-card animate-fade-in-up delay-2">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-rose-50">
+              <Clock className="w-6 h-6 text-rose-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-slate-800">{myRequests.filter(r => r.status === 'Expired').length}</p>
+              <p className="text-xs text-muted">My Expired Requests</p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       {/* Pending Requests */}
       <Card header="Pending COO Approvals" noPadding>

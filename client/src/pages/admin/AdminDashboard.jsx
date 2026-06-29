@@ -3,7 +3,7 @@ import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
 import StatusBadge from '../../components/ui/StatusBadge';
-import { Users, Truck, FileText, Activity, TrendingUp, Building2 } from 'lucide-react';
+import { Users, Truck, FileText, Activity, TrendingUp, Building2, AlertCircle } from 'lucide-react';
 import { parseDate } from '../../utils/date';
 
 
@@ -27,10 +27,11 @@ export default function AdminDashboard() {
     });
   }, []);
 
-  if (loading) return <DashboardSkeleton cards={4} rows={5} cols={4} />;
+  if (loading) return <DashboardSkeleton cards={5} rows={5} cols={4} />;
   if (!data) return <p className="text-center text-muted py-20">Failed to load dashboard data.</p>;
 
   const totalRequests = data.requestsByStatus.reduce((s, r) => s + r.count, 0);
+  const expiredRequests = data.requestsByStatus.find(r => r.status === 'Expired')?.count || 0;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -40,7 +41,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="hover-card animate-fade-in-up delay-1">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-primary-50"><FileText className="w-6 h-6 text-primary-600" /></div>
@@ -63,6 +64,12 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-info-50"><TrendingUp className="w-6 h-6 text-primary-600" /></div>
             <div><p className="text-2xl font-bold">{data.vehicles.in_use}</p><p className="text-xs text-muted">Vehicles In Use</p></div>
+          </div>
+        </Card>
+        <Card className="hover-card animate-fade-in-up delay-5">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-rose-50"><AlertCircle className="w-6 h-6 text-rose-600" /></div>
+            <div><p className="text-2xl font-bold">{expiredRequests}</p><p className="text-xs text-muted">Expired Requests</p></div>
           </div>
         </Card>
       </div>
