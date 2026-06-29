@@ -197,7 +197,7 @@ export default function RequestDetails() {
               </div>
             )}
 
-            {request.want_ticket === 1 && (
+            {request.want_ticket === 1 && !['Garage', 'Security'].includes(user?.role) && (
               <div className="mt-6 pt-6 border-t border-border">
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-2">Ticket Booking Requisition</p>
                 <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl space-y-2">
