@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate, useSearchParams, useNavigate } from 'react-router-dom';
 import { Truck, Shield, ArrowRight, ArrowLeft } from 'lucide-react';
 import api from '../services/api';
+import { gsap } from 'gsap';
 
 export default function Login() {
   const { user, loading, dispatch } = useAuth();
@@ -46,6 +47,7 @@ export default function Login() {
   const passwordRef = useRef(null);
   const emailRef = useRef(null);
   const empNumRef = useRef(null);
+  const bubbleRef = useRef(null);
 
   const handleMouseDown = (e) => {
     if (e.button !== 0) return; // Only left click
@@ -86,7 +88,18 @@ export default function Login() {
 
     const handleMouseUp = () => {
       setIsDragging(false);
-      setDragOffset({ x: 0, y: 0 });
+      const startX = dragOffset.x;
+      const startY = dragOffset.y;
+      const obj = { x: startX, y: startY };
+      gsap.to(obj, {
+        x: 0,
+        y: 0,
+        duration: 0.6,
+        ease: "elastic.out(1, 0.45)",
+        onUpdate: () => {
+          setDragOffset({ x: obj.x, y: obj.y });
+        }
+      });
     };
 
     const handleTouchMove = (e) => {
@@ -101,7 +114,18 @@ export default function Login() {
 
     const handleTouchEnd = () => {
       setIsDragging(false);
-      setDragOffset({ x: 0, y: 0 });
+      const startX = dragOffset.x;
+      const startY = dragOffset.y;
+      const obj = { x: startX, y: startY };
+      gsap.to(obj, {
+        x: 0,
+        y: 0,
+        duration: 0.6,
+        ease: "elastic.out(1, 0.45)",
+        onUpdate: () => {
+          setDragOffset({ x: obj.x, y: obj.y });
+        }
+      });
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -118,6 +142,32 @@ export default function Login() {
       window.removeEventListener('touchcancel', handleTouchEnd);
     };
   }, [isDragging, dragStart]);
+
+  // Speech bubble elastic pop-in and floating loop animation
+  useEffect(() => {
+    if (bubbleRef.current) {
+      gsap.fromTo(bubbleRef.current, 
+        { scale: 0, opacity: 0 },
+        { 
+          scale: 1, 
+          opacity: 1, 
+          duration: 0.8, 
+          ease: "elastic.out(1.2, 0.55)",
+          transformOrigin: "bottom center"
+        }
+      );
+
+      const anim = gsap.to(bubbleRef.current, {
+        y: "-=3",
+        duration: 1.5,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut"
+      });
+
+      return () => anim.kill();
+    }
+  }, [greeting, isDragging]);
 
   // Recalculate target coordinates for caret tracking on focus/input changes
   useEffect(() => {
@@ -245,7 +295,7 @@ export default function Login() {
           >
             {/* Speech Bubble */}
             {greeting && (
-              <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border border-blue-400/20 text-[10px] font-semibold px-2.5 py-1 rounded-xl shadow-lg whitespace-nowrap z-30 animate-fade-in">
+              <div ref={bubbleRef} className="absolute -top-9 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border border-blue-400/20 text-[10px] font-semibold px-2.5 py-1 rounded-xl shadow-lg whitespace-nowrap z-30">
                 {isDragging ? 'Wheee! 😄' : `${greeting}!`}
                 <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2 h-2 bg-indigo-600 border-r border-b border-blue-400/20 rotate-45" />
               </div>
@@ -400,7 +450,52 @@ export default function Login() {
 // Interactive SVG Paper Mascot resembling Orient Paper Mills sheets
 function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused, isDragging }) {
   const mascotRef = useRef(null);
+  const mouthRef = useRef(null);
   const [pupilOffset, setPupilOffset] = useState({ x: 0, y: 0 });
+
+  // Idea 5: Wind Flutter / Idle Wave
+  useEffect(() => {
+    if (!mascotRef.current) return;
+    const anim = gsap.to(mascotRef.current, {
+      rotate: "1.5deg",
+      skewX: "1deg",
+      y: "-=2",
+      duration: 2.2,
+      yoyo: true,
+      repeat: -1,
+      ease: "sine.inOut"
+    });
+    return () => anim.kill();
+  }, []);
+
+  // Idea 3: Mouth Path Morphing
+  useEffect(() => {
+    if (!mouthRef.current) return;
+    
+    let targetPath = "M 45 53 Q 50 58 55 53"; // default happy smile
+    let fillVal = "none";
+    let strokeW = "2";
+    
+    if (isDragging) {
+      targetPath = "M 42 53 Q 50 65 58 53 Z"; // open smile
+      fillVal = "#475569";
+      strokeW = "1";
+    } else if (isPasswordFocused) {
+      targetPath = "M 45 55 Q 50 55 55 55"; // flat line
+    } else if (isConfused) {
+      targetPath = "M 44 54 Q 50 49 56 54"; // wavy/worried line
+    } else if (isInputFocused) {
+      targetPath = "M 46 54 Q 50 51 54 54"; // surprise mouth arc
+    }
+    
+    gsap.to(mouthRef.current, {
+      attr: { d: targetPath },
+      fill: fillVal,
+      strokeWidth: strokeW,
+      duration: 0.35,
+      ease: "power2.out"
+    });
+  }, [isDragging, isPasswordFocused, isConfused, isInputFocused]);
 
   useEffect(() => {
     if (!mascotRef.current) return;
@@ -501,17 +596,14 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
         )}
 
         {/* Mouth */}
-        {isDragging ? (
-          <path d="M 42 53 Q 50 63 58 53 Z" fill="#475569" stroke="#475569" strokeWidth="1" strokeLinecap="round" />
-        ) : isPasswordFocused ? (
-          <line x1="46" y1="55" x2="54" y2="55" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
-        ) : isConfused ? (
-          <path d="M 44 54 Q 47 50 50 54 T 56 54" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
-        ) : isInputFocused ? (
-          <circle cx="50" cy="54" r="3.5" fill="none" stroke="#475569" strokeWidth="2" />
-        ) : (
-          <path d="M 45 53 Q 50 58 55 53" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
-        )}
+        <path 
+          ref={mouthRef}
+          d="M 45 53 Q 50 58 55 53" 
+          fill="none" 
+          stroke="#475569" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+        />
 
         {/* Left Arm */}
         <g 
