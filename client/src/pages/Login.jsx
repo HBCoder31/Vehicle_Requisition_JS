@@ -173,7 +173,7 @@ export default function Login() {
     }
   }, [greeting, isDragging]);
 
-  // Page load landing animations (blobs scale, card slide-up, mascot drop-bounce)
+  // Page load landing animations (blobs scale, 3D card flip-in, mascot drop-spin-bounce)
   useEffect(() => {
     // 1. Scale up background blobs
     gsap.fromTo(".bg-blob",
@@ -181,19 +181,45 @@ export default function Login() {
       { scale: 1, opacity: 1, duration: 1.5, stagger: 0.15, ease: "power3.out" }
     );
 
-    // 2. Slide up and fade in login card
+    // 2. Slide up and 3D flip-in login card
     if (cardRef.current) {
+      // Set perspective on parent container for 3D depth
+      gsap.set(cardRef.current.parentNode, { perspective: 1000 });
+      
       gsap.fromTo(cardRef.current,
-        { y: 80, opacity: 0, scale: 0.96 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.9, ease: "back.out(1.15)", delay: 0.15 }
+        { 
+          rotationX: -45, 
+          rotationY: 15, 
+          z: -300, 
+          opacity: 0, 
+          scale: 0.9 
+        },
+        { 
+          rotationX: 0, 
+          rotationY: 0, 
+          z: 0, 
+          opacity: 1, 
+          scale: 1, 
+          duration: 1.3, 
+          ease: "back.out(1.3)", 
+          delay: 0.15 
+        }
       );
     }
 
-    // 3. Drop down paper mascot and landing bounce
+    // 3. Drop down paper mascot with a 360-spin and landing bounce
     if (mascotContainerRef.current) {
       gsap.fromTo(mascotContainerRef.current,
-        { y: -350, scaleY: 1.5, scaleX: 0.6, opacity: 0 },
-        { y: 0, scaleY: 1, scaleX: 1, opacity: 1, duration: 1.1, ease: "bounce.out", delay: 0.5 }
+        { y: -350, rotate: -360, scale: 0.5, opacity: 0 },
+        { 
+          y: 0, 
+          rotate: 0, 
+          scale: 1, 
+          opacity: 1, 
+          duration: 1.25, 
+          ease: "bounce.out", 
+          delay: 0.65 
+        }
       );
     }
   }, []);
@@ -576,17 +602,17 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
     
     if (isHovered && !isDragging && !isPasswordFocused && !isConfused && !isFlipping) {
       leftAnim = gsap.to(leftArmRef.current, {
-        rotate: -60,
+        rotate: 35,
         transformOrigin: "5px 70px",
-        duration: 0.12,
+        duration: 0.15,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut"
       });
       rightAnim = gsap.to(rightArmRef.current, {
-        rotate: 60,
+        rotate: -35,
         transformOrigin: "95px 70px",
-        duration: 0.12,
+        duration: 0.15,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut"
@@ -595,27 +621,27 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
       let leftRot = 0;
       let rightRot = 0;
       if (isDragging || isFlipping) {
-        leftRot = -150;
-        rightRot = 150;
+        leftRot = 45;
+        rightRot = -45;
       } else if (isPasswordFocused) {
-        leftRot = -135;
-        rightRot = 135;
+        leftRot = 65;
+        rightRot = -65;
       } else if (isConfused) {
-        leftRot = -45;
-        rightRot = 45;
+        leftRot = 25;
+        rightRot = -25;
       }
       
       gsap.to(leftArmRef.current, { 
         rotate: leftRot, 
         transformOrigin: "5px 70px", 
-        duration: 0.35, 
-        ease: "back.out(1.5)" 
+        duration: 0.45, 
+        ease: "back.out(1.7)" 
       });
       gsap.to(rightArmRef.current, { 
         rotate: rightRot, 
         transformOrigin: "95px 70px", 
-        duration: 0.35, 
-        ease: "back.out(1.5)" 
+        duration: 0.45, 
+        ease: "back.out(1.7)" 
       });
     }
     
