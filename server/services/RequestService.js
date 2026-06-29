@@ -150,10 +150,10 @@ class RequestService {
       throw new AppError('Request not found.', 404);
     }
 
-    // Access control: owner, same-department HOD, COO, Garage, GM-HR, or Admin
+    // Access control: owner, same-department HOD, COO, Garage, GM-HR, Admin, or Travel Admin
     const isOwner = request.employee_id === user.id;
     const isDeptHOD = user.role === 'HOD' && request.department_id === user.department_id;
-    const hasGlobalAccess = ['COO', 'Garage', 'Admin', 'GM-HR'].includes(user.role);
+    const hasGlobalAccess = ['COO', 'Garage', 'Admin', 'GM-HR', 'Travel Admin'].includes(user.role);
 
     if (!isOwner && !isDeptHOD && !hasGlobalAccess) {
       throw new AppError('Access denied.', 403);
