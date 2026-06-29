@@ -546,8 +546,6 @@ export default function Login() {
 function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused, isDragging, isFlipping, isHovered }) {
   const mascotRef = useRef(null);
   const mouthRef = useRef(null);
-  const leftArmRef = useRef(null);
-  const rightArmRef = useRef(null);
   const [pupilOffset, setPupilOffset] = useState({ x: 0, y: 0 });
 
   // Idea 5: Wind Flutter / Idle Wave
@@ -594,36 +592,7 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
     });
   }, [isDragging, isPasswordFocused, isConfused, isInputFocused, isFlipping]);
 
-  // Arm State Animation (GSAP)
-  useEffect(() => {
-    if (!leftArmRef.current || !rightArmRef.current) return;
-    
-    let leftRot = 0;
-    let rightRot = 0;
-    if (isDragging || isFlipping) {
-      leftRot = -45;
-      rightRot = 45;
-    } else if (isPasswordFocused) {
-      leftRot = -135;
-      rightRot = 135;
-    } else if (isConfused) {
-      leftRot = -25;
-      rightRot = 25;
-    }
-    
-    gsap.to(leftArmRef.current, { 
-      rotate: leftRot, 
-      transformOrigin: "5px 70px", 
-      duration: 0.45, 
-      ease: "back.out(1.7)" 
-    });
-    gsap.to(rightArmRef.current, { 
-      rotate: rightRot, 
-      transformOrigin: "95px 70px", 
-      duration: 0.45, 
-      ease: "back.out(1.7)" 
-    });
-  }, [isDragging, isPasswordFocused, isConfused, isFlipping]);
+
 
   useEffect(() => {
     if (!mascotRef.current) return;
@@ -733,12 +702,12 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
           strokeLinecap="round" />
 
         {/* Left Arm */}
-        <g ref={leftArmRef} style={{ transformOrigin: '5px 70px' }}>
+        <g style={{ transformOrigin: '5px 70px' }}>
           <path d="M 5 70 L 5 110 A 5 5 0 0 1 -5 110 L -5 70 Z" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
         </g>
         
         {/* Right Arm */}
-        <g ref={rightArmRef} style={{ transformOrigin: '95px 70px' }}>
+        <g style={{ transformOrigin: '95px 70px' }}>
           <path d="M 95 70 L 95 110 A 5 5 0 0 0 105 110 L 105 70 Z" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
         </g>
       </svg>
