@@ -576,35 +576,47 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
     
     if (isHovered && !isDragging && !isPasswordFocused && !isConfused && !isFlipping) {
       leftAnim = gsap.to(leftArmRef.current, {
-        rotate: "-60deg",
+        rotate: -60,
+        transformOrigin: "5px 70px",
         duration: 0.12,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut"
       });
       rightAnim = gsap.to(rightArmRef.current, {
-        rotate: "60deg",
+        rotate: 60,
+        transformOrigin: "95px 70px",
         duration: 0.12,
         yoyo: true,
         repeat: -1,
         ease: "sine.inOut"
       });
     } else {
-      let leftRot = "0deg";
-      let rightRot = "0deg";
+      let leftRot = 0;
+      let rightRot = 0;
       if (isDragging || isFlipping) {
-        leftRot = "-150deg";
-        rightRot = "150deg";
+        leftRot = -150;
+        rightRot = 150;
       } else if (isPasswordFocused) {
-        leftRot = "-135deg";
-        rightRot = "135deg";
+        leftRot = -135;
+        rightRot = 135;
       } else if (isConfused) {
-        leftRot = "-45deg";
-        rightRot = "45deg";
+        leftRot = -45;
+        rightRot = 45;
       }
       
-      gsap.to(leftArmRef.current, { rotate: leftRot, duration: 0.35, ease: "back.out(1.5)" });
-      gsap.to(rightArmRef.current, { rotate: rightRot, duration: 0.35, ease: "back.out(1.5)" });
+      gsap.to(leftArmRef.current, { 
+        rotate: leftRot, 
+        transformOrigin: "5px 70px", 
+        duration: 0.35, 
+        ease: "back.out(1.5)" 
+      });
+      gsap.to(rightArmRef.current, { 
+        rotate: rightRot, 
+        transformOrigin: "95px 70px", 
+        duration: 0.35, 
+        ease: "back.out(1.5)" 
+      });
     }
     
     return () => {
