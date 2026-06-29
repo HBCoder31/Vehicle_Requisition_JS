@@ -471,5 +471,39 @@ input[type="button"]:active:not(:disabled) {
   animation: shrinkBar 6000ms linear forwards;
 }
 
+/* Swiper Custom Theme Styling */
+.timeline-swiper {
+  position: relative;
+  width: 100%;
+}
+
+.timeline-swiper .swiper-button-next,
+.timeline-swiper .swiper-button-prev {
+  color: #0f172a !important; /* slate-900 */
+  background: white;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease-in-out;
+}
+
+.timeline-swiper .swiper-button-next:hover,
+.timeline-swiper .swiper-button-prev:hover {
+  background: #f8fafc;
+  transform: scale(1.05);
+}
+
+.timeline-swiper .swiper-button-next::after,
+.timeline-swiper .swiper-button-prev::after {
+  font-size: 14px !important;
+  font-weight: bold;
+}
+
+.timeline-swiper .swiper-pagination-bullet-active {
+  background: #e11d48 !important; /* corporate red primary-600 */
+}
+
 
 
