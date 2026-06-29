@@ -18,6 +18,52 @@ export default function ManageEmployees() {
   // Popover: only used for editing (not creating)
   const [popover, setPopover] = useState({ open: false, x: 0, y: 0 });
   const popoverRef = useRef(null);
+  const anchorRef = useRef(null);
+
+  const updatePopoverPosition = useCallback(() => {
+    if (!anchorRef.current) return;
+    const rect = anchorRef.current.getBoundingClientRect();
+    const popoverWidth = 420;
+    const gap = 8;
+    
+    // Place to the left of the button; flip right if near left edge
+    let x = rect.left - popoverWidth - gap;
+    if (x < 12) x = rect.right + gap;
+    let y = rect.top - 8;
+    
+    // Prevent going below viewport
+    const estimatedHeight = 480;
+    if (y + estimatedHeight > window.innerHeight - 12) {
+      y = window.innerHeight - estimatedHeight - 12;
+    }
+    if (y < 12) y = 12;
+    
+    setPopover(prev => {
+      if (prev.x === x && prev.y === y) return prev;
+      return { ...prev, x, y };
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!popover.open) return;
+
+    const handleScroll = () => {
+      updatePopoverPosition();
+    };
+
+    const scrollContainer = document.getElementById('page-content');
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [popover.open, updatePopoverPosition]);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -49,16 +95,17 @@ export default function ManageEmployees() {
       phone: emp.phone || '',
     });
     setEditModal({ open: false, employee: emp });
-    // Position the popover near the pencil button
+    
     if (btnEl) {
+      anchorRef.current = btnEl;
       const rect = btnEl.getBoundingClientRect();
       const popoverWidth = 420;
       const gap = 8;
-      // Place to the left of the button; flip right if near left edge
+      
       let x = rect.left - popoverWidth - gap;
       if (x < 12) x = rect.right + gap;
       let y = rect.top - 8;
-      // Prevent going below viewport
+      
       const estimatedHeight = 480;
       if (y + estimatedHeight > window.innerHeight - 12) {
         y = window.innerHeight - estimatedHeight - 12;
@@ -69,6 +116,7 @@ export default function ManageEmployees() {
   }
 
   function closePopover() {
+    anchorRef.current = null;
     setPopover({ open: false, x: 0, y: 0 });
     setEditModal({ open: false, employee: null });
   }
