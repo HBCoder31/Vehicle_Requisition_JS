@@ -73,7 +73,18 @@ export default function RequestForm() {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm(prev => {
+      const updated = { ...prev, [name]: value };
+      // If switching to Personal Work, force travel type to Within
+      if (name === 'work_type' && value === 'Personal') {
+        updated.travel_type = 'Within Anuppur/Shahdol';
+        updated.want_ticket = 0;
+        updated.mode_of_transport = '';
+        updated.ticket_from = '';
+        updated.ticket_to = '';
+      }
+      return updated;
+    });
   }
 
   async function handleSubmit(e) {
@@ -130,27 +141,17 @@ export default function RequestForm() {
 
           {/* Work Category */}
           <div>
-            <label className={labelClass}>Requisition Purpose Category</label>
-            <div className="flex gap-6">
-              {[
-                { label: "Company's Work", value: 'Company' },
-                { label: 'Personal Work', value: 'Personal' }
-              ].map(item => (
-                <label key={item.value} className="flex items-center gap-2.5 cursor-pointer group">
-                  <input
-                    type="radio"
-                    name="work_type"
-                    value={item.value}
-                    checked={form.work_type === item.value}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-primary-600 border-border focus:ring-primary-500"
-                  />
-                  <span className={`text-sm ${form.work_type === item.value ? 'text-slate-800 font-semibold' : 'text-slate-500 group-hover:text-slate-700'}`}>
-                    {item.label}
-                  </span>
-                </label>
-              ))}
-            </div>
+            <label htmlFor="work_type" className={labelClass}>Requisition Purpose Category</label>
+            <select
+              id="work_type"
+              name="work_type"
+              value={form.work_type}
+              onChange={handleChange}
+              className={inputClass}
+            >
+              <option value="Company">Company's Work</option>
+              <option value="Personal">Personal Work</option>
+            </select>
           </div>
 
           {/* Purpose */}
@@ -215,24 +216,27 @@ export default function RequestForm() {
 
           {/* Travel Type */}
           <div>
-            <label className={labelClass}>Travel Type</label>
-            <div className="flex gap-4">
-              {['Within Anuppur/Shahdol', 'Beyond Anuppur/Shahdol'].map(type => (
-                <label key={type} className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    type="radio"
-                    name="travel_type"
-                    value={type}
-                    checked={form.travel_type === type}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-primary-600 border-border focus:ring-primary-500"
-                  />
-                  <span className={`text-sm ${form.travel_type === type ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
-                    {type}
-                  </span>
-                </label>
-              ))}
-            </div>
+            <label htmlFor="travel_type" className={labelClass}>Travel Type</label>
+            <select
+              id="travel_type"
+              name="travel_type"
+              value={form.travel_type}
+              onChange={handleChange}
+              className={inputClass}
+            >
+              <option value="Within Anuppur/Shahdol">Within Anuppur/Shahdol</option>
+              <option
+                value="Beyond Anuppur/Shahdol"
+                disabled={form.work_type === 'Personal'}
+              >
+                Beyond Anuppur/Shahdol{form.work_type === 'Personal' ? ' (Not available for Personal Work)' : ''}
+              </option>
+            </select>
+            {form.work_type === 'Personal' && (
+              <p className="mt-1.5 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-md border border-slate-200">
+                ℹ Personal work requests are limited to Within Anuppur/Shahdol only.
+              </p>
+            )}
             {form.travel_type === 'Beyond Anuppur/Shahdol' && (
               <p className="mt-1.5 text-xs text-warning-600 bg-warning-50 px-3 py-1.5 rounded-md">
                 ⚠ Requests beyond Anuppur/Shahdol require additional COO approval.
