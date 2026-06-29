@@ -4,16 +4,15 @@ import api from '../../services/api';
 import Card from '../../components/ui/Card';
 import StatusBadge from '../../components/ui/StatusBadge';
 import DashboardSkeleton from '../../components/ui/DashboardSkeleton';
-import { FileText, Plus, Clock, CheckCircle, XCircle, ExternalLink, Trash2, Ticket, AlertCircle, MapPin } from 'lucide-react';
+import { FileText, Plus, Clock, CheckCircle, XCircle, ExternalLink, Trash2, Ticket, AlertCircle, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseDate } from '../../utils/date';
 import TravelTicketsTab from '../phase2/TravelTicketsTab';
 
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination } from 'swiper/modules';
+import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import 'swiper/css/pagination';
 
 export default function EmployeeDashboard() {
   const [requests, setRequests] = useState([]);
@@ -22,6 +21,7 @@ export default function EmployeeDashboard() {
   const [activeTab, setActiveTab] = useState('requests'); // 'requests', 'tickets'
   const [viewMode, setViewMode] = useState('timeline'); // 'timeline', 'table'
   const loadStart = useRef(Date.now());
+  const swiperRef = useRef(null);
 
   useEffect(() => {
     fetchRequests();
@@ -122,27 +122,47 @@ export default function EmployeeDashboard() {
           header={
             <div className="flex items-center justify-between w-full">
               <h3 className="text-base font-semibold text-slate-800">Recent Requests</h3>
-              <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg">
-                <button 
-                  onClick={() => setViewMode('timeline')}
-                  className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-                    viewMode === 'timeline'
-                      ? 'bg-white text-slate-800 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  Timeline View
-                </button>
-                <button 
-                  onClick={() => setViewMode('table')}
-                  className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-                    viewMode === 'table'
-                      ? 'bg-white text-slate-800 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  Table View
-                </button>
+              <div className="flex items-center gap-3">
+                {viewMode === 'timeline' && requests.length > 0 && (
+                  <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-100 shadow-sm">
+                    <button 
+                      onClick={() => swiperRef.current?.swiper?.slidePrev()}
+                      className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-white active:scale-95 transition-all"
+                      title="Previous"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => swiperRef.current?.swiper?.slideNext()}
+                      className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-white active:scale-95 transition-all"
+                      title="Next"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg">
+                  <button 
+                    onClick={() => setViewMode('timeline')}
+                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                      viewMode === 'timeline'
+                        ? 'bg-white text-slate-800 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    Timeline View
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('table')}
+                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                      viewMode === 'table'
+                        ? 'bg-white text-slate-800 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    Table View
+                  </button>
+                </div>
               </div>
             </div>
           }
@@ -157,17 +177,16 @@ export default function EmployeeDashboard() {
             /* Swiper Timeline view */
             <div className="p-2 select-none relative">
               <Swiper
-                modules={[Navigation, Pagination]}
+                ref={swiperRef}
+                modules={[Navigation]}
                 spaceBetween={20}
                 slidesPerView={1}
-                navigation
-                pagination={{ clickable: true }}
                 breakpoints={{
                   640: { slidesPerView: 1 },
                   768: { slidesPerView: 2 },
                   1024: { slidesPerView: 3 }
                 }}
-                className="pb-12 timeline-swiper"
+                className="timeline-swiper"
               >
                 {requests.map((req, i) => (
                   <SwiperSlide key={req.id}>
