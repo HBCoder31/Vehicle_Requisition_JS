@@ -221,18 +221,17 @@ export default function Login() {
 
       <div className="relative w-full max-w-md animate-fade-in">
         {/* Logo & Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/15 rounded-2xl backdrop-blur-sm mb-4 ring-2 ring-white/20">
-            <img src="/logo-icon.png?v=2" alt="VRTP Logo" className="w-16 h-16 object-contain rounded-xl" />
+        <div className="text-center mb-5">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/15 rounded-2xl backdrop-blur-sm mb-3 ring-2 ring-white/20">
+            <img src="/logo-icon.png?v=2" alt="VRTP Logo" className="w-12 h-12 object-contain rounded-xl" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-2xl font-bold text-white mb-1">
             Vehicle Requisitional and Travel Portal
           </h1>
-
         </div>
 
         {/* Login Card */}
-        <div className="relative bg-white rounded-2xl p-8 shadow-2xl border border-slate-100 transition-all duration-300 login-card mt-12">
+        <div className="relative bg-white rounded-2xl p-6 shadow-2xl border border-slate-100 transition-all duration-300 login-card mt-3">
           {/* Interactive Mascot in Card Flow */}
           <div 
             onMouseDown={handleMouseDown}
@@ -242,13 +241,13 @@ export default function Login() {
               transition: isDragging ? 'none' : 'transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)',
               filter: isDragging ? 'drop-shadow(0 25px 15px rgba(0, 0, 0, 0.15))' : 'none'
             }}
-            className="relative w-24 h-28 mx-auto mb-6 select-none cursor-grab active:cursor-grabbing z-30"
+            className="relative w-20 h-24 mx-auto mb-4 select-none cursor-grab active:cursor-grabbing z-30"
           >
             {/* Speech Bubble */}
             {greeting && (
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border border-blue-400/20 text-[11px] font-semibold px-3 py-1.5 rounded-xl shadow-lg whitespace-nowrap z-30 animate-fade-in">
+              <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border border-blue-400/20 text-[10px] font-semibold px-2.5 py-1 rounded-xl shadow-lg whitespace-nowrap z-30 animate-fade-in">
                 {isDragging ? 'Wheee! 😄' : `${greeting}!`}
-                <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-indigo-600 border-r border-b border-blue-400/20 rotate-45" />
+                <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-2 h-2 bg-indigo-600 border-r border-b border-blue-400/20 rotate-45" />
               </div>
             )}
             <PaperMascot 
@@ -260,11 +259,11 @@ export default function Login() {
             />
           </div>
 
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-slate-800 mb-1">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-slate-800 mb-0.5">
               {view === 'login' ? 'Welcome Back' : 'Reset Password'}
             </h2>
-            <p className="text-slate-500 text-sm">
+            <p className="text-slate-500 text-xs">
               {view === 'login' 
                 ? 'Sign in to access your dashboard' 
                 : 'Enter your details to receive a new password'}
@@ -272,20 +271,20 @@ export default function Login() {
           </div>
 
           {errorMsg && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700 font-medium">{errorMsg}</p>
+            <div className="mb-4 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-xs text-red-700 font-medium">{errorMsg}</p>
             </div>
           )}
           {successMsg && (
-            <div className="mb-6 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-              <p className="text-sm text-emerald-700 font-medium">{successMsg}</p>
+            <div className="mb-4 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <p className="text-xs text-emerald-700 font-medium">{successMsg}</p>
             </div>
           )}
 
           {view === 'login' ? (
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-3.5">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Employee Number / Email ID</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Employee Number / Email ID</label>
                 <input
                   ref={identifierRef}
                   type="text"
@@ -294,23 +293,14 @@ export default function Login() {
                   onChange={e => setFormData({ ...formData, identifier: e.target.value })}
                   onFocus={() => setFocusedInput('identifier')}
                   onBlur={() => setFocusedInput(null)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
                   placeholder="EMP001 or you@company.com"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-sm font-medium text-slate-700">Password</label>
-                  {/* Forgot Password temporarily disabled
-                  <button 
-                    type="button"
-                    onClick={() => { setView('forgot-password'); setErrorMsg(''); setSuccessMsg(''); }}
-                    className="text-xs text-blue-600 hover:text-blue-800 transition-colors font-medium"
-                  >
-                    Forgot Password?
-                  </button>
-                  */}
+                  <label className="block text-xs font-semibold text-slate-600">Password</label>
                 </div>
                 <input
                   ref={passwordRef}
@@ -320,7 +310,7 @@ export default function Login() {
                   onChange={e => setFormData({ ...formData, password: e.target.value })}
                   onFocus={() => setFocusedInput('password')}
                   onBlur={() => setFocusedInput(null)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
                   placeholder="••••••••"
                 />
               </div>
@@ -328,19 +318,19 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 mt-6 px-4 py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-70 shadow-md hover:shadow-lg"
+                className="w-full flex items-center justify-center gap-2 mt-4 px-4 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-70 shadow-md hover:shadow-lg"
               >
                 {isSubmitting ? 'Signing in...' : 'Sign In'}
                 {!isSubmitting && <ArrowRight className="w-4 h-4" />}
               </button>
             </form>
           ) : (
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <p className="text-sm text-slate-600 mb-4 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+            <form onSubmit={handleForgotPassword} className="space-y-3.5">
+              <p className="text-xs text-slate-600 mb-3 bg-blue-50/50 p-2.5 rounded-lg border border-blue-100">
                 Please provide your registered mail ID and employee number to get a new password.
               </p>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email ID</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Email ID</label>
                 <input
                   ref={emailRef}
                   type="email"
@@ -349,13 +339,13 @@ export default function Login() {
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
                   onFocus={() => setFocusedInput('email')}
                   onBlur={() => setFocusedInput(null)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
                   placeholder="you@company.com"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Employee Number</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Employee Number</label>
                 <input
                   ref={empNumRef}
                   type="text"
@@ -364,7 +354,7 @@ export default function Login() {
                   onChange={e => setFormData({ ...formData, employee_number: e.target.value })}
                   onFocus={() => setFocusedInput('employee_number')}
                   onBlur={() => setFocusedInput(null)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
                   placeholder="EMP001"
                 />
               </div>
@@ -372,26 +362,26 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 mt-6 px-4 py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-70 shadow-md hover:shadow-lg"
+                className="w-full flex items-center justify-center gap-2 mt-4 px-4 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-70 shadow-md hover:shadow-lg"
               >
                 {isSubmitting ? 'Sending Request...' : 'Reset Password'}
                 {!isSubmitting && <ArrowRight className="w-4 h-4" />}
               </button>
               
-              <div className="text-center mt-4">
+              <div className="text-center mt-3">
                 <button 
                   type="button"
                   onClick={() => { setView('login'); setErrorMsg(''); setSuccessMsg(''); }}
-                  className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 transition-colors font-medium"
+                  className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 transition-colors font-medium"
                 >
-                  <ArrowLeft className="w-4 h-4" /> Back to Login
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back to Login
                 </button>
               </div>
             </form>
           )}
 
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="flex items-center gap-2 text-slate-500 text-xs">
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-2 text-slate-500 text-[11px]">
               <Shield className="w-3.5 h-3.5 text-blue-500" />
               <span>Secure Internal Portal Access.</span>
             </div>
@@ -399,7 +389,7 @@ export default function Login() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-primary-300/60 text-xs mt-6">
+        <p className="text-center text-primary-300/60 text-[11px] mt-4">
           © {new Date().getFullYear()} Vehicle Requisitional and Travel Portal.
         </p>
       </div>
