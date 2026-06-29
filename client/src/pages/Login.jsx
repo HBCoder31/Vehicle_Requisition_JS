@@ -601,14 +601,14 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
     let leftRot = 0;
     let rightRot = 0;
     if (isDragging || isFlipping) {
-      leftRot = 45;
-      rightRot = -45;
+      leftRot = -45;
+      rightRot = 45;
     } else if (isPasswordFocused) {
-      leftRot = 65;
-      rightRot = -65;
+      leftRot = -135;
+      rightRot = 135;
     } else if (isConfused) {
-      leftRot = 25;
-      rightRot = -25;
+      leftRot = -25;
+      rightRot = 25;
     }
     
     gsap.to(leftArmRef.current, { 
