@@ -48,7 +48,7 @@ exports.register = catchAsync(async (req, res) => {
 
   setCookies(res, accessToken, refreshToken);
 
-  res.status(201).json({ status: 'success', user });
+  res.status(201).json({ status: 'success', user, accessToken });
 });
 
 /**
@@ -77,7 +77,7 @@ exports.login = catchAsync(async (req, res) => {
     user.effectiveDepartments = user.department_id ? [user.department_id] : [];
   }
 
-  res.json({ status: 'success', user });
+  res.json({ status: 'success', user, accessToken });
 });
 
 /**
@@ -93,7 +93,7 @@ exports.refresh = catchAsync(async (req, res) => {
   
   setCookies(res, tokens.accessToken, tokens.refreshToken);
 
-  res.json({ status: 'success', message: 'Token refreshed' });
+  res.json({ status: 'success', message: 'Token refreshed', accessToken: tokens.accessToken });
 });
 
 /**

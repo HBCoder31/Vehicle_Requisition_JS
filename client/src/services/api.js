@@ -13,6 +13,18 @@ const api = axios.create({
   },
 });
 
+// Request interceptor to attach token from sessionStorage
+api.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Response interceptor for global error handling
 api.interceptors.response.use(
   (response) => response,

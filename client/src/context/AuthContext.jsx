@@ -3,14 +3,14 @@ import api from '../services/api';
 
 const AuthContext = createContext(null);
 
-// Synchronously check if session flag is set in localStorage on initial evaluation
+// Synchronously check if session flag is set in sessionStorage on initial evaluation
 let initialLoadingState = true;
 try {
-  if (localStorage.getItem('isLoggedIn') !== 'true') {
+  if (sessionStorage.getItem('isLoggedIn') !== 'true') {
     initialLoadingState = false;
   }
 } catch (e) {
-  // If localStorage is blocked, default to true to be safe
+  // If sessionStorage is blocked, default to true to be safe
 }
 
 const initialState = {
@@ -25,17 +25,20 @@ function authReducer(state, action) {
       return { ...state, loading: true, error: null };
     case 'AUTH_SUCCESS':
       try {
-        localStorage.setItem('isLoggedIn', 'true');
+        if (action.token) sessionStorage.setItem('accessToken', action.token);
+        sessionStorage.setItem('isLoggedIn', 'true');
       } catch (e) {}
       return { user: action.payload, loading: false, error: null };
     case 'AUTH_ERROR':
       try {
-        localStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('accessToken');
       } catch (e) {}
       return { user: null, loading: false, error: action.payload };
     case 'LOGOUT':
       try {
-        localStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('accessToken');
       } catch (e) {}
       return { user: null, loading: false, error: null };
     default:
@@ -46,7 +49,7 @@ function authReducer(state, action) {
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Restore session from JWT cookie on mount
+  // Restore session from JWT cookie/sessionStorage on mount
   useEffect(() => {
     // Detect reload on startup
     let isReload = false;
@@ -70,12 +73,12 @@ export function AuthProvider({ children }) {
     }
 
     async function checkAuth() {
-      // Check if we have an active login session flagged in localStorage
+      // Check if we have an active login session flagged in sessionStorage
       let hasSessionFlag = false;
       try {
-        hasSessionFlag = localStorage.getItem('isLoggedIn') === 'true';
+        hasSessionFlag = sessionStorage.getItem('isLoggedIn') === 'true';
       } catch (e) {
-        console.warn('localStorage is not accessible:', e);
+        console.warn('sessionStorage is not accessible:', e);
       }
 
       // If no session flag exists, skip backend call and immediately render login
@@ -104,7 +107,7 @@ export function AuthProvider({ children }) {
 
       try {
         const { data } = await api.get('/auth/me');
-        dispatch({ type: 'AUTH_SUCCESS', payload: data.user });
+        dispatch({ type: 'AUTH_SUCCESS', payload: data.user, token: data.accessToken });
       } catch {
         dispatch({ type: 'AUTH_ERROR', payload: null });
       }

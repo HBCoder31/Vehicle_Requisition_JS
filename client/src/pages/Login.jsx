@@ -168,7 +168,7 @@ export default function Login() {
         identifier: formData.identifier,
         password: formData.password
       });
-      dispatch({ type: 'AUTH_SUCCESS', payload: data.user });
+      dispatch({ type: 'AUTH_SUCCESS', payload: data.user, token: data.accessToken });
       navigate('/dashboard');
     } catch (e) {
       const err = e.response?.data?.error;
