@@ -61,7 +61,7 @@ export default function CooDashboard() {
     }
   }
 
-  if (loading) return <DashboardSkeleton cards={1} rows={4} cols={5} />;
+  if (loading) return <DashboardSkeleton cards={3} rows={4} cols={5} />;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -80,7 +80,7 @@ export default function CooDashboard() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="hover-card animate-fade-in-up delay-1">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-primary-50">
@@ -100,6 +100,17 @@ export default function CooDashboard() {
             <div>
               <p className="text-2xl font-bold text-slate-800">{myRequests.filter(r => r.status === 'Expired').length}</p>
               <p className="text-xs text-muted">My Expired Requests</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="hover-card animate-fade-in-up delay-3">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-indigo-50">
+              <Ticket className="w-6 h-6 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-slate-800">{myRequests.length}</p>
+              <p className="text-xs text-muted">My Total Requests</p>
             </div>
           </div>
         </Card>

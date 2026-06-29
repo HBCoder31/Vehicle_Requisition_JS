@@ -61,7 +61,7 @@ export default function EmployeeDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           { label: 'Total Requests', value: stats.total, icon: FileText, color: 'text-primary-600', bg: 'bg-primary-50', delay: 'delay-1' },
           { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-warning-600', bg: 'bg-warning-50', delay: 'delay-2' },

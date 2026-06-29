@@ -41,7 +41,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="hover-card animate-fade-in-up delay-1">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-primary-50"><FileText className="w-6 h-6 text-primary-600" /></div>
