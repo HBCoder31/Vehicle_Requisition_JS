@@ -594,62 +594,36 @@ function PaperMascot({ targetPos, isPasswordFocused, isInputFocused, isConfused,
     });
   }, [isDragging, isPasswordFocused, isConfused, isInputFocused, isFlipping]);
 
-  // Arm Waving Hover and State Animation (GSAP)
+  // Arm State Animation (GSAP)
   useEffect(() => {
     if (!leftArmRef.current || !rightArmRef.current) return;
     
-    let leftAnim, rightAnim;
-    
-    if (isHovered && !isDragging && !isPasswordFocused && !isConfused && !isFlipping) {
-      leftAnim = gsap.to(leftArmRef.current, {
-        rotate: 35,
-        transformOrigin: "5px 70px",
-        duration: 0.15,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut"
-      });
-      rightAnim = gsap.to(rightArmRef.current, {
-        rotate: -35,
-        transformOrigin: "95px 70px",
-        duration: 0.15,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut"
-      });
-    } else {
-      let leftRot = 0;
-      let rightRot = 0;
-      if (isDragging || isFlipping) {
-        leftRot = 45;
-        rightRot = -45;
-      } else if (isPasswordFocused) {
-        leftRot = 65;
-        rightRot = -65;
-      } else if (isConfused) {
-        leftRot = 25;
-        rightRot = -25;
-      }
-      
-      gsap.to(leftArmRef.current, { 
-        rotate: leftRot, 
-        transformOrigin: "5px 70px", 
-        duration: 0.45, 
-        ease: "back.out(1.7)" 
-      });
-      gsap.to(rightArmRef.current, { 
-        rotate: rightRot, 
-        transformOrigin: "95px 70px", 
-        duration: 0.45, 
-        ease: "back.out(1.7)" 
-      });
+    let leftRot = 0;
+    let rightRot = 0;
+    if (isDragging || isFlipping) {
+      leftRot = 45;
+      rightRot = -45;
+    } else if (isPasswordFocused) {
+      leftRot = 65;
+      rightRot = -65;
+    } else if (isConfused) {
+      leftRot = 25;
+      rightRot = -25;
     }
     
-    return () => {
-      if (leftAnim) leftAnim.kill();
-      if (rightAnim) rightAnim.kill();
-    };
-  }, [isHovered, isDragging, isPasswordFocused, isConfused, isFlipping]);
+    gsap.to(leftArmRef.current, { 
+      rotate: leftRot, 
+      transformOrigin: "5px 70px", 
+      duration: 0.45, 
+      ease: "back.out(1.7)" 
+    });
+    gsap.to(rightArmRef.current, { 
+      rotate: rightRot, 
+      transformOrigin: "95px 70px", 
+      duration: 0.45, 
+      ease: "back.out(1.7)" 
+    });
+  }, [isDragging, isPasswordFocused, isConfused, isFlipping]);
 
   useEffect(() => {
     if (!mascotRef.current) return;
