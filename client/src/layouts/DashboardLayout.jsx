@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { parseDate } from '../utils/date';
 import {
   LayoutDashboard, FileText, CheckSquare, Truck, Users, ScrollText,
-  Menu, X, LogOut, ChevronDown, Shield, Bell, Check, TrendingUp, Search, RefreshCw, MapPin, History
+  Menu, X, LogOut, ChevronDown, Shield, Bell, Check, TrendingUp, Search, RefreshCw, MapPin, History, Ticket
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
@@ -68,6 +68,7 @@ const roleNavConfig = {
     { to: '/garage/maintenance', icon: CheckSquare, label: 'Maintenance' },
     { to: '/garage/fuel', icon: FileText, label: 'Fuel Logs' },
     { to: '/security/gate', icon: Shield, label: 'Gate Operations' },
+    { to: '/travel-admin', icon: Ticket, label: 'Travel Booking (TA)' },
     { to: '/requests/history', icon: History, label: 'All Request History' },
     { to: '/admin/audit-logs', icon: ScrollText, label: 'Audit Logs' },
     { to: '/delegations', icon: Users, label: 'Delegations' },
@@ -75,6 +76,11 @@ const roleNavConfig = {
   ],
   Security: [
     { to: '/security/gate', icon: Shield, label: 'Gate Operations' },
+  ],
+  'Travel Admin': [
+    { to: '/travel-admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/requests/history', icon: History, label: 'Request History' },
+    { to: '/employee/travel-ledger', icon: ScrollText, label: 'My Travel Ledger' },
   ],
 };
 
@@ -86,6 +92,7 @@ const roleBadgeColors = {
   Garage:   'bg-info-50 text-primary-700',
   Admin:    'bg-danger-50 text-danger-700',
   Security: 'bg-slate-100 text-slate-700',
+  'Travel Admin': 'bg-teal-100 text-teal-800',
 };
 
 const getPopupStyles = (notif) => {

@@ -38,6 +38,7 @@ import TravelHistory from './pages/phase2/TravelHistory';
 import FleetAnalytics from './pages/phase2/FleetAnalytics';
 import BillingManagement from './pages/phase2/BillingManagement';
 import PaymentManagement from './pages/phase2/PaymentManagement';
+import TravelAdminDashboard from './pages/phase2/TravelAdminDashboard';
 
 /**
  * Redirect /dashboard to the appropriate role-based page.
@@ -52,6 +53,7 @@ function DashboardRedirect() {
     Garage: '/garage',
     Admin: '/admin',
     Security: '/security/gate',
+    'Travel Admin': '/travel-admin',
   };
   return <Navigate to={roleRoutes[user?.role] || '/login'} replace />;
 }
@@ -68,7 +70,7 @@ export default function App() {
       } />
 
       {/* Employee routes */}
-      <Route element={<ProtectedRoute allowedRoles={['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+      <Route element={<ProtectedRoute allowedRoles={['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Travel Admin']}><DashboardLayout /></ProtectedRoute>}>
         <Route path="/requests/:id" element={<RequestDetails />} />
         <Route path="/requests/edit/:id" element={<EditRequest />} />
         <Route path="/requests/history" element={<RequestHistory />} />
@@ -83,7 +85,7 @@ export default function App() {
       </Route>
 
       {/* Restricted Delegations Route */}
-      <Route element={<ProtectedRoute allowedRoles={['HOD', 'GM-HR', 'COO', 'Garage', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+      <Route element={<ProtectedRoute allowedRoles={['HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Travel Admin']}><DashboardLayout /></ProtectedRoute>}>
         <Route path="/delegations" element={<Delegations />} />
       </Route>
 
@@ -140,6 +142,11 @@ export default function App() {
       {/* Security routes */}
       <Route element={<ProtectedRoute allowedRoles={['Security', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
         <Route path="/security/gate" element={<SecurityDashboard />} />
+      </Route>
+
+      {/* Travel Admin routes */}
+      <Route element={<ProtectedRoute allowedRoles={['Travel Admin', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+        <Route path="/travel-admin" element={<TravelAdminDashboard />} />
       </Route>
 
       {/* Fleet Operations */}

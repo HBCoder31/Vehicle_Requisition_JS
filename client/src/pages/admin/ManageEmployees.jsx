@@ -473,7 +473,7 @@ export default function ManageEmployees() {
               <label htmlFor="emp-role" className="block text-sm font-medium text-slate-700 mb-1">Role</label>
               <select id="emp-role" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
                 className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none">
-                {['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security'].map(r => <option key={r} value={r}>{r}</option>)}
+                {['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security', 'Travel Admin'].map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
             <div>
@@ -560,7 +560,7 @@ export default function ManageEmployees() {
                     <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-600 font-semibold uppercase border border-slate-200">No</span>
                   </td>
                   <td className="px-3 py-2 border-r border-slate-200 text-slate-500">—</td>
-                  <td className="px-3 py-2">Employee, HOD, GM-HR, COO, Garage, Admin, Security. Defaults to <code className="bg-slate-50 px-1 py-0.5 rounded border border-slate-200 text-slate-800">Employee</code>.</td>
+                  <td className="px-3 py-2">Employee, HOD, GM-HR, COO, Garage, Admin, Security, Travel Admin. Defaults to <code className="bg-slate-50 px-1 py-0.5 rounded border border-slate-200 text-slate-800">Employee</code>.</td>
                 </tr>
                 <tr>
                   <td className="px-3 py-2 border-r border-slate-200 font-semibold text-slate-800">department</td>
