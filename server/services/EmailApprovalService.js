@@ -5,7 +5,6 @@
  * and orchestration for email-based approval/rejection of vehicle requests.
  */
 const crypto = require('crypto');
-const fs = require('fs');
 const path = require('path');
 const { pool } = require('../config/db');
 const EmailService = require('./EmailService');
@@ -14,21 +13,10 @@ const UserRepository = require('../repositories/UserRepository');
 
 const TOKEN_EXPIRY_HOURS = 48;
 
-let logoBase64 = '';
-try {
-  const paths = [
-    path.join(__dirname, '../../client/dist/logo.png'),
-    path.join(__dirname, '../../client/public/logo.png')
-  ];
-  for (const p of paths) {
-    if (fs.existsSync(p)) {
-      const base64 = fs.readFileSync(p, 'base64');
-      logoBase64 = `data:image/png;base64,${base64}`;
-      break;
-    }
-  }
-} catch (err) {
-  console.error('Failed to load logo in EmailApprovalService:', err);
+// Logo URL — served from the server's /uploads directory
+function getLogoUrl() {
+  const base = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+  return `${base}/uploads/logo.png`;
 }
 
 class EmailApprovalService {
@@ -263,7 +251,7 @@ Recipient Email: ${approver.email}`);
                         🚗 VRTP
                       </td>
                       <td align="right" style="vertical-align:middle;">
-                        ${logoBase64 ? `<img src="${logoBase64}" alt="CK Birla Group" style="display:block;max-height:40px;width:auto;border:0;outline:none;text-decoration:none;" />` : `<span style="color:rgba(255,255,255,0.85);font-size:12px;line-height:1.4;">CK Birla Group<br/>Orient Paper &amp; Industries</span>`}
+                        <img src="${getLogoUrl()}" alt="CK Birla Group" width="120" style="display:block;max-height:44px;width:auto;border:0;outline:none;text-decoration:none;" />
                       </td>
                     </tr>
                   </table>
