@@ -272,7 +272,7 @@ export default function ManageEmployees() {
                 <td><strong>role</strong></td>
                 <td><span class="badge badge-optional">No</span></td>
                 <td>—</td>
-                <td>Must match one of: Employee, HOD, GM-HR, COO, Garage, Admin. Defaults to <strong>Employee</strong>.</td>
+                <td>Must match one of: Employee, HOD, GM-HR, COO, Garage, Admin, Security. Defaults to <strong>Employee</strong>.</td>
                 <td>Employee</td>
               </tr>
               <tr>
@@ -295,7 +295,7 @@ export default function ManageEmployees() {
           <h3>System Validation Rules:</h3>
           <ul>
             <li><strong>Unique Constraints:</strong> Rows containing duplicate email addresses or employee numbers will be automatically skipped to prevent data corruption.</li>
-            <li><strong>Valid Roles:</strong> Acceptable roles are: <code>Employee</code>, <code>HOD</code>, <code>GM-HR</code>, <code>COO</code>, <code>Garage</code>, <code>Admin</code>, <code>Security Guard</code>. If a role is incorrect or misspelled, the row is skipped.</li>
+            <li><strong>Valid Roles:</strong> Acceptable roles are: <code>Employee</code>, <code>HOD</code>, <code>GM-HR</code>, <code>COO</code>, <code>Garage</code>, <code>Admin</code>, <code>Security</code>. If a role is incorrect or misspelled, the row is skipped.</li>
             <li><strong>Active Departments:</strong> Currently configured departments in the portal are: <strong>${deptList}</strong>. You can use either the full department name or the department code.</li>
           </ul>
 
@@ -322,7 +322,7 @@ export default function ManageEmployees() {
     COO:      'bg-success-50 text-success-700',
     Garage:   'bg-info-50 text-primary-700',
     Admin:    'bg-danger-50 text-danger-700',
-    'Security Guard': 'bg-slate-100 text-slate-700',
+    Security: 'bg-slate-100 text-slate-700',
   };
 
   if (loading) return <Spinner size="lg" className="py-20" />;
@@ -473,7 +473,7 @@ export default function ManageEmployees() {
               <label htmlFor="emp-role" className="block text-sm font-medium text-slate-700 mb-1">Role</label>
               <select id="emp-role" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
                 className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white focus:border-primary-500 outline-none">
-                {['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security Guard'].map(r => <option key={r} value={r}>{r}</option>)}
+                {['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security'].map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
             <div>
@@ -560,7 +560,7 @@ export default function ManageEmployees() {
                     <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-600 font-semibold uppercase border border-slate-200">No</span>
                   </td>
                   <td className="px-3 py-2 border-r border-slate-200 text-slate-500">—</td>
-                  <td className="px-3 py-2">Employee, HOD, GM-HR, COO, Garage, Admin. Defaults to <code className="bg-slate-50 px-1 py-0.5 rounded border border-slate-200 text-slate-800">Employee</code>.</td>
+                  <td className="px-3 py-2">Employee, HOD, GM-HR, COO, Garage, Admin, Security. Defaults to <code className="bg-slate-50 px-1 py-0.5 rounded border border-slate-200 text-slate-800">Employee</code>.</td>
                 </tr>
                 <tr>
                   <td className="px-3 py-2 border-r border-slate-200 font-semibold text-slate-800">department</td>

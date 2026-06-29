@@ -217,7 +217,7 @@ export default function SecurityDashboard() {
         'Exit Date & Time': item.exit_time ? new Date(item.exit_time).toLocaleString() : '-',
         'Odometer Out': item.odometer_out || 0,
         'Gate Out': item.gate_no_out || '-',
-        'Security Guard Out': item.security_guard_out || '-',
+        'Security Out': item.security_out || '-',
         'Exit Remarks': item.remarks_out || '',
         'Entry Date & Time': item.entry_time ? new Date(item.entry_time).toLocaleString() : '-',
         'Odometer In': item.odometer_in || '',
@@ -594,7 +594,7 @@ export default function SecurityDashboard() {
                           <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
                             <Gauge className="w-3.5 h-3.5 text-slate-400" /> Out Odo: <span className="font-bold text-slate-700">{item.odometer_out} km</span>
                           </div>
-                          <div className="text-xs text-slate-400 mt-0.5">Gate: {item.gate_no_out} | Guard: {item.security_guard_out || '-'}</div>
+                          <div className="text-xs text-slate-400 mt-0.5">Gate: {item.gate_no_out} | Guard: {item.security_out || '-'}</div>
                           {item.remarks_out && <div className="text-[11px] bg-slate-50 px-2 py-0.5 rounded text-slate-500 mt-1.5 border border-slate-100 w-fit">Exit Notes: {item.remarks_out}</div>}
                         </td>
                         <td className="px-5 py-4">

@@ -24,12 +24,12 @@ const router = express.Router();
 // All phase2 routes require authentication
 router.use(authenticate);
 
-// Security Gate routes (Security Guard, Admin)
-router.get('/gate/exits', authorize('Security Guard', 'Admin'), getPendingExits);
-router.get('/gate/entries', authorize('Security Guard', 'Admin'), getPendingEntries);
-router.post('/gate/exit', authorize('Security Guard', 'Admin'), recordExit);
-router.post('/gate/entry', authorize('Security Guard', 'Admin'), recordEntry);
-router.get('/gate/history', authorize('Security Guard', 'Admin'), getGateHistory);
+// Security Gate routes (Security, Admin)
+router.get('/gate/exits', authorize('Security', 'Admin'), getPendingExits);
+router.get('/gate/entries', authorize('Security', 'Admin'), getPendingEntries);
+router.post('/gate/exit', authorize('Security', 'Admin'), recordExit);
+router.post('/gate/entry', authorize('Security', 'Admin'), recordEntry);
+router.get('/gate/history', authorize('Security', 'Admin'), getGateHistory);
 
 // Travel History route (Any authenticated user can view history, query filtering handled in controller)
 router.get('/travel-history', getEmployeeTravelHistory);

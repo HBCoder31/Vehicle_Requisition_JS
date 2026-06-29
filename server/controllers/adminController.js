@@ -42,7 +42,7 @@ async function createEmployee(req, res) {
       return res.status(400).json({ error: 'employee_number, email, password, full_name, and role are required.' });
     }
 
-    const validRoles = ['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security Guard'];
+    const validRoles = ['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security'];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
     }
@@ -90,7 +90,7 @@ async function updateEmployee(req, res) {
     }
 
     if (role) {
-      const validRoles = ['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security Guard'];
+      const validRoles = ['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security'];
       if (!validRoles.includes(role)) {
         return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
       }
@@ -383,7 +383,7 @@ async function importEmployees(req, res) {
       deptMap[d.id.toString()] = d.id;
     });
 
-    const validRoles = ['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security Guard'];
+    const validRoles = ['Employee', 'HOD', 'GM-HR', 'COO', 'Garage', 'Admin', 'Security'];
     let insertedCount = 0;
     const skipped = [];
 

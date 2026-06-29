@@ -84,7 +84,7 @@ class Phase2Repository {
       const [result] = await connection.execute(`
         INSERT INTO vehicle_trip_logs (
           request_id, vehicle_id, driver_id, employee_id,
-          odometer_out, fuel_level_out, gate_no_out, security_guard_out, remarks_out, photo_url_out,
+          odometer_out, fuel_level_out, gate_no_out, security_out, remarks_out, photo_url_out,
           status
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Vehicle Out')
       `, [
@@ -95,7 +95,7 @@ class Phase2Repository {
         exitData.odometer_out,
         exitData.fuel_level_out || null,
         exitData.gate_no_out,
-        exitData.security_guard_name,
+        exitData.security_name,
         exitData.remarks_out || null,
         exitData.photo_url_out || null
       ]);
@@ -318,7 +318,7 @@ class Phase2Repository {
       FROM employees e
       LEFT JOIN departments dept ON e.department_id = dept.id
       LEFT JOIN employee_travel_summary ets ON e.id = ets.employee_id
-      WHERE e.role != 'Admin' AND e.role != 'Security Guard'
+      WHERE e.role != 'Admin' AND e.role != 'Security'
       ORDER BY outstanding_balance DESC, e.full_name ASC
     `);
     return rows;

@@ -51,7 +51,7 @@ function DashboardRedirect() {
     COO: '/coo',
     Garage: '/garage',
     Admin: '/admin',
-    'Security Guard': '/security/gate',
+    Security: '/security/gate',
   };
   return <Navigate to={roleRoutes[user?.role] || '/login'} replace />;
 }
@@ -137,8 +137,8 @@ export default function App() {
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
       </Route>
 
-      {/* Security Guard routes */}
-      <Route element={<ProtectedRoute allowedRoles={['Security Guard', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+      {/* Security routes */}
+      <Route element={<ProtectedRoute allowedRoles={['Security', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
         <Route path="/security/gate" element={<SecurityDashboard />} />
       </Route>
 

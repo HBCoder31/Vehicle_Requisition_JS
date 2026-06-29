@@ -73,7 +73,7 @@ const roleNavConfig = {
     { to: '/delegations', icon: Users, label: 'Delegations' },
     { to: '/employee/travel-ledger', icon: ScrollText, label: 'My Travel Ledger' },
   ],
-  'Security Guard': [
+  Security: [
     { to: '/security/gate', icon: Shield, label: 'Gate Operations' },
   ],
 };
@@ -85,7 +85,7 @@ const roleBadgeColors = {
   COO:      'bg-success-50 text-success-700',
   Garage:   'bg-info-50 text-primary-700',
   Admin:    'bg-danger-50 text-danger-700',
-  'Security Guard': 'bg-slate-100 text-slate-700',
+  Security: 'bg-slate-100 text-slate-700',
 };
 
 const getPopupStyles = (notif) => {

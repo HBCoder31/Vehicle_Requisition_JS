@@ -47,7 +47,7 @@ async function recordExit(req, res) {
       odometer_out,
       fuel_level_out,
       gate_no_out,
-      security_guard_name: req.user.full_name,
+      security_name: req.user.full_name,
       remarks_out,
       photo_url_out
     };
