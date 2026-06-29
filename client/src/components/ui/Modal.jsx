@@ -21,32 +21,32 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop — covers full viewport always */}
+    /* Fixed overlay — always covers the visible viewport, never scrolls with page */
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      {/* Centering wrapper — min-h-full + flex centers the modal vertically */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className={`relative bg-surface rounded-2xl shadow-2xl w-full ${sizeClasses[size]} animate-modal-spring`}>
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-border">
-            <h3 className="text-base font-semibold text-slate-800">{title}</h3>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          {/* Body */}
-          <div className="px-6 py-4">
-            {children}
-          </div>
+      {/* Dialog — centered, max height so it never overflows the viewport */}
+      <div className={`relative bg-surface rounded-2xl shadow-2xl w-full ${sizeClasses[size]} animate-modal-spring flex flex-col max-h-[90vh]`}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-3 border-b border-border shrink-0">
+          <h3 className="text-base font-semibold text-slate-800">{title}</h3>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        {/* Body — scrolls internally if content is taller than 90vh */}
+        <div className="px-6 py-4 overflow-y-auto">
+          {children}
         </div>
       </div>
     </div>
   );
 
 }
+
