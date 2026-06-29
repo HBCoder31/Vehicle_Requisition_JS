@@ -3,12 +3,28 @@ import { useEffect } from 'react';
 
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }) {
   useEffect(() => {
+    // The scrollable element is the <main id="page-content"> container,
+    // NOT body — so we must lock that element's scroll.
+    const scrollContainer = document.getElementById('page-content');
+    if (!scrollContainer) return;
+
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      // Save current scroll position and lock
+      const savedScroll = scrollContainer.scrollTop;
+      scrollContainer.dataset.savedScroll = savedScroll;
+      scrollContainer.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = '';
+      // Restore scroll position and unlock
+      const savedScroll = parseInt(scrollContainer.dataset.savedScroll || '0', 10);
+      scrollContainer.style.overflow = '';
+      scrollContainer.scrollTop = savedScroll;
     }
-    return () => { document.body.style.overflow = ''; };
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.style.overflow = '';
+      }
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
