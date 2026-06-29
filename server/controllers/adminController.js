@@ -82,11 +82,24 @@ async function createEmployee(req, res) {
  */
 async function updateEmployee(req, res) {
   try {
-    const { employee_number, password, full_name, role, department_id, phone, is_active } = req.body;
+    const { employee_number, email, password, full_name, role, department_id, phone, is_active } = req.body;
 
     const [existing] = await pool.execute('SELECT * FROM employees WHERE id = ?', [req.params.id]);
     if (existing.length === 0) {
       return res.status(404).json({ error: 'Employee not found.' });
+    }
+
+    // Check for duplicate email or employee_number excluding current user
+    if (email || employee_number) {
+      const checkEmail = email || existing[0].email;
+      const checkEmpNo = employee_number || existing[0].employee_number;
+      const [duplicate] = await pool.execute(
+        'SELECT id FROM employees WHERE (email = ? OR employee_number = ?) AND id != ?',
+        [checkEmail, checkEmpNo, req.params.id]
+      );
+      if (duplicate.length > 0) {
+        return res.status(409).json({ error: 'An employee with this email or employee number already exists.' });
+      }
     }
 
     if (role) {
@@ -100,6 +113,7 @@ async function updateEmployee(req, res) {
     let params = [];
 
     if (employee_number) { query += 'employee_number = ?, '; params.push(employee_number); }
+    if (email) { query += 'email = ?, '; params.push(email); }
     if (password) {
       const hash = await bcrypt.hash(password, 10);
       query += 'password_hash = ?, '; params.push(hash);
@@ -107,7 +121,7 @@ async function updateEmployee(req, res) {
     if (full_name) { query += 'full_name = ?, '; params.push(full_name); }
     if (role) { query += 'role = ?, '; params.push(role); }
     if (department_id !== undefined) { query += 'department_id = ?, '; params.push(department_id); }
-    if (phone) { query += 'phone = ?, '; params.push(phone); }
+    if (phone !== undefined) { query += 'phone = ?, '; params.push(phone); }
     if (is_active !== undefined) { query += 'is_active = ?, '; params.push(is_active); }
 
     // remove trailing comma and space

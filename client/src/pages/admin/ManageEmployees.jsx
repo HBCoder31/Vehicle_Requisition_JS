@@ -447,27 +447,20 @@ export default function ManageEmployees() {
                 className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
             </div>
           </div>
-          {!editModal.employee && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="emp-email" className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                <input id="emp-email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
-              </div>
-              <div>
-                <label htmlFor="emp-pass" className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                <input id="emp-pass" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
-              </div>
-            </div>
-          )}
-          {editModal.employee && (
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="emp-pass" className="block text-sm font-medium text-slate-700 mb-1">Password (Leave blank to keep current)</label>
-              <input id="emp-pass" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" placeholder="••••••••" />
+              <label htmlFor="emp-email" className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <input id="emp-email" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" />
             </div>
-          )}
+            <div>
+              <label htmlFor="emp-pass" className="block text-sm font-medium text-slate-700 mb-1">
+                {editModal.employee ? 'Password (Leave blank to keep current)' : 'Password'}
+              </label>
+              <input id="emp-pass" type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:border-primary-500 outline-none" placeholder={editModal.employee ? '••••••••' : ''} />
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="emp-role" className="block text-sm font-medium text-slate-700 mb-1">Role</label>
