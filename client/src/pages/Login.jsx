@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, useSearchParams, useNavigate } from 'react-router-dom';
-import { Truck, Shield, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Truck, Shield, ArrowRight, ArrowLeft, Info } from 'lucide-react';
+import AboutDevelopersModal from '../components/AboutDevelopersModal';
 import api from '../services/api';
 import { gsap } from 'gsap';
 
@@ -12,6 +13,7 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState(searchParams.get('error') || '');
   const [successMsg, setSuccessMsg] = useState('');
   const [view, setView] = useState('login'); // 'login' | 'forgot-password'
+  const [showAboutModal, setShowAboutModal] = useState(false);
   
   const [formData, setFormData] = useState({
     identifier: '',
@@ -538,6 +540,19 @@ export default function Login() {
           © {new Date().getFullYear()} Vehicle Requisitional and Travel Portal.
         </p>
       </div>
+
+      {/* Bottom Right About Developers Button */}
+      <button 
+        type="button"
+        onClick={() => setShowAboutModal(true)}
+        className="absolute bottom-4 right-4 bg-white/10 hover:bg-white/20 active:scale-[0.98] border border-white/25 text-white/80 hover:text-white px-3 py-1.5 rounded-xl text-xs font-semibold backdrop-blur-md transition-all duration-200 shadow-lg cursor-pointer z-20 flex items-center gap-1.5"
+      >
+        <Info className="w-3.5 h-3.5" />
+        About Developers
+      </button>
+
+      {/* About Developers Modal */}
+      <AboutDevelopersModal isOpen={showAboutModal} onClose={() => setShowAboutModal(false)} />
     </div>
   );
 }

@@ -4,11 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { parseDate } from '../utils/date';
 import {
   LayoutDashboard, FileText, CheckSquare, Truck, Users, ScrollText,
-  Menu, X, LogOut, ChevronDown, Shield, Bell, Check, TrendingUp, Search, RefreshCw, MapPin, History, Ticket
+  Menu, X, LogOut, ChevronDown, Shield, Bell, Check, TrendingUp, Search, RefreshCw, MapPin, History, Ticket, Info
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import socket from '../services/socket';
+import AboutDevelopersModal from '../components/AboutDevelopersModal';
 
 const roleNavConfig = {
   Employee: [
@@ -141,6 +142,7 @@ export default function DashboardLayout() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [newNotificationPopup, setNewNotificationPopup] = useState(null);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
@@ -325,6 +327,18 @@ export default function DashboardLayout() {
               {sidebarOpen && <span className="truncate">{label}</span>}
             </NavLink>
           ))}
+          
+          {/* Custom Nav Item at the end for About Developers */}
+          <button
+            onClick={() => setShowAboutModal(true)}
+            className={`flex items-center gap-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 w-full text-left cursor-pointer
+              ${sidebarOpen ? 'px-3' : 'justify-center px-0'}
+              text-primary-200 hover:bg-white/10 hover:text-white`}
+            title={!sidebarOpen ? 'About Developers' : ''}
+          >
+            <Info className="w-5 h-5 shrink-0" />
+            {sidebarOpen && <span className="truncate">About Developers</span>}
+          </button>
         </nav>
 
         {/* Sidebar Footer */}
@@ -590,6 +604,8 @@ export default function DashboardLayout() {
       >
         <RefreshCw className="w-5 h-5" />
       </button>
+      {/* About Developers Modal */}
+      <AboutDevelopersModal isOpen={showAboutModal} onClose={() => setShowAboutModal(false)} />
     </div>
   );
 }
